@@ -12,8 +12,32 @@
 #include "Devices/Input.h"
 #include "Devices/Battery.h"
 #include "Util/Notes.h"
+#include <esp_spiffs.h>
 
 BacklightBrightness* bl;
+
+bool initSPIFFS(){
+	esp_vfs_spiffs_conf_t conf = {
+			.base_path = "/spiffs",
+			.partition_label = "storage",
+			.max_files = 8,
+			.format_if_mount_failed = false
+	};
+
+	auto ret = esp_vfs_spiffs_register(&conf);
+	if(ret != ESP_OK){
+		if(ret == ESP_FAIL){
+			ESP_LOGE("FS", "Failed to mount or format filesystem");
+		}else if(ret == ESP_ERR_NOT_FOUND){
+			ESP_LOGE("FS", "Failed to find SPIFFS partition");
+		}else{
+			ESP_LOGE("FS", "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
+		}
+		return false;
+	}
+
+	return true;
+}
 
 void init(){
 	auto ret = nvs_flash_init();
@@ -22,6 +46,8 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	if(!initSPIFFS()) return;
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
