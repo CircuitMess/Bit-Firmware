@@ -36,9 +36,10 @@ protected:
 	void _getStat() const;
 
 };
+
 namespace fs {
 
-extern File open(const char* path, const char* mode);
+extern File open(const char* path, const char* mode = "r");
 
 }
 
