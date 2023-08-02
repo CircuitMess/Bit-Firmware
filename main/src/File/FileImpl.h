@@ -9,9 +9,9 @@ class FileImpl;
 typedef std::shared_ptr<FileImpl> FileImplPtr;
 
 enum class SeekMode : uint8_t {
-	SeekSet = 0,
-	SeekCur = 1,
-	SeekEnd = 2
+	SeekSet = SEEK_SET,
+	SeekCur = SEEK_CUR,
+	SeekEnd = SEEK_END
 };
 
 class FileImpl {
@@ -23,10 +23,8 @@ public:
 	virtual bool seek(uint32_t pos, SeekMode mode) = 0;
 	virtual size_t position() const = 0;
 	virtual size_t size() const = 0;
-	virtual bool setBufferSize(size_t size) = 0;
 	virtual void close() = 0;
 	virtual time_t getLastWrite() = 0;
-	virtual const char* path() const = 0;
 	virtual const char* name() const = 0;
 	virtual bool isDirectory() = 0;
 	virtual FileImplPtr openNextFile(const char* mode) = 0;

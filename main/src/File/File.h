@@ -5,8 +5,6 @@
 #include <fstream>
 #include <utility>
 
-std::fstream s;
-
 class File {
 public:
 	File(FileImplPtr p = FileImplPtr());
