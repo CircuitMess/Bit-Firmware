@@ -4,7 +4,6 @@
 #include <LovyanGFX.h>
 
 typedef lgfx::LGFX_Sprite Sprite;
-typedef uint16_t Color;
 
 class Display {
 public:
