@@ -9,7 +9,10 @@ UIThread::~UIThread(){
 }
 
 void UIThread::loop(){
-	if(!game) return;
+	if(!game){
+		vTaskDelay(1);
+		return;
+	}
 
 	auto curr = esp_timer_get_time();
 	auto delta = curr - loopTime;
@@ -18,6 +21,8 @@ void UIThread::loop(){
 	game->loop(delta);
 	display.getCanvas().pushSprite(0, 0);
 	display.getLGFX().display();
+
+	vTaskDelay(1);
 }
 
 void UIThread::startGame(std::unique_ptr<Game> game){
