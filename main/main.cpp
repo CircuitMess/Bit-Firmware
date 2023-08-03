@@ -13,6 +13,8 @@
 #include "Devices/Battery.h"
 #include "Util/Notes.h"
 #include <esp_spiffs.h>
+#include "UIThread.h"
+#include "Games/TestGame.h"
 
 BacklightBrightness* bl;
 
@@ -73,21 +75,16 @@ void init(){
 
 	if(settings->get().sound){
 		//TODO - startup chime
-		audio->play({
-							Chirp{ .startFreq = NOTE_E4, .endFreq = NOTE_GS4, .duration = 100 },
-							Chirp{ .startFreq = 0, .endFreq = 0, .duration = 200 },
-							Chirp{ .startFreq = NOTE_GS4, .endFreq = NOTE_B4, .duration = 100 },
-							Chirp{ .startFreq = 0, .endFreq = 0, .duration = 200 },
-							Chirp{ .startFreq = NOTE_B4, .endFreq = NOTE_E5, .duration = 100 }
-					});
 	}
 
 	bl->fadeIn();
 
-	auto& display = disp->getLGFX();
 	// Start Battery scanning after everything else, otherwise Critical
 	// Battery event might come while initialization is still in progress
 	battery->begin();
+
+	auto ui = new UIThread(*disp);
+	ui->startGame(std::make_unique<TestGame>(disp->getCanvas()));
 }
 
 extern "C" void app_main(void){
