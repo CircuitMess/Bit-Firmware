@@ -1,7 +1,7 @@
 #include "Display.h"
 #include <Pins.hpp>
 
-Display::Display(){
+Display::Display() : canvas(&lgfx){
 	setupBus();
 	setupPanel();
 
@@ -9,6 +9,9 @@ Display::Display(){
 	panel.setBus(&bus);
 	lgfx.setPanel(&panel);
 	lgfx.init();
+
+	canvas.setColorDepth(lgfx::rgb565_2Byte);
+	canvas.createSprite(128, 128);
 }
 
 Display::~Display(){
@@ -56,6 +59,10 @@ void Display::setupPanel(){
 
 LGFX_Device& Display::getLGFX(){
 	return lgfx;
+}
+
+Sprite& Display::getCanvas(){
+	return canvas;
 }
 
 void Display::drawTest(){
