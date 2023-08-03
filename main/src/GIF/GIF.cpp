@@ -1,4 +1,7 @@
+#include <esp_log.h>
 #include "GIF.h"
+
+static const char* TAG = "GIF";
 
 GIF::GIF(){}
 
@@ -6,6 +9,12 @@ GIF::GIF(File file){
 	if(!file) return;
 	file.seek(0);
 	gif = gd_open_gif(file);
+
+	if(gif == nullptr){
+		ESP_LOGE(TAG, "gifdec couldn't open gif");
+		return;
+	}
+
 	data = std::shared_ptr<Pixel>(new Pixel[getWidth() * getHeight()], std::default_delete<Pixel[]>());
 }
 
