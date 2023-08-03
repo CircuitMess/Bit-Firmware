@@ -4,7 +4,7 @@
 #include <functional>
 #include <list>
 #include "../GameSystem.h"
-#include "Devices/Display.h"
+#include "Color.h"
 
 class CollisionSystem : public GameSystem {
 	friend Game;

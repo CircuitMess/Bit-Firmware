@@ -11,16 +11,17 @@
 
 #undef abs
 
-CollisionSystem::CollisionSystem(const Game* game) : GameSystem(game), Walls({
-	 .top =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 160, 100 }) },
-	 .bot =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 160, 100 }) },
-	 .left =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 100, 128 }) },
-	 .right =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 100, 128 }) }
-}){
+CollisionSystem::CollisionSystem(const Game* game) :
+		GameSystem(game), Walls({
+										.top =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 128, 100 }) },
+										.bot =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 128, 100 }) },
+										.left =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 100, 128 }) },
+										.right =  { nullptr, std::make_unique<RectCC>(glm::vec2{ 100, 128 }) }
+								}){
 	Walls.top.setPos({ 0, -100 });
 	Walls.bot.setPos({ 0, 128 });
 	Walls.left.setPos({ -100, 0 });
-	Walls.right.setPos({ 160, 0 });
+	Walls.right.setPos({ 128, 0 });
 }
 
 void CollisionSystem::update(uint32_t deltaMicros){
@@ -33,18 +34,20 @@ void CollisionSystem::update(uint32_t deltaMicros){
 		auto type1 = pair.first->getCollisionComponent()->getType();
 		auto type2 = pair.second->getCollisionComponent()->getType();
 
-		std::pair<CollisionType, CollisionType> types = {type1, type2};
+		std::pair<CollisionType, CollisionType> types = { type1, type2 };
 
 		std::map<std::pair<CollisionType, CollisionType>, std::function<bool(const GameObject&, const GameObject&)>> map = {
-			{ { CollisionType::Circle, CollisionType::Circle }, &CollisionSystem::circleCircle },
-			{ { CollisionType::Rect, CollisionType::Rect }, &CollisionSystem::rectRect },
-			{ { CollisionType::Rect, CollisionType::Circle }, &CollisionSystem::rectCircle },
-			{ { CollisionType::Circle, CollisionType::Rect }, [](const GameObject& circle, const GameObject& rect){ return rectCircle(rect, circle); }},
-			{ { CollisionType::Polygon, CollisionType::Polygon }, &CollisionSystem::polyPoly },
-			{ { CollisionType::Polygon, CollisionType::Rect }, &CollisionSystem::polyRect },
-			{ { CollisionType::Rect, CollisionType::Polygon }, [](const GameObject& rect, const GameObject& poly){ return polyRect(poly, rect); } },
-			{ { CollisionType::Polygon, CollisionType::Circle }, &CollisionSystem::polyCircle },
-			{ { CollisionType::Circle, CollisionType::Polygon }, [](const GameObject& circle, const GameObject& poly){ return polyCircle(poly, circle); } }
+				{ { CollisionType::Circle,  CollisionType::Circle },  &CollisionSystem::circleCircle },
+				{ { CollisionType::Rect,    CollisionType::Rect },    &CollisionSystem::rectRect },
+				{ { CollisionType::Rect,    CollisionType::Circle },  &CollisionSystem::rectCircle },
+				{ { CollisionType::Circle,  CollisionType::Rect },    [](const GameObject& circle, const GameObject& rect){
+					return rectCircle(rect, circle);
+				} },
+				{ { CollisionType::Polygon, CollisionType::Polygon }, &CollisionSystem::polyPoly },
+				{ { CollisionType::Polygon, CollisionType::Rect },    &CollisionSystem::polyRect },
+				{ { CollisionType::Rect,    CollisionType::Polygon }, [](const GameObject& rect, const GameObject& poly){ return polyRect(poly, rect); } },
+				{ { CollisionType::Polygon, CollisionType::Circle },  &CollisionSystem::polyCircle },
+				{ { CollisionType::Circle,  CollisionType::Polygon }, [](const GameObject& circle, const GameObject& poly){ return polyCircle(poly, circle); } }
 		};
 
 		bool overlap = map[types](*pair.first, *pair.second);
@@ -56,7 +59,7 @@ void CollisionSystem::update(uint32_t deltaMicros){
 		pair.colliding = overlap;
 	}
 
-	for(auto& pair:removedPairs){
+	for(auto& pair : removedPairs){
 		if(pairs.empty()) break;
 		pairs.erase(std::remove(pairs.begin(), pairs.end(), pair), pairs.end());
 	}
@@ -75,7 +78,7 @@ void CollisionSystem::addPair(const GameObject& first, const GameObject& second,
 
 	if(removedPairs.empty()) return;
 
-	auto it = remove_if(removedPairs.begin(), removedPairs.end(), [&first, &second](const Pair& pair) -> bool {
+	auto it = remove_if(removedPairs.begin(), removedPairs.end(), [&first, &second](const Pair& pair) -> bool{
 		return (pair.first == &first && pair.second == &second) || (pair.first == &second && pair.second == &first);
 	});
 	removedPairs.erase(it, removedPairs.end());
@@ -90,7 +93,7 @@ void CollisionSystem::removePair(const GameObject& first, const GameObject& seco
 
 	if(addedPairs.empty()) return;
 
-	auto it = remove_if(addedPairs.begin(), addedPairs.end(), [&first, &second](const Pair& pair) -> bool {
+	auto it = remove_if(addedPairs.begin(), addedPairs.end(), [&first, &second](const Pair& pair) -> bool{
 		return (pair.first == &first && pair.second == &second) || (pair.first == &second && pair.second == &first);
 	});
 	addedPairs.erase(it, addedPairs.end());
@@ -105,7 +108,7 @@ void CollisionSystem::removeObject(const GameObject& GO){
 
 	if(addedPairs.empty()) return;
 
-	auto it = remove_if(addedPairs.begin(), addedPairs.end(), [&GO](const Pair& pair) -> bool {
+	auto it = remove_if(addedPairs.begin(), addedPairs.end(), [&GO](const Pair& pair) -> bool{
 		return pair.first == &GO || pair.second == &GO;
 	});
 	addedPairs.erase(it, addedPairs.end());
@@ -181,17 +184,17 @@ bool CollisionSystem::circleCircle(const GameObject& circle1, const GameObject& 
 }
 
 bool CollisionSystem::rectCircle(const GameObject& rect, const GameObject& circle){
-	auto cPos = circle.getPos() +  circle.getCollisionComponent()->getCircle()->getOffset();
+	auto cPos = circle.getPos() + circle.getCollisionComponent()->getCircle()->getOffset();
 	auto r = circle.getCollisionComponent()->getCircle()->getRadius();
 	auto rDim = rect.getCollisionComponent()->getRect()->getDim();
 	auto rPos = rect.getPos() + 0.5f * rDim;
 
 	// Thank you https://www.gamedevelopment.blog/collision-detection-circles-rectangles-and-polygons/
 	auto distance = glm::abs(cPos - rPos);
-	if (distance.x > (rDim.x/2 + r)) { return false; }
-	if (distance.y > (rDim.y/2 + r)) { return false; }
-	if (distance.x <= (rDim.x/2)) { return true; }
-	if (distance.y <= (rDim.y/2)) { return true; }
+	if(distance.x > (rDim.x / 2 + r)){ return false; }
+	if(distance.y > (rDim.y / 2 + r)){ return false; }
+	if(distance.x <= (rDim.x / 2)){ return true; }
+	if(distance.y <= (rDim.y / 2)){ return true; }
 
 	return glm::distance(distance, rDim * 0.5f) <= r;
 }
@@ -302,7 +305,7 @@ CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedPoly(const GameObj
 	auto polyPoints = poly.getCollisionComponent()->getPolygon()->getPoints();
 	auto pos = poly.getPos();
 
-	if( rot == 0){
+	if(rot == 0){
 		std::transform(polyPoints.begin(), polyPoints.end(), polyPoints.begin(), [&pos](glm::vec2& point){
 			return point + pos;
 		});
@@ -331,7 +334,7 @@ void CollisionSystem::drawDebug(Sprite& canvas){
 	for(const auto& pair : pairs){
 		Color c = pair.colliding ? TFT_GREEN : TFT_RED;
 
-		const auto draw = [canvas, &drawn](Color c, const GameObject& obj){
+		const auto draw = [&canvas, &drawn](Color c, const GameObject& obj){
 			if(drawn.count(&obj) && c != TFT_GREEN) return;
 			drawn.insert(&obj);
 
@@ -341,8 +344,8 @@ void CollisionSystem::drawDebug(Sprite& canvas){
 				canvas.drawRect(obj.getPos().x, obj.getPos().y, col->getRect()->getDim().x, col->getRect()->getDim().y, c);
 			}else if(col->getType() == CollisionType::Circle){
 				canvas.drawCircle(obj.getPos().x + obj.getCollisionComponent()->getCircle()->getOffset().x,
-								   obj.getPos().y + obj.getCollisionComponent()->getCircle()->getOffset().y,
-								   col->getCircle()->getRadius(), c);
+								  obj.getPos().y + obj.getCollisionComponent()->getCircle()->getOffset().y,
+								  col->getCircle()->getRadius(), c);
 			}else if(col->getType() == CollisionType::Polygon){
 				CollisionSystem::drawPolygon(obj, canvas, c);
 			}
@@ -354,8 +357,6 @@ void CollisionSystem::drawDebug(Sprite& canvas){
 }
 
 void CollisionSystem::drawPolygon(const GameObject& poly, Sprite& canvas, Color color){
-	typedef glm::vec2 Point;
-
 	auto points = poly.getCollisionComponent()->getPolygon()->getPoints();
 
 	if(points.empty()) return;
