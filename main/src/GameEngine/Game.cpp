@@ -1,10 +1,13 @@
 #include "Game.h"
 #include <utility>
 #include <esp_log.h>
+#include "Util/Services.h"
 
-Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) : collision(this), inputQueue(12), base(base), resMan(root),
-																				   resources(std::move(resources)),
-																				   loadTask([this](){ loadFunc(); }, "loadTask", 4096), render(this, base){
+Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) :
+		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), base(base),
+		resMan(root),resources(std::move(resources)),
+		loadTask([this](){ loadFunc(); }, "loadTask", 4096),
+		render(this, base){
 
 }
 

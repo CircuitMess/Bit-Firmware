@@ -13,6 +13,7 @@
 #include <Util/Threaded.h>
 #include <Util/Events.h>
 #include "Devices/Input.h"
+#include "Services/ChirpSystem.h"
 
 class Game {
 
@@ -45,6 +46,8 @@ protected:
 
 	EventQueue inputQueue;
 	virtual void handleInput(const Input::Data& data);
+
+	ChirpSystem& audio;
 
 private:
 	Sprite& base;
