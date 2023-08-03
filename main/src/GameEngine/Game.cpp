@@ -2,9 +2,9 @@
 #include <utility>
 #include <esp_log.h>
 
-Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) : resMan(root), collision(this), inputQueue(12), base(base),
+Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) : collision(this), inputQueue(12), base(base), resMan(root),
 																				   resources(std::move(resources)),
-																				   render(this, base), loadTask([this](){ loadFunc(); }, "loadTask", 4096){
+																				   loadTask([this](){ loadFunc(); }, "loadTask", 4096), render(this, base){
 
 }
 
@@ -18,6 +18,7 @@ void Game::loadFunc(){
 	resMan.load(resources);
 	onLoad();
 	loaded = true;
+	loadTask.stop(0);
 }
 
 void Game::start(){
@@ -57,7 +58,19 @@ void Game::removeObject(const GameObjPtr& obj){
 	objects.erase(obj);
 }
 
+void Game::handleInput(const Input::Data& data){
+
+}
+
 void Game::loop(uint micros){
+	Event e;
+	if(inputQueue.get(e, 0)){
+		if(e.facility == Facility::Input){
+			handleInput(*((Input::Data*) e.data));
+		}
+		free(e.data);
+	}
+
 	collision.update(micros);
 	onLoop((float) micros / 1000000.0f);
 

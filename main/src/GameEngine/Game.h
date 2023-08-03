@@ -9,9 +9,10 @@
 #include "Collision/CollisionSystem.h"
 #include "Rendering/RenderSystem.h"
 #include <Devices/Display.h>
-#include <File/File.h>
+#include <FS/File.h>
 #include <Util/Threaded.h>
 #include <Util/Events.h>
+#include "Devices/Input.h"
 
 class Game {
 
@@ -43,6 +44,7 @@ protected:
 	CollisionSystem collision;
 
 	EventQueue inputQueue;
+	virtual void handleInput(const Input::Data& data);
 
 private:
 	Sprite& base;
