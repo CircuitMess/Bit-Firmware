@@ -48,3 +48,9 @@ void AnimRC::setLoopMode(GIF::LoopMode loopMode){
 	this->loopMode = loopMode;
 	gif->setLoopMode(loopMode);
 }
+
+void AnimRC::update(uint32_t deltaMicros){
+	if(!playing) return;
+
+	gif->loop(deltaMicros);
+}

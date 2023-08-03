@@ -35,7 +35,7 @@ public:
 
 protected:
 	void push(Sprite& parent, PixelDim pos, float rot) const override;
-
+	void update(uint32_t deltaMicros) override;
 private:
 	std::unique_ptr<GIFSprite> gif;
 	bool playing = false;

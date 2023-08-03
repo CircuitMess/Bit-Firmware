@@ -18,6 +18,11 @@ public:
 	void setVisible(bool visible);
 
 protected:
+	/**
+	 * Update is used for animated RenderComponents
+	 * @param deltaMicros Time delta since last update.
+	 */
+	virtual void update(uint32_t deltaMicros);
 	virtual void push(Sprite& parent, PixelDim pos, float rot) const = 0;
 
 private:

@@ -1,7 +1,7 @@
 #include "StaticRC.h"
 #include <utility>
 #include <esp_log.h>
-#include "CMFileWrapper.h"
+#include "Color.h"
 
 StaticRC::StaticRC(File file, PixelDim dim) : file(std::move(file)), dim(dim){}
 

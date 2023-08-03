@@ -15,3 +15,7 @@ bool RenderComponent::isVisible() const{
 void RenderComponent::setVisible(bool visible){
 	RenderComponent::visible = visible;
 }
+
+void RenderComponent::update(uint32_t deltaMicros){
+
+}
