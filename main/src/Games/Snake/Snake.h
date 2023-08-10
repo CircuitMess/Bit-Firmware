@@ -16,7 +16,7 @@ protected:
 
 private:
 	enum class State {
-		Running, GameOver
+		Running, GameOver, GameWin
 	} state = State::Running;
 
 	GameObjPtr bg;
@@ -27,14 +27,15 @@ private:
 
 	uint32_t score = 0;
 	glm::vec2 speed = { 0, 0 };
+	float baseSpeed = StartingSpeed;
 	float moveBuffer = 0; //this accumulates to TileDim over time, until the position changes
 	bool inputInterrupt = true; //for handling input cases inside one tile movement timeframe
+	float gameWinCounter = 0;
 
 	struct FoodDesc {
 		const char* path;
 		PixelDim dim;
 	};
-
 	static constexpr FoodDesc Foods[] = {
 			{ "/Apple.raw",     { 5,  5 } },
 			{ "/Banana.raw",    { 10, 11 } },
@@ -43,7 +44,6 @@ private:
 			{ "/Grapes.raw",    { 5,  9 } },
 			{ "/Icecream.raw",  { 5,  11 } },
 			{ "/Lemon.raw",     { 9,  7 } },
-			{ "/Pear.raw",      { 5,  8 } },
 			{ "/Plum.raw",      { 7,  4 } },
 			{ "/Sausage.raw",   { 7,  9 } },
 	};
@@ -56,8 +56,9 @@ private:
 
 	static constexpr PixelDim HitboxDim = { 3, 3 };
 	static constexpr uint8_t StartingLength = 2;
-	static constexpr float BaseSpeed = 50; //TODO - speed up as game progresses
-
+	static constexpr float StartingSpeed = 50;
+	static constexpr float SpeedIncrement = 1.0 / 24.0;
+	static constexpr uint8_t GameWinPause = 2;
 	void drawHead(Sprite& head);
 	void addSegment();
 	void moveSnake(glm::vec2 move);

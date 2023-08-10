@@ -14,7 +14,6 @@ Snake::Snake(Sprite& canvas) : Game(canvas, "/Games/Snake", {
 		{ Foods[6].path, {}, true },
 		{ Foods[7].path, {}, true },
 		{ Foods[8].path, {}, true },
-		{ Foods[9].path, {}, true },
 		RES_GOBLET
 }){
 
@@ -38,7 +37,7 @@ void Snake::onLoad(){
 	snake.push_back(head);
 	addObject(head);
 
-	speed = { 0, -BaseSpeed };
+	speed = { 0, -baseSpeed };
 
 	for(int i = 1; i < StartingLength; ++i){
 		addSegment();
@@ -66,7 +65,7 @@ void Snake::onLoad(){
 
 void Snake::onLoop(float deltaTime){
 	if(state == State::Running){
-		moveBuffer += deltaTime * BaseSpeed;
+		moveBuffer += deltaTime * baseSpeed;
 		if(moveBuffer >= TileDim.x){
 			moveSnake(speed);
 			moveBuffer -= TileDim.x;
@@ -81,12 +80,18 @@ void Snake::onLoop(float deltaTime){
 			return;
 		}
 
-		moveBuffer += deltaTime * BaseSpeed;
+		moveBuffer += deltaTime * baseSpeed;
 		if(moveBuffer >= TileDim.x){
 			removeObject(snake.back());
 			snake.pop_back();
 			moveBuffer = 0;
 
+		}
+	}else if(state == State::GameWin){
+		gameWinCounter += deltaTime;
+		if(gameWinCounter >= GameWinPause){
+			//pop
+			return;
 		}
 	}
 }
@@ -94,7 +99,7 @@ void Snake::onLoop(float deltaTime){
 void Snake::handleInput(const Input::Data& data){
 	if(data.action != Input::Data::Press) return;
 
-	if(state == State::GameOver){
+	if(state == State::GameOver || state == State::GameWin){
 		//pop
 		return;
 	}
@@ -106,19 +111,19 @@ void Snake::handleInput(const Input::Data& data){
 	switch(data.btn){
 		case Input::Up:
 			if(speed.y != 0) return;
-			speed = { 0, -BaseSpeed };
+			speed = { 0, -baseSpeed };
 			break;
 		case Input::Down:
 			if(speed.y != 0) return;
-			speed = { 0, BaseSpeed };
+			speed = { 0, baseSpeed };
 			break;
 		case Input::Left:
 			if(speed.x != 0) return;
-			speed = { -BaseSpeed, 0 };
+			speed = { -baseSpeed, 0 };
 			break;
 		case Input::Right:
 			if(speed.x != 0) return;
-			speed = { BaseSpeed, 0 };
+			speed = { baseSpeed, 0 };
 			break;
 		default:
 			break;
@@ -242,6 +247,16 @@ void Snake::foodEaten(bool initial){
 		audio.play({ { 100, 100, 100 } });
 		scoreElement->setScore(++score);
 		addSegment();
+
+		if(score >= GridDim.x * GridDim.y){
+			gameWinCounter = 0;
+			audio.play({ { 600, 400,  200 },
+						 { 400, 1000, 200 } });
+			state = State::GameWin;
+			return;
+		}
+
+		baseSpeed += SpeedIncrement;
 	}
 	const auto& foodIndex = rand() % (sizeof(Foods) / sizeof(Foods[0]));
 	std::static_pointer_cast<StaticRC>(food->getRenderComponent())->setFile(getFile(Foods[foodIndex].path), Foods[foodIndex].dim);
