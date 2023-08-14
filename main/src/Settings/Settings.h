@@ -2,11 +2,13 @@
 #define BIT_FIRMWARE_SETTINGS_H
 
 #include <nvs.h>
+#include "Services/Robots.h"
 
 struct SettingsStruct {
 	bool sound = true;
 	uint8_t screenBrightness = 100;
 	uint8_t sleepTime = 1;
+	uint8_t robotsSeen[Robot::COUNT] = {0};
 };
 
 class Settings {

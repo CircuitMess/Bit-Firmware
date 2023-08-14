@@ -21,6 +21,8 @@ class Game {
 	friend GameSystem;
 
 public:
+	virtual ~Game();
+
 	void load();
 	bool isLoaded() const;
 
@@ -49,6 +51,8 @@ protected:
 	virtual void handleInput(const Input::Data& data);
 
 	ChirpSystem& audio;
+
+	void exit();
 
 private:
 	Sprite& base;

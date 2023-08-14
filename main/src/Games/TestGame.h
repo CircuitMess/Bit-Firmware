@@ -31,6 +31,8 @@ private:
 	GameObjPtr label;
 
 	bool gravity = true;
+
+	uint64_t startTime;
 };
 
 

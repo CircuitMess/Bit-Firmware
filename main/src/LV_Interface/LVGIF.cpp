@@ -49,9 +49,12 @@ LVGIF::LVGIF(lv_obj_t* parent, const char* path) : LVObject(parent), path(path){
 	lv_img_set_src(img, imgPath);
 	timer = lv_timer_create([](lv_timer_t* t){
 		auto gif = (LVGIF*) t->user_data;
+		bool done = false;
+
 		gif->index++;
 		if(gif->index >= gif->durations.size()){
-			if(gif->cb) gif->cb();
+			done = true;
+
 			if(gif->loopType == LoopType::Single){
 				return;
 			}else if(gif->loopType == LoopType::On){
@@ -64,6 +67,9 @@ LVGIF::LVGIF(lv_obj_t* parent, const char* path) : LVObject(parent), path(path){
 		sprintf(gif->imgPath, "%s/%lu.bin", gif->path, gif->index);
 		lv_img_set_src(gif->img, gif->imgPath);
 
+		if(done && gif->cb){
+			gif->cb();
+		}
 	}, durations[index], this);
 	lv_timer_pause(timer);
 }
