@@ -71,6 +71,7 @@ void Block::setPos(PixelDim gridPos){
 	this->gridPos = gridPos;
 
 	for(auto& segment : segments){
+		if(segment == nullptr) continue;
 		auto pos = segment->getPos();
 		pos += diff * Blocks::TileDim.x;
 		segment->setPos(pos);
@@ -230,5 +231,13 @@ void Block::rotate(){
 			break;
 		default:
 			break;
+	}
+}
+
+void Block::clearSegment(GameObjPtr segment){
+	for(auto& seg : segments){
+		if(seg.get() == segment.get()){
+			seg.reset();
+		}
 	}
 }

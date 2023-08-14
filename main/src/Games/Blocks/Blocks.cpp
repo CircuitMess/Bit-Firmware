@@ -141,7 +141,8 @@ bool Blocks::moveBlock(){
 			gameOver();
 			return true;
 		}
-		//check for lineclear
+		checkLineClear();
+
 		newBlock();
 		return true;
 	}
@@ -180,6 +181,7 @@ bool Blocks::checkBoundLeft(const Block& block){
 	for(const auto& seg : blocks.back().segments){
 		auto gridpos = globalToGridPos(seg->getPos());
 		if(gridpos.x == 0) return true;
+		if(blocksMatrix[gridpos.x - 1][gridpos.y]) return true;
 	}
 
 	return false;
@@ -189,7 +191,74 @@ bool Blocks::checkBoundRight(const Block& block){
 	for(const auto& seg : blocks.back().segments){
 		auto gridpos = globalToGridPos(seg->getPos());
 		if(gridpos.x == (GridDim.x - 1)) return true;
+		if(blocksMatrix[gridpos.x + 1][gridpos.y]) return true;
 	}
 
 	return false;
+}
+
+void Blocks::checkLineClear(){
+	for(int y = 0; y < GridDim.y; ++y){
+		bool clear = true;
+		for(int x = 0; x < GridDim.x; ++x){
+			if(!blocksMatrix[x][y]){
+				clear = false;
+				break;
+			}
+		}
+
+		if(clear){
+			for(int x = 0; x < GridDim.x; ++x){
+				blocksMatrix[x][y] = false;
+			}
+			//clear all segment objects
+			for(int i = 0; i < blocks.size(); i++){
+				for(auto& segment : blocks[i].segments){
+					if(segment == nullptr) continue;
+					if(globalToGridPos(segment->getPos()).y == y){
+						clearSegment(blocks[i], segment);
+					}
+				}
+			}
+
+			//shift all other segment objects
+			for(int x = 0; x < GridDim.x; ++x){
+				for(int y2 = y; y2 > 0; --y2){
+					blocksMatrix[x][y2] = blocksMatrix[x][y2 - 1];
+					for(int i = 0; i < blocks.size(); i++){
+						for(auto& segment : blocks[i].segments){
+							if(segment == nullptr) continue;
+							if(globalToGridPos(segment->getPos()) == PixelDim{ x, y2 - 1 }){
+								segment->setPos(gridToGlobalPos({ x, y2 }));
+							}
+						}
+					}
+				}
+			}
+
+
+			++linesCleared;
+			score += (linesCleared > 1) ? (linesCleared * (level + 1)) : 1;
+
+			if(linesCleared >= (level * 10)){
+				//increase game_level
+				if((level + 1) <= MaxLevel){
+					level++;
+				}
+			}
+		}
+	}
+}
+
+void Blocks::clearSegment(Block& block, GameObjPtr segment){
+	removeObject(segment);
+	block.clearSegment(segment);
+	if(block.segments[0] == nullptr && block.segments[1] == nullptr && block.segments[2] == nullptr && block.segments[3] == nullptr){
+		for(auto it = blocks.begin(); it != blocks.end(); ++it){
+			if(&(*it) == &block){
+				blocks.erase(it);
+				break;
+			}
+		}
+	}
 }

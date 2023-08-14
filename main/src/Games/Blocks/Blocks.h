@@ -24,7 +24,7 @@ private:
 	GameObjPtr scoreElement;
 
 	uint8_t level = 0;
-	uint32_t lines = 0;
+	uint32_t linesCleared = 0;
 	uint32_t score = 0;
 	float moveBuffer = 0; //this accumulates to TileDim over time, until the position changes
 	float popCounter = 0;
@@ -42,6 +42,13 @@ private:
 	static constexpr uint32_t BlockTypesNum = 7;
 	static constexpr uint32_t BlockColorsNum = 6;
 	static constexpr Color colors[BlockColorsNum] = { TFT_RED, TFT_GREEN, TFT_YELLOW, TFT_CYAN, TFT_GOLD, TFT_PURPLE };
+
+//	static constexpr float AnimPeriod = 0.2;
+//	static constexpr uint8_t AnimLoops = 3;
+//	float animTimer = 0;
+//	float animLoopCount = 0;
+//	bool animState = false;
+	//TODO - animations for line clears
 
 	static constexpr uint8_t PopPause = 2;
 	static constexpr float LongPressTime = 0.35;
@@ -63,9 +70,15 @@ private:
 	void sendLastInput();
 	bool checkBoundLeft(const Block& block);
 	bool checkBoundRight(const Block& block);
+	void checkLineClear();
+	void clearSegment(Block& block, GameObjPtr segment);
 
 	static constexpr PixelDim globalToGridPos(PixelDim globalPos){
 		return (globalPos - Blocks::GridPos) / Blocks::TileDim.x;
+	}
+
+	static constexpr PixelDim gridToGlobalPos(PixelDim gridPos){
+		return gridPos * TileDim.x + GridPos;
 	}
 };
 

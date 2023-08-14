@@ -25,6 +25,7 @@ public:
 	PixelDim getPos() const;
 	void rotate(const bool* blocksMatrix);
 	void placed();
+	void clearSegment(GameObjPtr segment);
 private:
 	void rotate();
 };
