@@ -28,7 +28,7 @@ GameManager::GameManager() : Threaded("GameMan", 2 * 1024), events(12){
 }
 
 bool GameManager::isUnlocked(Games game){
-	if(!GameRobot.contains(game)) return false;
+	if(!GameRobot.contains(game)) return true;
 	auto rob = GameRobot.at(game);
 	return unlocked.count(rob);
 }

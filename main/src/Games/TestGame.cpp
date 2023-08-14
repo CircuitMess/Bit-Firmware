@@ -8,7 +8,7 @@
 
 TestGame::TestGame(Sprite& canvas) : Game(canvas, "", {
 		{ "/Pat1.gif",            {}, true },
-		{ "/Bg/Level1.raw",       {}, true },
+		{ "/Level1.raw",       {}, true },
 		{ "/MenuIcons/Icon1.raw", {}, true },
 		{ "/MenuIcons/Icon2.raw", {}, true },
 		{ "/MenuIcons/Icon3.raw", {}, true },
@@ -26,7 +26,7 @@ void TestGame::onLoad(){
 	pat->setPos({ 50, 30 });
 
 	bg = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/Bg/Level1.raw"), PixelDim{ 160, 128 }),
+			std::make_unique<StaticRC>(getFile("/Level1.raw"), PixelDim{ 160, 128 }),
 			nullptr
 	);
 	addObject(bg);

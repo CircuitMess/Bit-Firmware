@@ -91,6 +91,8 @@ void Game::loop(uint micros){
 			handleInput(*((Input::Data*) e.data));
 		}
 		free(e.data);
+
+		if(exited) return;
 	}
 
 	collision.update(micros);
