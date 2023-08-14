@@ -4,7 +4,7 @@
 #include "GameEngine/Collision/RectCC.h"
 
 Blocks::Blocks(Sprite& canvas) : Game(canvas, "/Games/Blocks", {
-}){
+}), nextBlock(Block::Type::ReverseS, TFT_BLACK, NextBlockPos){
 
 }
 
@@ -19,8 +19,57 @@ void Blocks::onLoad(){
 	bgSprite->clear(TFT_BLACK);
 	bgSprite->drawFastVLine(GridPos.x - 1, 0, 128, TFT_WHITE);
 	bgSprite->drawFastVLine(GridPos.x + GridDim.x * TileDim.x + 1, 0, 128, TFT_WHITE);
-	state = State::Running;
 
+	scoreLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("SCORE", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	scoreLabel->setPos(GridPos.x / 2, 5);
+	addObject(scoreLabel);
+	scoreNumLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("00000", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	scoreNumLabel->setPos(GridPos.x / 2, 15);
+	scoreTextRC = std::static_pointer_cast<TextRC>(scoreNumLabel->getRenderComponent());
+	addObject(scoreNumLabel);
+
+	nextLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("NEXT", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	nextLabel->setPos(GridPos.x / 2, 65);
+	addObject(nextLabel);
+
+	levelLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("LV. 1", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	levelLabel->setPos(128 - GridPos.x / 2 + 1, 5);
+	levelTextRC = std::static_pointer_cast<TextRC>(levelLabel->getRenderComponent());
+	addObject(levelLabel);
+
+
+	linesLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("LINES", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	linesLabel->setPos(128 - GridPos.x / 2 + 1, 20);
+	addObject(linesLabel);
+	linesNumLabel = std::make_shared<GameObject>(
+			std::make_unique<TextRC>("00000", TextStyle{ &Font0, TFT_WHITE, 1, TC_DATUM }),
+			nullptr
+	);
+	linesNumLabel->setPos(128 - GridPos.x / 2 + 1, 30);
+	linesTextRC = std::static_pointer_cast<TextRC>(linesNumLabel->getRenderComponent());
+	addObject(linesNumLabel);
+
+	nextBlock = Block(Block::Type((rand() % BlockTypesNum) + 1), colors[rand() % BlockColorsNum], NextBlockPos);
+	for(auto& segment : nextBlock.segments){
+		addObject(segment);
+	}
+
+	state = State::Running;
 	newBlock();
 	memset((void*) blocksMatrix, 0, GridDim.x * GridDim.y * sizeof(bool));
 }
@@ -104,9 +153,13 @@ void Blocks::gameOver(){
 }
 
 void Blocks::newBlock(){
-	blocks.emplace_back(Block::Type((rand() % BlockTypesNum) + 1), colors[rand() % BlockColorsNum], PixelDim{ 5, 0 });
+	nextBlock.setPos({ 5, 0 });
+	blocks.push_back(std::move(nextBlock));
 
-	for(auto& segment : blocks.back().segments){
+
+	nextBlock = Block(Block::Type((rand() % BlockTypesNum) + 1), colors[rand() % BlockColorsNum], NextBlockPos);
+
+	for(auto& segment : nextBlock.segments){
 		addObject(segment);
 	}
 }
@@ -142,6 +195,7 @@ bool Blocks::moveBlock(){
 			return true;
 		}
 		checkLineClear();
+		updateScore();
 
 		newBlock();
 		return true;
@@ -198,6 +252,7 @@ bool Blocks::checkBoundRight(const Block& block){
 }
 
 void Blocks::checkLineClear(){
+	uint8_t multipleLinesCleared = 0;
 	for(int y = 0; y < GridDim.y; ++y){
 		bool clear = true;
 		for(int x = 0; x < GridDim.x; ++x){
@@ -236,16 +291,25 @@ void Blocks::checkLineClear(){
 				}
 			}
 
-
-			++linesCleared;
-			score += (linesCleared > 1) ? (linesCleared * (level + 1)) : 1;
-
-			if(linesCleared >= (level * 10)){
-				//increase game_level
-				if((level + 1) <= MaxLevel){
-					level++;
+			//clean blocks with no segments
+			for(auto& block : blocks){
+				if(block.segments[0] == nullptr && block.segments[1] == nullptr && block.segments[2] == nullptr && block.segments[3] == nullptr){
+					for(auto it = blocks.begin(); it != blocks.end(); ++it){
+						if(&(*it) == &block){
+							blocks.erase(it);
+							break;
+						}
+					}
 				}
 			}
+			++multipleLinesCleared;
+		}
+	}
+	score += (multipleLinesCleared > 1) ? (multipleLinesCleared * (level + 1)) : multipleLinesCleared;
+	linesCleared += multipleLinesCleared;
+	if(linesCleared >= (level * 10)){
+		if((level + 1) <= MaxLevel){
+			level++;
 		}
 	}
 }
@@ -253,12 +317,17 @@ void Blocks::checkLineClear(){
 void Blocks::clearSegment(Block& block, GameObjPtr segment){
 	removeObject(segment);
 	block.clearSegment(segment);
-	if(block.segments[0] == nullptr && block.segments[1] == nullptr && block.segments[2] == nullptr && block.segments[3] == nullptr){
-		for(auto it = blocks.begin(); it != blocks.end(); ++it){
-			if(&(*it) == &block){
-				blocks.erase(it);
-				break;
-			}
-		}
-	}
+}
+
+void Blocks::updateScore(){
+	std::string s = std::to_string(score);
+	s.insert(s.begin(), 5 - s.length(), '0');
+	scoreTextRC->setText(s);
+
+	s = std::to_string(linesCleared);
+	s.insert(s.begin(), 5 - s.length(), '0');
+	linesTextRC->setText(s);
+
+	s = "LV. " + std::to_string(level);
+	levelTextRC->setText(s);
 }

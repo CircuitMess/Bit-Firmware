@@ -3,6 +3,7 @@
 
 #include "GameEngine/Game.h"
 #include "Block.h"
+#include "GameEngine/Rendering/TextRC.h"
 
 class Blocks : public Game {
 	friend Block;
@@ -21,7 +22,20 @@ private:
 
 	std::vector<Block> blocks;
 	GameObjPtr bg;
-	GameObjPtr scoreElement;
+	GameObjPtr scoreLabel;
+	GameObjPtr scoreNumLabel;
+	std::shared_ptr<TextRC> scoreTextRC;
+
+	GameObjPtr nextLabel;
+	Block nextBlock;
+
+	GameObjPtr levelLabel;
+	std::shared_ptr<TextRC> levelTextRC;
+
+	GameObjPtr linesLabel;
+	GameObjPtr linesNumLabel;
+	std::shared_ptr<TextRC> linesTextRC;
+
 
 	uint8_t level = 0;
 	uint32_t linesCleared = 0;
@@ -34,6 +48,7 @@ private:
 	//grid starts outside screen for vanish zone (rows 21-24)
 	static constexpr PixelDim GridPos = { (128 - GridDim.x * TileDim.x) / 2, (128 - GridDim.y * TileDim.y) };
 	static constexpr uint8_t KillHeight = 21; //if a block is placed in row 21, that's game over
+	static constexpr PixelDim NextBlockPos = { -3, 16 };
 
 	static constexpr uint8_t MaxLevel = 9;
 	static constexpr float BaseSpeed = TileDim.y;
@@ -72,6 +87,7 @@ private:
 	bool checkBoundRight(const Block& block);
 	void checkLineClear();
 	void clearSegment(Block& block, GameObjPtr segment);
+	void updateScore();
 
 	static constexpr PixelDim globalToGridPos(PixelDim globalPos){
 		return (globalPos - Blocks::GridPos) / Blocks::TileDim.x;
