@@ -6,6 +6,7 @@
 #include "Util/stdafx.h"
 #include "UIThread.h"
 #include <Games/TestGame.h>
+#include "Games/Blocks/Blocks.h"
 
 struct Entry {
 	const char* icon;
@@ -29,7 +30,8 @@ static constexpr Entry MenuEntries[] = {
 };
 
 static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher {
-		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<TestGame>(canvas); }); } }
+		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<TestGame>(canvas); }); } },
+		{ Games::Blocks, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Blocks>(canvas); }); } },
 };
 
 // Ordered by adress
