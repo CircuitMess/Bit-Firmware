@@ -33,28 +33,28 @@ Block::Block(Block::Type type, Color c, const PixelDim& gridPos) : type(type), c
 			segments[3]->setPos(gridPos.x, gridPos.y - 1);
 			break;
 		case Type::L:
-			segments[0]->setPos((gridPos.x), gridPos.y + 1);
-			segments[1]->setPos((gridPos.x), gridPos.y);
-			segments[2]->setPos((gridPos.x), gridPos.y + 2);
-			segments[3]->setPos((gridPos.x) - 1, gridPos.y + 2);
-			break;
-		case Type::ReverseL:
 			segments[0]->setPos(gridPos.x, gridPos.y + 1);
 			segments[1]->setPos(gridPos.x, gridPos.y);
 			segments[2]->setPos(gridPos.x, gridPos.y + 2);
 			segments[3]->setPos((gridPos.x) + 1, gridPos.y + 2);
 			break;
-		case Type::S:
-			segments[0]->setPos((gridPos.x) - 1, gridPos.y);
-			segments[1]->setPos((gridPos.x) - 1, gridPos.y + 1);
-			segments[2]->setPos((gridPos.x), gridPos.y);
-			segments[3]->setPos((gridPos.x), gridPos.y - 1);
+		case Type::ReverseL:
+			segments[0]->setPos((gridPos.x), gridPos.y + 1);
+			segments[1]->setPos((gridPos.x), gridPos.y);
+			segments[2]->setPos((gridPos.x), gridPos.y + 2);
+			segments[3]->setPos((gridPos.x) - 1, gridPos.y + 2);
 			break;
-		case Type::ReverseS:
+		case Type::S:
 			segments[0]->setPos(gridPos.x, gridPos.y);
 			segments[1]->setPos(gridPos.x, gridPos.y + 1);
 			segments[2]->setPos((gridPos.x) - 1, gridPos.y);
 			segments[3]->setPos((gridPos.x) - 1, gridPos.y - 1);
+			break;
+		case Type::ReverseS:
+			segments[0]->setPos((gridPos.x) - 1, gridPos.y);
+			segments[1]->setPos((gridPos.x) - 1, gridPos.y + 1);
+			segments[2]->setPos((gridPos.x), gridPos.y);
+			segments[3]->setPos((gridPos.x), gridPos.y - 1);
 			break;
 	}
 
@@ -118,9 +118,10 @@ void Block::placed(){
 void Block::rotate(){
 	rotation = (rotation + 1) % 4;
 	const auto current_rotation = rotation + 1;
+	printf("type: %d, rotation: %d\n", (int) type, current_rotation);
 	switch(type){
 		case Type::Line:
-			if(current_rotation == 2 || current_rotation == 4){
+			if(current_rotation == 1 || current_rotation == 3){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 2 * Blocks::TileDim.y);
@@ -157,22 +158,22 @@ void Block::rotate(){
 			break;
 
 		case Type::L:
-			if(current_rotation == 1){
+			if(current_rotation == 4){
 				segments[1]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 2){
+			}else if(current_rotation == 1){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 3){
+			}else if(current_rotation == 2){
 				segments[1]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 4){
+			}else if(current_rotation == 3){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
@@ -180,21 +181,21 @@ void Block::rotate(){
 			break;
 
 		case Type::ReverseL:
-			if(current_rotation == 1){
+			if(current_rotation == 4){
 				segments[1]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 2){
+			}else if(current_rotation == 1){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
-			}else if(current_rotation == 3){
+			}else if(current_rotation == 2){
 				segments[1]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 4){
+			}else if(current_rotation == 3){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
@@ -203,12 +204,12 @@ void Block::rotate(){
 			break;
 
 		case Type::S:
-			if(current_rotation == 1 || current_rotation == 3){
+			if(current_rotation == 2 || current_rotation == 4){
 				segments[1]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 2 || current_rotation == 4){
+			}else if(current_rotation == 1 || current_rotation == 3){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
@@ -217,12 +218,12 @@ void Block::rotate(){
 			break;
 
 		case Type::ReverseS:
-			if(current_rotation == 1 || current_rotation == 3){
+			if(current_rotation == 2 || current_rotation == 4){
 				segments[1]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[2]->setPos(segments[0]->getPos().x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 				segments[3]->setPos(segments[0]->getPos().x - 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
 
-			}else if(current_rotation == 2 || current_rotation == 4){
+			}else if(current_rotation == 1 || current_rotation == 3){
 				segments[1]->setPos(segments[0]->getPos().x, segments[0]->getPos().y + 1 * Blocks::TileDim.y);
 				segments[2]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y);
 				segments[3]->setPos(segments[0]->getPos().x + 1 * Blocks::TileDim.x, segments[0]->getPos().y - 1 * Blocks::TileDim.y);
