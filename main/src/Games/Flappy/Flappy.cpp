@@ -98,7 +98,7 @@ void Flappy::onLoop(float deltaTime){
 
 	if(state == FallOut && obstacles.empty()){
 		if(life == 0){
-//			pop();
+			exit();
 		}else{
 			resetDuck();
 		}
@@ -170,9 +170,9 @@ void Flappy::handleInput(const Input::Data& data){
 
 	const auto& btn = data.btn;
 	if(btn == Input::B){
-		audio.play(Sound{ Chirp{ 400, 350, 50 } });
-//		pop();
-		return;
+//		audio.play(Sound{ Chirp{ 400, 350, 50 } });
+////		pop();
+//		return;
 	}else if(btn != Input::A) return;
 
 	if(state == Wait || state == FlyIn){
