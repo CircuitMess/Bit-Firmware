@@ -10,54 +10,7 @@
 #include <unordered_map>
 
 static const char* Cached[] = {
-	"/bg.bin",
-	"/bg_bot.bin",
-
-	"/icons/batteryFull.bin",
-	"/icons/batteryLow.bin",
-	"/icons/batteryMid.bin",
-	"/icons/phone.bin",
-	"/icons/phoneDisconnected.bin",
-
-	"/icon/app_inst.bin",
-	"/icon/app_mess.bin",
-	"/icon/app_sms.bin",
-	"/icon/app_snap.bin",
-	"/icon/app_tiktok.bin",
-	"/icon/app_wapp.bin",
-	"/icon/call_in.bin",
-	"/icon/call_miss.bin",
-	"/icon/call_out.bin",
-	"/icon/cat_email.bin",
-	"/icon/cat_entert.bin",
-	"/icon/cat_fin.bin",
-	"/icon/cat_health.bin",
-	"/icon/cat_loc.bin",
-	"/icon/cat_news.bin",
-	"/icon/cat_other.bin",
-	"/icon/cat_sched.bin",
-	"/icon/cat_soc.bin",
-	"/icon/etc.bin",
-	"/icon/lock_closed.bin",
-	"/icon/lock_open.bin",
-	"/icon/trash.bin",
-	"/icon/trash_sel.bin",
-	"/icon/back.bin",
-	"/icon/back_sel.bin",
-
-	"/clockIcons/0.bin",
-	"/clockIcons/1.bin",
-	"/clockIcons/2.bin",
-	"/clockIcons/3.bin",
-	"/clockIcons/4.bin",
-	"/clockIcons/5.bin",
-	"/clockIcons/6.bin",
-	"/clockIcons/7.bin",
-	"/clockIcons/8.bin",
-	"/clockIcons/9.bin",
-	"/clockIcons/colon.bin",
-	"/clockIcons/space.bin"
-
+	// "/bg.bin"
 };
 
 const char* TAG = "FSLVGL";
@@ -135,15 +88,9 @@ void FSLVGL::addToCache(const char* path, bool use32bAligned){
 	}
 
 	auto found = findCache(p);
-	if(found != cache.end()){
-		found->deleteFlag = false;
-		return;
-	}
+	if(found != cache.end()) return;
 
-	std::string spath("/spiffs");
-	spath.append(p);
-
-	auto file = SPIFFS::open(spath.c_str());
+	auto file = SPIFFS::open(path);
 	auto ram = new File();
 	*ram = RamFile::open(file, use32bAligned);
 	if(ram->size() == 0){
@@ -151,7 +98,7 @@ void FSLVGL::addToCache(const char* path, bool use32bAligned){
 		return;
 	}
 
-	FileResource r = { ram, false };
+	FileResource r = { ram };
 	cache.insert(r);
 }
 
@@ -166,7 +113,8 @@ void FSLVGL::removeFromCache(const char* path){
 	auto it = findCache(p);
 	if(it == cache.end()) return;
 
-	it->deleteFlag = true;
+	delete it->ramFile;
+	cache.erase(it);
 }
 
 void FSLVGL::loadCache(){
@@ -202,13 +150,7 @@ void* FSLVGL::open_cb(struct _lv_fs_drv_t* drv, const char* path, lv_fs_mode_t m
 
 lv_fs_res_t FSLVGL::close_cb(struct _lv_fs_drv_t* drv, void* file_p){
 	auto it = findCache(file_p);
-	if(it != cache.end()){
-		if(it->deleteFlag){
-			delete it->ramFile;
-			cache.erase(it);
-		}
-		return 0;
-	}
+	if(it != cache.end()) return 0;
 
 	fclose((FILE*) file_p);
 	return 0;

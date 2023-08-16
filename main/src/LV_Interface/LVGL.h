@@ -21,7 +21,7 @@ public:
 private:
 	Display& display;
 
-	static constexpr uint8_t Rows = 32;
+	static constexpr uint8_t Rows = 64;
 	uint8_t drawBuffer[2*128*Rows];
 
 	lv_disp_draw_buf_t lvDrawBuf;

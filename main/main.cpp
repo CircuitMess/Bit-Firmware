@@ -14,10 +14,13 @@
 #include "Util/Notes.h"
 #include <esp_spiffs.h>
 #include "UIThread.h"
-#include "Games/TestGame.h"
+#include "Services/Robots.h"
+#include "Services/GameManager.h"
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
+#include "Screens/MainMenu.h"
+#include "Screens/IntroScreen.h"
 
 BacklightBrightness* bl;
 
@@ -52,6 +55,12 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
+	gpio_config_t cfg = {
+			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
+			.mode = GPIO_MODE_INPUT
+	};
+	gpio_config(&cfg);
+
 	if(!initSPIFFS()) return;
 
 	auto settings = new Settings();
@@ -66,8 +75,6 @@ void init(){
 	auto audio = new ChirpSystem(*buzzPwm);
 	Services.set(Service::Audio, audio);
 
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-
 	auto disp = new Display();
 	auto input = new Input(true);
 	Services.set(Service::Input, input);
@@ -76,14 +83,23 @@ void init(){
 	if(battery->isShutdown()) return; // Stop initialization if battery is critical
 	Services.set(Service::Battery, battery);
 
+	// GameManager before robot detector, in case robot is plugged in during boot
+	auto games = new GameManager();
+	Services.set(Service::Games, games);
+	auto rob = new Robots();
+
 	auto lvgl = new LVGL(*disp);
 	auto lvInput = new InputLVGL();
 	auto lvFS = new FSLVGL('S');
 
 	auto gamer = new GameRunner(*disp);
 
+	MainMenu::loadCache();
+
 	auto ui = new UIThread(*lvgl, *gamer);
-	ui->startGame([](Sprite& canvas){ return std::make_unique<TestGame>(canvas); });
+	Services.set(Service::UI, ui);
+
+	ui->startScreen([](){ return std::make_unique<IntroScreen>(); });
 
 	if(settings->get().sound){
 		//TODO - startup chime

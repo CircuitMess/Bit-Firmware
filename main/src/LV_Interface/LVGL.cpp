@@ -52,18 +52,21 @@ void LVGL::resume(){
 void LVGL::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 	stopScreen();
 
-	lv_obj_t* tmp = lv_obj_create(nullptr);
-	lv_scr_load_anim(tmp, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
-
-	currentScreen.reset();
-
 	currentScreen = create();
 	currentScreen->start(this);
 	lv_scr_load_anim(*currentScreen, LV_SCR_LOAD_ANIM_NONE, 0, 0, true);
 }
 
 void LVGL::stopScreen(){
-	if(!currentScreen) return;
-	currentScreen->stop();
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
+
+	if(currentScreen){
+		currentScreen->stop();
+
+		// and switch to a temp screen. if currentScreen isn't set, that means a temp screen is already running
+		lv_obj_t* tmp = lv_obj_create(nullptr);
+		lv_scr_load_anim(tmp, LV_SCR_LOAD_ANIM_NONE, 0, 0, false);
+	}
+
+	currentScreen.reset();
 }

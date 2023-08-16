@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_RECTCC_H
-#define CIRCUITPET_FIRMWARE_RECTCC_H
+#ifndef BIT_FIRMWARE_RECTCC_H
+#define BIT_FIRMWARE_RECTCC_H
 
 #include "CollisionComponent.h"
 #include "../PixelDim.hpp"
@@ -19,4 +19,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_RECTCC_H
+#endif //BIT_FIRMWARE_RECTCC_H

@@ -22,7 +22,7 @@ private:
 
 	std::unique_ptr<Game> currentGame;
 
-	static constexpr uint32_t FrameTime = 30; // [ms]
+	static constexpr uint32_t FrameTime = 25; // [ms]
 
 };
 

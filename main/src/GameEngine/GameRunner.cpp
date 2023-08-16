@@ -40,6 +40,8 @@ void GameRunner::loop(){
 	lastMicros = currMicros;
 
 	currentGame->loop(delta);
+	if(!currentGame) return; // in case the game exited in its loop
+
 	display.getCanvas().pushSprite(0, 0);
 	display.getLGFX().display();
 
