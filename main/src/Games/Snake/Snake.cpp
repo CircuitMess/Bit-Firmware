@@ -76,7 +76,7 @@ void Snake::onLoop(float deltaTime){
 		}
 	}else if(state == State::GameOver){
 		if(snake.empty()){
-			//pop
+			exit();
 			return;
 		}
 
@@ -90,7 +90,7 @@ void Snake::onLoop(float deltaTime){
 	}else if(state == State::GameWin){
 		gameWinCounter += deltaTime;
 		if(gameWinCounter >= GameWinPause){
-			//pop
+			exit();
 			return;
 		}
 	}
@@ -100,7 +100,7 @@ void Snake::handleInput(const Input::Data& data){
 	if(data.action != Input::Data::Press) return;
 
 	if(state == State::GameOver || state == State::GameWin){
-		//pop
+		exit();
 		return;
 	}
 
