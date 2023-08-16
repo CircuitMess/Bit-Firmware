@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_GAMESYSTEM_H
-#define CIRCUITPET_FIRMWARE_GAMESYSTEM_H
+#ifndef BIT_FIRMWARE_GAMESYSTEM_H
+#define BIT_FIRMWARE_GAMESYSTEM_H
 
 #include "GameObject.h"
 #include <vector>
@@ -22,4 +22,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_GAMESYSTEM_H
+#endif //BIT_FIRMWARE_GAMESYSTEM_H

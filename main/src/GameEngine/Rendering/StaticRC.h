@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_STATICRC_H
-#define CIRCUITPET_FIRMWARE_STATICRC_H
+#ifndef BIT_FIRMWARE_STATICRC_H
+#define BIT_FIRMWARE_STATICRC_H
 
 #include "RenderComponent.h"
 #include "FS/File.h"
@@ -25,4 +25,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_STATICRC_H
+#endif //BIT_FIRMWARE_STATICRC_H

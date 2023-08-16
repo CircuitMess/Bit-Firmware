@@ -21,7 +21,21 @@
 #define TFT_DC 15
 #define TFT_RST 16
 
-#define SIDE_DETECT1 44
-#define SIDE_DETECT2 21
+#define DET_1 44
+#define DET_2 21
+#define ADDR_1 43
+#define ADDR_2 42
+#define ADDR_3 41
+#define ADDR_4 40
+#define ADDR_5 39
+#define ADDR_6 38
+
+#define CTRL_1 37
+#define CTRL_2 36
+#define CTRL_3 35
+#define CTRL_4 26
+#define CTRL_5 33
+#define CTRL_6 34
+
 
 #endif //BIT_LIBRARY_PINS_HPP

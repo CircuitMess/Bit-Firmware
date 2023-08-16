@@ -164,8 +164,10 @@ void CollisionSystem::wallsAll(const GameObject& obj, std::function<void()> hand
 }
 
 bool CollisionSystem::rectRect(const GameObject& square1, const GameObject& square2){
-	auto pos1 = square1.getPos() - 0.5f;
-	auto pos2 = square2.getPos() - 0.5f;
+	auto offset1 = square1.getCollisionComponent()->getRect()->getOffset();
+	auto offset2 = square2.getCollisionComponent()->getRect()->getOffset();
+	auto pos1 = square1.getPos() + offset1 - 0.5f;
+	auto pos2 = square2.getPos() + offset2 - 0.5f;
 	auto dim1 = square1.getCollisionComponent()->getRect()->getDim() + 1.0f;
 	auto dim2 = square2.getCollisionComponent()->getRect()->getDim() + 1.0f;
 
@@ -187,7 +189,8 @@ bool CollisionSystem::rectCircle(const GameObject& rect, const GameObject& circl
 	auto cPos = circle.getPos() + circle.getCollisionComponent()->getCircle()->getOffset();
 	auto r = circle.getCollisionComponent()->getCircle()->getRadius();
 	auto rDim = rect.getCollisionComponent()->getRect()->getDim();
-	auto rPos = rect.getPos() + 0.5f * rDim;
+	auto rOffset = rect.getCollisionComponent()->getRect()->getOffset();
+	auto rPos = (rect.getPos() + rOffset) + 0.5f * rDim;
 
 	// Thank you https://www.gamedevelopment.blog/collision-detection-circles-rectangles-and-polygons/
 	auto distance = glm::abs(cPos - rPos);
@@ -223,11 +226,13 @@ bool CollisionSystem::polyRect(const GameObject& poly, const GameObject& rect){
 	if(!poly.getCollisionComponent()->getPolygon()->isConvex()) return false;
 
 	auto dim = rect.getCollisionComponent()->getRect()->getDim();
+	auto rOffset = rect.getCollisionComponent()->getRect()->getOffset();
+	auto pos = rect.getPos() + rOffset;
 
-	glm::vec2 point1 = rect.getPos();
-	glm::vec2 point2 = { rect.getPos().x + dim.x, rect.getPos().y };
-	glm::vec2 point3 = rect.getPos() + dim;
-	glm::vec2 point4 = { rect.getPos().x, rect.getPos().y + dim.y };
+	glm::vec2 point1 = pos;
+	glm::vec2 point2 = { pos.x + dim.x, pos.y };
+	glm::vec2 point3 = pos + dim;
+	glm::vec2 point4 = { pos.x, pos.y + dim.y };
 	auto rectPoints = { point1, point2, point3, point4 };
 
 	bool isColliding = false;
@@ -343,7 +348,9 @@ void CollisionSystem::drawDebug(Sprite& canvas){
 			if(!col) return;
 
 			if(col->getType() == CollisionType::Rect){
-				canvas.drawRect(obj.getPos().x, obj.getPos().y, col->getRect()->getDim().x, col->getRect()->getDim().y, c);
+				auto rOffset = col->getRect()->getOffset();
+				auto pos = obj.getPos() + rOffset;
+				canvas.drawRect(pos.x, pos.y, col->getRect()->getDim().x, col->getRect()->getDim().y, c);
 			}else if(col->getType() == CollisionType::Circle){
 				canvas.drawCircle(obj.getPos().x + obj.getCollisionComponent()->getCircle()->getOffset().x,
 								  obj.getPos().y + obj.getCollisionComponent()->getCircle()->getOffset().y,

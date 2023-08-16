@@ -15,7 +15,8 @@ public:
 	TextRC(std::string text, TextStyle style = DefaultStyle);
 	~TextRC() override = default;
 
-	void setText(std::string text, TextStyle style = DefaultStyle);
+	void setText(std::string text);
+	void setStyle(TextStyle style);
 
 protected:
 	void push(Sprite& parent, PixelDim pos, float rot) const override;

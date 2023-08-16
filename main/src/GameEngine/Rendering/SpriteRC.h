@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_SPRITERC_H
-#define CIRCUITPET_FIRMWARE_SPRITERC_H
+#ifndef BIT_FIRMWARE_SPRITERC_H
+#define BIT_FIRMWARE_SPRITERC_H
 
 #include <memory>
 #include "Devices/Display.h"
@@ -20,4 +20,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_SPRITERC_H
+#endif //BIT_FIRMWARE_SPRITERC_H

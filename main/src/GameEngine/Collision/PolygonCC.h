@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_POLYGONCC_H
-#define CIRCUITPET_FIRMWARE_POLYGONCC_H
+#ifndef BIT_FIRMWARE_POLYGONCC_H
+#define BIT_FIRMWARE_POLYGONCC_H
 
 #include <vec2.hpp>
 #include <vector>
@@ -30,4 +30,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_POLYGONCC_H
+#endif //BIT_FIRMWARE_POLYGONCC_H

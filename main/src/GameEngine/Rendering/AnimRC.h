@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_ANIMRC_H
-#define CIRCUITPET_FIRMWARE_ANIMRC_H
+#ifndef BIT_FIRMWARE_ANIMRC_H
+#define BIT_FIRMWARE_ANIMRC_H
 
 #include "RenderComponent.h"
 #include "GIF/GIFSprite.h"
@@ -44,4 +44,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_ANIMRC_H
+#endif //BIT_FIRMWARE_ANIMRC_H
