@@ -32,7 +32,7 @@ void Pong::onLoop(float deltaTime){
 		case State::End:
 			endCounter += deltaTime;
 			if(endCounter >= EndTime){
-				//pop
+				exit();
 			}
 			break;
 	}
@@ -58,7 +58,7 @@ void Pong::handleInput(const Input::Data& data){
 
 		case State::End:
 			if(data.action == Input::Data::Press){
-				//pop
+				exit();
 			}
 			break;
 	}
