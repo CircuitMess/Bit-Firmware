@@ -1,6 +1,9 @@
 #include "UIThread.h"
+#include "Util/stdafx.h"
+#include "GameEngine/Game.h"
+#include "Devices/Display.h"
 
-UIThread::UIThread(Display& display) : Threaded("UIThread", 4 * 1024, 6, 1), display(display){
+UIThread::UIThread(LVGL& lvgl, GameRunner& gameRunner) : Threaded("UI", 4 * 1024, 5, 1), lvgl(lvgl), gamer(gameRunner){
 	start();
 }
 
@@ -9,34 +12,24 @@ UIThread::~UIThread(){
 }
 
 void UIThread::loop(){
-	if(!game){
-		vTaskDelay(1);
+	if(active == Src::LVGL){
+		lvgl.loop();
+	}else if(active == Src::Game){
+		gamer.loop();
+	}else{
+		delayMillis(100);
 		return;
 	}
-
-	auto curr = esp_timer_get_time();
-	auto delta = curr - loopTime;
-	loopTime = curr;
-
-	game->loop(delta);
-	display.getCanvas().pushSprite(0, 0);
-	display.getLGFX().display();
-
-	vTaskDelay(1);
 }
 
-void UIThread::startGame(std::unique_ptr<Game> game){
-	//TODO - rework game loading and starting
-	stop();
+void UIThread::startGame(std::function<std::unique_ptr<Game>(Sprite&)> launcher){
+	lvgl.stopScreen();
+	gamer.startGame(std::move(launcher));
+	active = Src::Game;
+}
 
-	this->game = std::move(game);
-	this->game->load();
-	while(!this->game->isLoaded()){
-		vTaskDelay(1);
-	}
-
-	this->game->start();
-
-	loopTime = esp_timer_get_time();
-	start();
+void UIThread::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
+	gamer.endGame();
+	lvgl.startScreen(std::move(create));
+	active = Src::LVGL;
 }

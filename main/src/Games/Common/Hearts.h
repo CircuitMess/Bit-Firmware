@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_HEARTS_H
-#define CIRCUITPET_FIRMWARE_HEARTS_H
+#ifndef BIT_FIRMWARE_HEARTS_H
+#define BIT_FIRMWARE_HEARTS_H
 
 #include <memory>
 #include "GameEngine/GameObject.h"
@@ -24,4 +24,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_HEARTS_H
+#endif //BIT_FIRMWARE_HEARTS_H

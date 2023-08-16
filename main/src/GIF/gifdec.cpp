@@ -312,7 +312,7 @@ read_image_data(gd_GIF* gif, int interlace){
 	uint16_t key, clear, stop;
 	int ret;
 	Table* table;
-	Entry entry;
+	Entry entry{};
 	off_t start, end;
 
 	gif->fd.read(&byte, 1);

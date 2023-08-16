@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_GAMEOBJECT_H
-#define CIRCUITPET_FIRMWARE_GAMEOBJECT_H
+#ifndef BIT_FIRMWARE_GAMEOBJECT_H
+#define BIT_FIRMWARE_GAMEOBJECT_H
 
 #include <memory>
 #include "Rendering/RenderComponent.h"
@@ -34,4 +34,4 @@ private:
 
 typedef std::shared_ptr<GameObject> GameObjPtr;
 
-#endif //CIRCUITPET_FIRMWARE_GAMEOBJECT_H
+#endif //BIT_FIRMWARE_GAMEOBJECT_H

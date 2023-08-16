@@ -4,10 +4,11 @@
 #include "../GameEngine/Rendering/StaticRC.h"
 #include "../GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/TextRC.h"
+#include "Util/stdafx.h"
 
 TestGame::TestGame(Sprite& canvas) : Game(canvas, "", {
 		{ "/Pat1.gif",            {}, true },
-		{ "/Bg/Level1.raw",       {}, true },
+		{ "/Level1.raw",       {}, true },
 		{ "/MenuIcons/Icon1.raw", {}, true },
 		{ "/MenuIcons/Icon2.raw", {}, true },
 		{ "/MenuIcons/Icon3.raw", {}, true },
@@ -25,7 +26,7 @@ void TestGame::onLoad(){
 	pat->setPos({ 50, 30 });
 
 	bg = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/Bg/Level1.raw"), PixelDim{ 160, 128 }),
+			std::make_unique<StaticRC>(getFile("/Level1.raw"), PixelDim{ 160, 128 }),
 			nullptr
 	);
 	addObject(bg);
@@ -88,7 +89,12 @@ void TestGame::onLoad(){
 }
 
 void TestGame::onLoop(float deltaTime){
-	std::static_pointer_cast<TextRC>(label->getRenderComponent())->setText("time: " + std::to_string(esp_timer_get_time() / 1000000));
+	std::static_pointer_cast<TextRC>(label->getRenderComponent())->setText("time: " + std::to_string((millis() - startTime) / 1000));
+
+	if(millis() - startTime > 6000){
+		exit();
+		return;
+	}
 
 	for(int i = 0; i < objs.size(); i++){
 		auto& obj = objs[i];
@@ -102,6 +108,7 @@ void TestGame::onRender(Sprite& canvas){
 }
 
 void TestGame::onStart(){
+	startTime = millis();
 	reinterpret_cast<AnimRC*>(pat->getRenderComponent().get())->start();
 }
 
