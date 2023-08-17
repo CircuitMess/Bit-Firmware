@@ -241,9 +241,6 @@ void Flappy::createObstaclePair(){
 	auto gateHighPoint = offsetBoth + offsetTop + topDesc.dim.y;
 	auto gap = gateLowPoint - gateHighPoint;
 	if(gap < MinimumGap){
-
-		printf("adjusted gap\n");
-
 		if(gateHighPoint > (128 - gateLowPoint)){
 			offsetTop -= (MinimumGap - gap);
 		}else{
