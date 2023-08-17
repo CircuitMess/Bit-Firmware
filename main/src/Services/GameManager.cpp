@@ -52,8 +52,13 @@ void GameManager::loop(){
 
 	auto data = (Robots::Event*) evt.data;
 	if(data->action == Robots::Event::Insert){
-		bool isNew = false;
 		Robot rob = data->robot;
+		if(rob >= Robot::COUNT){
+			Events::post(Facility::Games, Event { .action = Event::Unknown });
+			return;
+		}
+
+		bool isNew = false;
 		if(!unlocked.count(rob)){
 			isNew = true;
 			unlocked.insert(rob);

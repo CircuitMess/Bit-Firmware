@@ -38,6 +38,8 @@ private:
 	EventQueue events;
 	void loop() override;
 
+	void handleInsert(const GameManager::Event& evt);
+
 	void launch(Games game);
 
 	std::unique_ptr<LVModal> modal;

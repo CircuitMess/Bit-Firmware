@@ -8,6 +8,11 @@
 #include <Games/TestGame.h>
 #include <Modals/NewRobot.h>
 #include <Modals/LockedGame.h>
+#include <Modals/UnknownRobot.h>
+#include "Games/Flappy/Flappy.h"
+#include "Games/Pong/Pong.h"
+#include "Games/Snake/Snake.h"
+#include "Games/Blocks/Blocks.h"
 #include "Games/MarvGame/MarvGame.h"
 
 struct Entry {
@@ -31,8 +36,11 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Robby", .rob = Robby, .game = Games::Robby }
 };
 
-static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher {
-		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<TestGame>(canvas); }); } },
+static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher{
+		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Flappy>(canvas); }); } },
+		{ Games::Pong, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Pong>(canvas); }); } },
+		{ Games::Snake, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Snake>(canvas); }); } },
+		{ Games::Blocks, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Blocks>(canvas); }); } },
 		{ Games::Marv, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); }); } }
 };
 
@@ -61,6 +69,8 @@ void MainMenu::launch(Games game){
 		return;
 	}
 
+	modal.reset();
+
 	auto ui = (UIThread*) Services.get(Service::UI);
 	auto launch = Launcher.at(game);
 	launch(ui);
@@ -84,23 +94,32 @@ void MainMenu::loop(){
 	Event evt{};
 	if(events.get(evt, 0)){
 		auto data = (GameManager::Event*) evt.data;
-		auto rob = data->rob;
-
-		// TODO: show inserted popup
-		// TODO: show unlock popup if new
-		if(data->isNew && robGames.count(rob)){
-			MenuItem* item = robGames.at(rob);
-			const auto icon = RobotIcons[rob];
-			const auto path = imgUnl(icon);
-			item->setIcon(path.c_str());
-		}
-
-		modal.reset();
-		modal = std::make_unique<NewRobot>(this, rob, data->isNew);
-		modal->start();
-
+		handleInsert(*data);
 		free(evt.data);
 	}
+}
+
+void MainMenu::handleInsert(const GameManager::Event& evt){
+	if(evt.action == GameManager::Event::Unknown){
+		modal.reset();
+		modal = std::make_unique<UnknownRobot>(this);
+		modal->start();
+		return;
+	}else if(evt.action != GameManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	if(isNew && robGames.count(rob)){
+		MenuItem* item = robGames.at(rob);
+		const auto icon = RobotIcons[rob];
+		const auto path = imgUnl(icon);
+		item->setIcon(path.c_str());
+	}
+
+	modal.reset();
+	modal = std::make_unique<NewRobot>(this, rob, isNew);
+	modal->start();
 }
 
 void MainMenu::buildUI(){
