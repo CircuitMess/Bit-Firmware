@@ -4,6 +4,7 @@
 #include "MenuItem.h"
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
+#include "LV_Interface/LVModal.h"
 #include "Util/Events.h"
 #include "Services/Robots.h"
 #include "Services/GameManager.h"
@@ -37,7 +38,11 @@ private:
 	EventQueue events;
 	void loop() override;
 
+	void handleInsert(const GameManager::Event& evt);
+
 	void launch(Games game);
+
+	std::unique_ptr<LVModal> modal;
 
 };
 
