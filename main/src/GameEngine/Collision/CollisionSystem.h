@@ -63,6 +63,9 @@ private:
 	static bool polyContainsPoint(const Polygon& polygon, glm::vec2 point);
 	static CollisionSystem::Polygon getRotatedTranslatedPoly(const GameObject& poly);
 	static void drawPolygon(const GameObject& poly, Sprite& canvas, Color color);
+	static void drawRect(const GameObject& rect, Sprite& canvas, Color color);
+	static CollisionSystem::Polygon getRotatedTranslatedRect(const GameObject& rect);
+	static bool intersectSegmentCircle(glm::vec2 start, glm::vec2 end, glm::vec2 center, float radius);;
 };
 
 
