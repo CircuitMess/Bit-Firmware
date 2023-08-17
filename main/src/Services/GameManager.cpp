@@ -2,7 +2,7 @@
 #include "Settings/Settings.h"
 #include "Util/Services.h"
 
-static const std::unordered_map<Games, Robot> GameRobot = {
+const std::unordered_map<Games, Robot> GameManager::GameRobot = {
 		{ Games::MrBee, Robot::MrBee },
 		{ Games::Artemis, Robot::Artemis },
 		{ Games::Bob, Robot::Bob },

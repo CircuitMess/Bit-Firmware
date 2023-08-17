@@ -164,6 +164,22 @@ void CollisionSystem::wallsAll(const GameObject& obj, std::function<void()> hand
 }
 
 bool CollisionSystem::rectRect(const GameObject& square1, const GameObject& square2){
+	if(square1.getRot() != 0 || square2.getRot() != 0){
+		auto points1 = getRotatedTranslatedRect(square1);
+		auto points2 = getRotatedTranslatedRect(square2);
+
+		bool isColliding = false;
+
+		for(auto i : points2){
+			if(polyContainsPoint(points1, i)){
+				isColliding = true;
+			}
+		}
+
+		return isColliding;
+	}
+
+
 	auto offset1 = square1.getCollisionComponent()->getRect()->getOffset();
 	auto offset2 = square2.getCollisionComponent()->getRect()->getOffset();
 	auto pos1 = square1.getPos() + offset1 - 0.5f;
@@ -186,6 +202,23 @@ bool CollisionSystem::circleCircle(const GameObject& circle1, const GameObject& 
 }
 
 bool CollisionSystem::rectCircle(const GameObject& rect, const GameObject& circle){
+	if(rect.getRot() != 0){
+		auto points = getRotatedTranslatedRect(rect);
+
+		glm::vec2 center = circle.getPos() + circle.getCollisionComponent()->getCircle()->getOffset();
+
+		for(int i = 0; i < points.size(); i++){
+			glm::vec2 start = points[i];
+			glm::vec2 end = points[(i + 1) % points.size()];
+			if(intersectSegmentCircle(start, end, center, circle.getCollisionComponent()->getCircle()->getRadius())) return true;
+		}
+
+		if(polyContainsPoint(points, center)) return true;
+
+		return false;
+	}
+
+
 	auto cPos = circle.getPos() + circle.getCollisionComponent()->getCircle()->getOffset();
 	auto r = circle.getCollisionComponent()->getCircle()->getRadius();
 	auto rDim = rect.getCollisionComponent()->getRect()->getDim();
@@ -208,32 +241,28 @@ bool CollisionSystem::polyPoly(const GameObject& obj1, const GameObject& obj2){
 
 	if(!poly1->isConvex() || !poly2->isConvex()) return false;
 
-	bool isColliding = false;
-
 	auto points1 = getRotatedTranslatedPoly(obj1);
 	auto points2 = getRotatedTranslatedPoly(obj2);
 
-	for(auto i : points2){
+	for(const auto& i : points2){
 		if(polyContainsPoint(points1, i)){
-			isColliding = true;
+			return true;
 		}
 	}
 
-	return isColliding;
+	for(const auto& i : points1){
+		if(polyContainsPoint(points2, i)){
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CollisionSystem::polyRect(const GameObject& poly, const GameObject& rect){
 	if(!poly.getCollisionComponent()->getPolygon()->isConvex()) return false;
 
-	auto dim = rect.getCollisionComponent()->getRect()->getDim();
-	auto rOffset = rect.getCollisionComponent()->getRect()->getOffset();
-	auto pos = rect.getPos() + rOffset;
-
-	glm::vec2 point1 = pos;
-	glm::vec2 point2 = { pos.x + dim.x, pos.y };
-	glm::vec2 point3 = pos + dim;
-	glm::vec2 point4 = { pos.x, pos.y + dim.y };
-	auto rectPoints = { point1, point2, point3, point4 };
+	auto rectPoints = getRotatedTranslatedRect(rect);
 
 	bool isColliding = false;
 
@@ -249,34 +278,10 @@ bool CollisionSystem::polyRect(const GameObject& poly, const GameObject& rect){
 }
 
 bool CollisionSystem::polyCircle(const GameObject& poly, const GameObject& circle){
-
 	if(!poly.getCollisionComponent()->getPolygon()->isConvex()) return false;
-
-	auto intersectSegmentCircle = [](glm::vec2 start, glm::vec2 end, glm::vec2 center, float radius){
-		glm::vec2 tmp = { end.x - start.x, end.y - start.y };        // holds polygon line vector
-		glm::vec2 tmp1 = { center.x - start.x, center.y - start.y };    // holds start to circle center vector
-		float l = glm::length(tmp);                    // the euclidean length of line :(w * w + h * h) squared
-		float u = glm::dot(tmp1, tmp);                // the dot product for these 2 vectors
-
-		glm::vec2 tmp2;
-
-		if(u <= 0){                                           // circle center is closest to start
-			tmp2 = { start.x, start.y };                  // set point to start point
-		}else if(u >= l){                                    // circle is closest to end
-			tmp2 = { end.x, end.y };                      // set point to end point
-		}else{                                                // circle is in between
-			glm::vec2 tmp3 = tmp * u;                           // scale the normal by the dot product to get position on border
-			tmp2 = tmp3 + start;                               // set point to position on line closest to circle center
-		}
-		// check if circle radius is longer than the line from our position on line to circle center (true for collisions)
-
-		glm::vec2 line = center - tmp2;
-		return glm::length(line) <= radius;
-	};
 
 	auto points = getRotatedTranslatedPoly(poly);
 	glm::vec2 center = circle.getPos() + circle.getCollisionComponent()->getCircle()->getOffset();
-
 
 	for(int i = 0; i < points.size(); i++){
 		glm::vec2 start = points[i];
@@ -348,9 +353,7 @@ void CollisionSystem::drawDebug(Sprite& canvas){
 			if(!col) return;
 
 			if(col->getType() == CollisionType::Rect){
-				auto rOffset = col->getRect()->getOffset();
-				auto pos = obj.getPos() + rOffset;
-				canvas.drawRect(pos.x, pos.y, col->getRect()->getDim().x, col->getRect()->getDim().y, c);
+				drawRect(obj, canvas, c);
 			}else if(col->getType() == CollisionType::Circle){
 				canvas.drawCircle(obj.getPos().x + obj.getCollisionComponent()->getCircle()->getOffset().x,
 								  obj.getPos().y + obj.getCollisionComponent()->getCircle()->getOffset().y,
@@ -381,5 +384,79 @@ void CollisionSystem::drawPolygon(const GameObject& poly, Sprite& canvas, Color 
 		glm::vec2 p2 = points[(i + 1) % points.size()];
 
 		canvas.drawLine(p1.x, p1.y, p2.x, p2.y, color);
+	}
+}
+
+CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedRect(const GameObject& rect){
+	float rot = rect.getRot();
+	auto dim = rect.getCollisionComponent()->getRect()->getDim();
+	auto offset = rect.getCollisionComponent()->getRect()->getOffset();
+	auto pos = rect.getPos() + offset;
+	glm::vec2 point1 = pos;
+	glm::vec2 point2 = { pos.x + dim.x, pos.y };
+	glm::vec2 point3 = pos + dim;
+	glm::vec2 point4 = { pos.x, pos.y + dim.y };
+	std::vector<glm::vec2> rectPoints = { point1, point2, point3, point4 };
+
+	if(rot == 0){
+		std::transform(rectPoints.begin(), rectPoints.end(), rectPoints.begin(), [](glm::vec2& point){
+			return point;
+		});
+		return rectPoints;
+	}
+
+	auto center = rect.getPos() + offset + (dim / 2.0f);
+
+	auto rotMat = glm::identity<glm::mat3>();
+	rotMat = glm::translate(rotMat, center);
+	rotMat = glm::rotate(rotMat, glm::radians(rot));
+	rotMat = glm::translate(rotMat, -center);
+
+	auto polyCopy = rectPoints;
+
+	std::transform(polyCopy.begin(), polyCopy.end(), polyCopy.begin(), [&rotMat, &pos](glm::vec2& point){
+		return rotMat * glm::vec3(point, 1.0f);
+	});
+
+	return polyCopy;
+}
+
+bool CollisionSystem::intersectSegmentCircle(glm::vec2 start, glm::vec2 end, glm::vec2 center, float radius){
+	glm::vec2 tmp = { end.x - start.x, end.y - start.y };        // holds polygon line vector
+	glm::vec2 tmp1 = { center.x - start.x, center.y - start.y };    // holds start to circle center vector
+	float l = glm::length(tmp);                    // the Euclidean length of line :(w * w + h * h) squared
+	float u = glm::dot(tmp1, tmp);                // the dot product for these 2 vectors
+
+	glm::vec2 tmp2;
+
+	if(u <= 0){                                           // circle center is closest to start
+		tmp2 = { start.x, start.y };                  // set point to start point
+	}else if(u >= l){                                    // circle is closest to end
+		tmp2 = { end.x, end.y };                      // set point to end point
+	}else{                                                // circle is in between
+		glm::vec2 tmp3 = tmp * u;                           // scale the normal by the dot product to get position on border
+		tmp2 = tmp3 + start;                               // set point to position on line closest to circle center
+	}
+	// check if circle radius is longer than the line from our position on line to circle center (true for collisions)
+
+	glm::vec2 line = center - tmp2;
+	return glm::length(line) <= radius;
+}
+
+void CollisionSystem::drawRect(const GameObject& rect, Sprite& canvas, Color color){
+	auto col = rect.getCollisionComponent();
+	if(rect.getRot() == 0){
+		auto rOffset = col->getRect()->getOffset();
+		auto pos = rect.getPos() + rOffset;
+		canvas.drawRect(pos.x, pos.y, col->getRect()->getDim().x, col->getRect()->getDim().y, color);
+	}else{
+		auto points = getRotatedTranslatedRect(rect);
+
+		for(size_t i = 0; i < points.size(); i++){
+			glm::vec2 p1 = points[i];
+			glm::vec2 p2 = points[(i + 1) % points.size()];
+
+			canvas.drawLine(p1.x, p1.y, p2.x, p2.y, color);
+		}
 	}
 }

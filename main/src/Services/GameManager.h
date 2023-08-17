@@ -8,6 +8,31 @@
 
 enum class Games : uint8_t { Blocks, Pong, Snake, Artemis, MrBee, Bob, Buttons, Capacitron, Hertz, Marv, Resistron, Robby, COUNT };
 
+// Ordered by address (enum Robot)
+static constexpr const char* RobotIcons[] = {
+		"Bee",
+		"Resis",
+		"Arte",
+		"Robby",
+		"Marv",
+		"Capa",
+		"Bob",
+		"Butt",
+		"Hertz"
+};
+
+static constexpr const char* RobotNames[] = {
+		"Mr. Bee",
+		"Resistron",
+		"Artemis",
+		"Robby",
+		"Marv",
+		"Capacitron",
+		"Bob",
+		"Buttons",
+		"Hertz"
+};
+
 class GameManager : private Threaded {
 public:
 	GameManager();
@@ -19,6 +44,8 @@ public:
 	};
 
 	bool isUnlocked(Games game);
+
+	static const std::unordered_map<Games, Robot> GameRobot;
 
 private:
 	std::unordered_set<Robot> unlocked;

@@ -6,6 +6,8 @@
 #include "Util/stdafx.h"
 #include "UIThread.h"
 #include <Games/TestGame.h>
+#include <Modals/NewRobot.h>
+#include <Modals/LockedGame.h>
 #include "Games/MarvGame/MarvGame.h"
 
 struct Entry {
@@ -34,19 +36,6 @@ static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launch
 		{ Games::Marv, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); }); } }
 };
 
-// Ordered by adress
-static constexpr const char* RobotIcons[] = {
-		"Bee",
-		"Resis",
-		"Arte",
-		"Robby",
-		"Marv",
-		"Capa",
-		"Bob",
-		"Butt",
-		"Hertz"
-};
-
 MainMenu::MainMenu() : events(12){
 	loadCache();
 	Events::listen(Facility::Games, &events);
@@ -62,7 +51,15 @@ void MainMenu::launch(Games game){
 	if(!Launcher.contains(game)) return;
 
 	auto games = (GameManager*) Services.get(Service::Games);
-	if(!games->isUnlocked(game)) return;
+	if(!games->isUnlocked(game)){
+		const auto rob = GameManager::GameRobot.at(game);
+
+		modal.reset();
+		modal = std::make_unique<LockedGame>(this, rob);
+		modal->start();
+
+		return;
+	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
 	auto launch = Launcher.at(game);
@@ -98,6 +95,10 @@ void MainMenu::loop(){
 			item->setIcon(path.c_str());
 		}
 
+		modal.reset();
+		modal = std::make_unique<NewRobot>(this, rob, data->isNew);
+		modal->start();
+
 		free(evt.data);
 	}
 }
@@ -123,6 +124,7 @@ void MainMenu::buildUI(){
 	lv_obj_set_style_pad_ver(contentContainer, 13, 0);
 
 	itemCont = lv_obj_create(contentContainer);
+	lv_obj_add_flag(itemCont, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
 	lv_obj_set_flex_flow(itemCont, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);

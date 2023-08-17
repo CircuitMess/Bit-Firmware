@@ -5,6 +5,9 @@
 
 class LVObject {
 public:
+	LVObject(const LVObject&) = delete;
+	LVObject& operator=(const LVObject&) = delete;
+
 	LVObject(lv_obj_t* parent);
 	virtual ~LVObject();
 

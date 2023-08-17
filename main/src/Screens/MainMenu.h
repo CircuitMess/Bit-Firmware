@@ -4,6 +4,7 @@
 #include "MenuItem.h"
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
+#include "LV_Interface/LVModal.h"
 #include "Util/Events.h"
 #include "Services/Robots.h"
 #include "Services/GameManager.h"
@@ -38,6 +39,8 @@ private:
 	void loop() override;
 
 	void launch(Games game);
+
+	std::unique_ptr<LVModal> modal;
 
 };
 
