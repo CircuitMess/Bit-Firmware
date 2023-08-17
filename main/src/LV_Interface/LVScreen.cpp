@@ -57,3 +57,7 @@ void LVScreen::loop(){ }
 bool LVScreen::isRunning() const{
 	return running;
 }
+
+lv_group_t* LVScreen::getInputGroup() const{
+	return inputGroup;
+}

@@ -6,6 +6,11 @@
 #include "Util/stdafx.h"
 #include "UIThread.h"
 #include <Games/TestGame.h>
+#include <Modals/NewRobot.h>
+#include <Modals/LockedGame.h>
+#include <Modals/UnknownRobot.h>
+#include "Games/Flappy/Flappy.h"
+#include "Games/Pong/Pong.h"
 #include "Games/Snake/Snake.h"
 
 struct Entry {
@@ -29,22 +34,10 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Robby", .rob = Robby, .game = Games::Robby }
 };
 
-static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher {
-		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<TestGame>(canvas); }); } },
+static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher{
+		{ Games::MrBee, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Flappy>(canvas); }); } },
+		{ Games::Pong, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Pong>(canvas); }); } },
 		{ Games::Snake, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Snake>(canvas); }); } }
-};
-
-// Ordered by adress
-static constexpr const char* RobotIcons[] = {
-		"Bee",
-		"Resis",
-		"Arte",
-		"Robby",
-		"Marv",
-		"Capa",
-		"Bob",
-		"Butt",
-		"Hertz"
 };
 
 MainMenu::MainMenu() : events(12){
@@ -62,7 +55,17 @@ void MainMenu::launch(Games game){
 	if(!Launcher.contains(game)) return;
 
 	auto games = (GameManager*) Services.get(Service::Games);
-	if(!games->isUnlocked(game)) return;
+	if(!games->isUnlocked(game)){
+		const auto rob = GameManager::GameRobot.at(game);
+
+		modal.reset();
+		modal = std::make_unique<LockedGame>(this, rob);
+		modal->start();
+
+		return;
+	}
+
+	modal.reset();
 
 	auto ui = (UIThread*) Services.get(Service::UI);
 	auto launch = Launcher.at(game);
@@ -87,19 +90,32 @@ void MainMenu::loop(){
 	Event evt{};
 	if(events.get(evt, 0)){
 		auto data = (GameManager::Event*) evt.data;
-		auto rob = data->rob;
-
-		// TODO: show inserted popup
-		// TODO: show unlock popup if new
-		if(data->isNew && robGames.count(rob)){
-			MenuItem* item = robGames.at(rob);
-			const auto icon = RobotIcons[rob];
-			const auto path = imgUnl(icon);
-			item->setIcon(path.c_str());
-		}
-
+		handleInsert(*data);
 		free(evt.data);
 	}
+}
+
+void MainMenu::handleInsert(const GameManager::Event& evt){
+	if(evt.action == GameManager::Event::Unknown){
+		modal.reset();
+		modal = std::make_unique<UnknownRobot>(this);
+		modal->start();
+		return;
+	}else if(evt.action != GameManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	if(isNew && robGames.count(rob)){
+		MenuItem* item = robGames.at(rob);
+		const auto icon = RobotIcons[rob];
+		const auto path = imgUnl(icon);
+		item->setIcon(path.c_str());
+	}
+
+	modal.reset();
+	modal = std::make_unique<NewRobot>(this, rob, isNew);
+	modal->start();
 }
 
 void MainMenu::buildUI(){
@@ -123,6 +139,7 @@ void MainMenu::buildUI(){
 	lv_obj_set_style_pad_ver(contentContainer, 13, 0);
 
 	itemCont = lv_obj_create(contentContainer);
+	lv_obj_add_flag(itemCont, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
 	lv_obj_set_flex_flow(itemCont, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
