@@ -118,7 +118,6 @@ void Block::placed(){
 void Block::rotate(){
 	rotation = (rotation + 1) % 4;
 	const auto current_rotation = rotation + 1;
-	printf("type: %d, rotation: %d\n", (int) type, current_rotation);
 	switch(type){
 		case Type::Line:
 			if(current_rotation == 1 || current_rotation == 3){
