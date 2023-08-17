@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_CIRCLECC_H
-#define CIRCUITPET_FIRMWARE_CIRCLECC_H
+#ifndef BIT_FIRMWARE_CIRCLECC_H
+#define BIT_FIRMWARE_CIRCLECC_H
 
 #include <cstdint>
 #include "CollisionComponent.h"
@@ -20,4 +20,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_CIRCLECC_H
+#endif //BIT_FIRMWARE_CIRCLECC_H

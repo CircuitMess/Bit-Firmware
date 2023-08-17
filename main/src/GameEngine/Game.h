@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_GAME_H
-#define CIRCUITPET_FIRMWARE_GAME_H
+#ifndef BIT_FIRMWARE_GAME_H
+#define BIT_FIRMWARE_GAME_H
 
 #include "ResourceManager.h"
 #include "GameObject.h"
@@ -73,4 +73,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_GAME_H
+#endif //BIT_FIRMWARE_GAME_H

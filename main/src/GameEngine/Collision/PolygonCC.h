@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_POLYGONCC_H
-#define CIRCUITPET_FIRMWARE_POLYGONCC_H
+#ifndef BIT_FIRMWARE_POLYGONCC_H
+#define BIT_FIRMWARE_POLYGONCC_H
 
 #include <vec2.hpp>
 #include <vector>
@@ -8,6 +8,7 @@
 class PolygonCC : public CollisionComponent {
 public:
 	PolygonCC(std::initializer_list<glm::vec2> points);
+	PolygonCC(const std::vector<glm::vec2>& points);
 	/**
 	 * @param points Points that define a polygon
 	 * @param pivot Pivot point when rotation is applied, relative to the polygon
@@ -30,4 +31,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_POLYGONCC_H
+#endif //BIT_FIRMWARE_POLYGONCC_H

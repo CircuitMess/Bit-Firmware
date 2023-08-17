@@ -1,5 +1,5 @@
-#ifndef CIRCUITPET_FIRMWARE_TESTGAME_H
-#define CIRCUITPET_FIRMWARE_TESTGAME_H
+#ifndef BIT_FIRMWARE_TESTGAME_H
+#define BIT_FIRMWARE_TESTGAME_H
 
 #include "../GameEngine/Game.h"
 
@@ -36,4 +36,4 @@ private:
 };
 
 
-#endif //CIRCUITPET_FIRMWARE_TESTGAME_H
+#endif //BIT_FIRMWARE_TESTGAME_H
