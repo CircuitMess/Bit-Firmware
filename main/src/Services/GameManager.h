@@ -38,7 +38,7 @@ public:
 	GameManager();
 
 	struct Event {
-		enum { Inserted } action;
+		enum { Inserted, Unknown } action;
 		Robot rob;
 		bool isNew;
 	};

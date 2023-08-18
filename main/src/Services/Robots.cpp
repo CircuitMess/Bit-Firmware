@@ -32,7 +32,10 @@ void Robots::sleepyLoop(){
 		Events::post(Facility::Robots, Event { .action = Event::Remove });
 	}else if(!inserted && nowInserted){
 		uint8_t addr = checkAddr();
-		if(addr >= Robot::COUNT) return;
+		if(addr >= Robot::COUNT){
+			// Unknown robot
+			addr = Robot::COUNT;
+		}
 
 		current = addr;
 		inserted = true;
