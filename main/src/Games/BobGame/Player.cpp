@@ -94,4 +94,3 @@ void BobGame::Player::btnReleased(Input::Button btn){
 		lastPressed = Input::Menu;
 	}
 }
-//TODO - release tipke koja se drži treba cancellat velocity, inače nije responzivno
