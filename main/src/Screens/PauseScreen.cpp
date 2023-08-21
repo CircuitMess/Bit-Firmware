@@ -1,4 +1,5 @@
 #include "PauseScreen.h"
+#include "Screens/MainMenu.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Devices/Input.h"
@@ -74,17 +75,29 @@ void PauseScreen::buildUI(){
 	}, 50);
 	lv_group_add_obj(inputGroup, *bri);
 
-	for(const auto& text : { "Controls...", "Exit game" }){
+	auto mkBtn = [this, &rest](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
 		lv_obj_add_style(item, focusStyle, LV_STATE_FOCUSED);
+		lv_obj_add_flag(item, LV_OBJ_FLAG_CLICKABLE);
+		lv_obj_clear_flag(item, LV_OBJ_FLAG_SCROLLABLE);
 
 		auto label = lv_label_create(item);
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
-	}
+
+		return item;
+	};
+
+	mkBtn("Controls...");
+	auto exit = mkBtn("Exit game");
+
+	lv_obj_add_event_cb(exit, [](lv_event_t* e){
+		auto ui = (UIThread*) Services.get(Service::UI);
+		ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	}, LV_EVENT_CLICKED, nullptr);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
 }
