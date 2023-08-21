@@ -15,6 +15,9 @@ public:
 	void startGame(Games game);
 	void startScreen(std::function<std::unique_ptr<LVScreen>()> create);
 
+	void pauseGame();
+	void resumeGame();
+
 private:
 	LVGL& lvgl;
 	GameRunner& gamer;

@@ -1,9 +1,37 @@
 #include "PauseScreen.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
+#include "Devices/Input.h"
+#include "UIThread.h"
+#include "Util/Services.h"
 
-PauseScreen::PauseScreen(){
+PauseScreen::PauseScreen() : evts(6){
 	buildUI();
+}
+
+void PauseScreen::onStart(){
+	bg->start();
+	Events::listen(Facility::Input, &evts);
+}
+
+void PauseScreen::onStop(){
+	bg->stop();
+	Events::unlisten(&evts);
+}
+
+void PauseScreen::loop(){
+	Event e;
+	if(evts.get(e, 0)){
+		auto data = (Input::Data*) e.data;
+		if((data->btn == Input::Menu || data->btn == Input::B) && data->action == Input::Data::Release){
+			auto ui = (UIThread*) Services.get(Service::UI);
+			ui->resumeGame();
+
+			free(e.data);
+			return;
+		}
+		free(e.data);
+	}
 }
 
 void PauseScreen::buildUI(){
@@ -59,12 +87,4 @@ void PauseScreen::buildUI(){
 	}
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
-}
-
-void PauseScreen::onStart(){
-	bg->start();
-}
-
-void PauseScreen::onStop(){
-	bg->stop();
 }

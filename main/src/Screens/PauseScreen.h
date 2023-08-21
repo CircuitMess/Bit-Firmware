@@ -4,12 +4,14 @@
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
 #include "LV_Interface/LVStyle.h"
+#include "Util/Events.h"
 
 class PauseScreen : public LVScreen {
 public:
 	PauseScreen();
 
 private:
+	EventQueue evts;
 
 	LVGIF* bg;
 
@@ -20,6 +22,7 @@ private:
 
 	void onStart() override;
 	void onStop() override;
+	void loop() override;
 
 };
 

@@ -88,7 +88,17 @@ void Game::loop(uint micros){
 	Event e;
 	if(inputQueue.get(e, 0)){
 		if(e.facility == Facility::Input){
-			handleInput(*((Input::Data*) e.data));
+			auto data = (Input::Data*) e.data;
+			if(data->btn == Input::Menu && data->action == Input::Data::Release){
+				stop();
+				auto ui = (UIThread*) Services.get(Service::UI);
+				ui->pauseGame();
+
+				free(e.data);
+				return;
+			}
+
+			handleInput(*data);
 		}
 		free(e.data);
 

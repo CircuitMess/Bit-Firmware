@@ -80,6 +80,7 @@ void GameRunner::endGame(){
 
 void GameRunner::resume(){
 	lastMicros = micros();
+	currentGame->start();
 }
 
 void GameRunner::loop(){

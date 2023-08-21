@@ -2,6 +2,7 @@
 #include "Util/stdafx.h"
 #include "GameEngine/Game.h"
 #include "Devices/Display.h"
+#include "Screens/PauseScreen.h"
 
 UIThread::UIThread(LVGL& lvgl, GameRunner& gameRunner) : Threaded("UI", 4 * 1024, 5, 1), lvgl(lvgl), gamer(gameRunner){
 	start();
@@ -32,4 +33,15 @@ void UIThread::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 	gamer.endGame();
 	lvgl.startScreen(std::move(create));
 	active = Src::LVGL;
+}
+
+void UIThread::pauseGame(){
+	lvgl.startScreen([](){ return std::make_unique<PauseScreen>(); });
+	active = Src::LVGL;
+}
+
+void UIThread::resumeGame(){
+	lvgl.stopScreen();
+	gamer.resume();
+	active = Src::Game;
 }
