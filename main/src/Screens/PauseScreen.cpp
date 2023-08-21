@@ -5,6 +5,8 @@
 #include "Devices/Input.h"
 #include "UIThread.h"
 #include "Util/Services.h"
+#include "Services/BacklightBrightness.h"
+#include "Settings/Settings.h"
 
 PauseScreen::PauseScreen() : evts(6){
 	buildUI();
@@ -18,6 +20,15 @@ void PauseScreen::onStart(){
 void PauseScreen::onStop(){
 	bg->stop();
 	Events::unlisten(&evts);
+
+	auto settings = (Settings*) Services.get(Service::Settings);
+
+	auto set = settings->get();
+	set.screenBrightness = blSlider->getValue();
+	set.sound = audioSwitch->getValue();
+
+	settings->set(set);
+	settings->store();
 }
 
 void PauseScreen::loop(){
@@ -65,15 +76,25 @@ void PauseScreen::buildUI(){
 	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
 	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
 
-	auto aud = new BoolElement(rest, "Sound", [this](bool value){
+	auto settings = (Settings*) Services.get(Service::Settings);
+	auto initSet = settings->get();
 
-	}, true);
-	lv_group_add_obj(inputGroup, *aud);
+	audioSwitch = new BoolElement(rest, "Sound", [](bool value){
+		auto chirp = (ChirpSystem*) Services.get(Service::Audio);
+		chirp->setMute(!value);
+		chirp->play({
+				Chirp{ .startFreq = 400, .endFreq = 600, .duration = 50 },
+				Chirp{ .startFreq = 0, .endFreq = 0, .duration = 100 },
+				Chirp{ .startFreq = 600, .endFreq = 400, .duration = 50 }
+		});
+	}, initSet.sound);
+	lv_group_add_obj(inputGroup, *audioSwitch);
 
-	auto bri = new SliderElement(rest, "Brightness", [this](uint8_t value){
-
-	}, 50);
-	lv_group_add_obj(inputGroup, *bri);
+	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
+		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
+		bl->setBrightness(value);
+	}, initSet.screenBrightness);
+	lv_group_add_obj(inputGroup, *blSlider);
 
 	auto mkBtn = [this, &rest](const char* text){
 		auto item = lv_obj_create(rest);

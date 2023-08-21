@@ -5,6 +5,8 @@
 #include "LV_Interface/LVGIF.h"
 #include "LV_Interface/LVStyle.h"
 #include "Util/Events.h"
+#include "Screens/Settings/BoolElement.h"
+#include "Screens/Settings/SliderElement.h"
 
 class PauseScreen : public LVScreen {
 public:
@@ -17,6 +19,9 @@ private:
 
 	LVStyle itemStyle;
 	LVStyle focusStyle;
+
+	BoolElement* audioSwitch;
+	SliderElement* blSlider;
 
 	void buildUI();
 
