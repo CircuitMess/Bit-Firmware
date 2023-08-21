@@ -4,12 +4,13 @@
 
 #include "Util/Threaded.h"
 #include "Game.h"
+#include "Services/GameManager.h"
 
 class GameRunner{
 public:
 	GameRunner(Display& display);
 
-	void startGame(std::function<std::unique_ptr<Game>(Sprite&)> launcher);
+	void startGame(Games game);
 	void endGame();
 
 	void loop();

@@ -20,7 +20,7 @@ NewRobot::NewRobot(LVScreen* parent, Robot rob, bool isNew) : LVModal(parent), r
 
 void NewRobot::click(){
 	if(!isNew || stage > 0){
-		stop();
+		delete this;
 		return;
 	}
 

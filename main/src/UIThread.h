@@ -12,7 +12,7 @@ public:
 	UIThread(LVGL& lvgl, GameRunner& gameRunner);
 	~UIThread() override;
 
-	void startGame(std::function<std::unique_ptr<Game>(Sprite&)> launcher);
+	void startGame(Games game);
 	void startScreen(std::function<std::unique_ptr<LVScreen>()> create);
 
 private:

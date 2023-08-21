@@ -5,6 +5,9 @@
 LVModal* LVModal::current = nullptr;
 
 LVModal::LVModal(LVScreen* parent) : LVObject((lv_obj_t*) *parent), parentScreen(parent){
+	delete current;
+	current = this;
+
 	inputGroup = lv_group_create();
 
 	container = lv_obj_create(*parent);
@@ -25,57 +28,12 @@ LVModal::LVModal(LVScreen* parent) : LVObject((lv_obj_t*) *parent), parentScreen
 
 	lv_obj_set_align(container, LV_ALIGN_CENTER);
 	lv_obj_add_flag(container, LV_OBJ_FLAG_FLOATING);
-	lv_obj_add_flag(container, LV_OBJ_FLAG_HIDDEN);
+
+	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), inputGroup);
 }
 
 LVModal::~LVModal(){
-	if(active){
-		current = nullptr;
-		lv_indev_set_group(InputLVGL::getInstance()->getIndev(), parentScreen->getInputGroup());
-	}
-	lv_group_del(inputGroup);
-}
-
-void LVModal::start(){
-	if(active) return;
-
-	if(current){
-		current->stop();
-	}
-
-	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), inputGroup);
-
-	lv_obj_clear_flag(container, LV_OBJ_FLAG_HIDDEN);
-	lv_obj_invalidate(container);
-
-	active = true;
-	current = this;
-
-	onStart();
-}
-
-void LVModal::stop(){
-	if(!active) return;
-
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), parentScreen->getInputGroup());
-
-	lv_obj_add_flag(container, LV_OBJ_FLAG_HIDDEN);
-	lv_obj_invalidate(container);
-
-	active = false;
+	lv_group_del(inputGroup);
 	current = nullptr;
-
-	onStop();
-}
-
-bool LVModal::isActive() const{
-	return active;
-}
-
-void LVModal::onStart(){
-
-}
-
-void LVModal::onStop(){
-
 }

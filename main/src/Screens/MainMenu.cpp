@@ -9,13 +9,6 @@
 #include <Modals/NewRobot.h>
 #include <Modals/LockedGame.h>
 #include <Modals/UnknownRobot.h>
-#include "Games/Flappy/Flappy.h"
-#include "Games/Pong/Pong.h"
-#include "Games/Snake/Snake.h"
-#include "Games/Blocks/Blocks.h"
-#include "Games/MarvGame/MarvGame.h"
-#include "Games/Hertz/HertzGame.h"
-#include "Games/BobGame/BobGame.h"
 
 struct Entry {
 	const char* icon;
@@ -38,17 +31,6 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Robby", .rob = Robby, .game = Games::Robby }
 };
 
-static const std::unordered_map<Games, std::function<void(UIThread* ui)>> Launcher{
-		{ Games::MrBee,  [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Flappy>(canvas); }); } },
-		{ Games::Pong,   [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Pong>(canvas); }); } },
-		{ Games::Snake,  [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Snake>(canvas); }); } },
-		{ Games::Blocks, [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<Blocks>(canvas); }); } },
-		{ Games::Marv,   [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); }); } },
-		{ Games::Hertz,  [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); }); } },
-		{ Games::Bob,    [](UIThread* ui){ ui->startGame([](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); }); } }
-
-};
-
 MainMenu::MainMenu() : events(12){
 	loadCache();
 	Events::listen(Facility::Games, &events);
@@ -61,28 +43,19 @@ MainMenu::~MainMenu(){
 }
 
 void MainMenu::launch(Games game){
-	if(!Launcher.contains(game)) return;
-
 	auto games = (GameManager*) Services.get(Service::Games);
 	if(!games->isUnlocked(game)){
 		const auto rob = GameManager::GameRobot.at(game);
-
-		modal.reset();
-		modal = std::make_unique<LockedGame>(this, rob);
-		modal->start();
-
+		new LockedGame(this, rob);
 		return;
 	}
 
-	modal.reset();
-
 	auto ui = (UIThread*) Services.get(Service::UI);
-	auto launch = Launcher.at(game);
-	launch(ui);
+	ui->startGame(game);
 }
 
 void MainMenu::onStarting(){
-	const auto height = lv_obj_get_height(itemCont) + 128 + 2 * 13;
+	const auto height = lv_obj_get_height(itemCont) + 128 + 2*13;
 	lv_obj_scroll_to(*this, 0, 0, LV_ANIM_OFF); // set y to <height> to scroll from top. 0 to scroll from bottom
 }
 
@@ -106,9 +79,7 @@ void MainMenu::loop(){
 
 void MainMenu::handleInsert(const GameManager::Event& evt){
 	if(evt.action == GameManager::Event::Unknown){
-		modal.reset();
-		modal = std::make_unique<UnknownRobot>(this);
-		modal->start();
+		new UnknownRobot(this);
 		return;
 	}else if(evt.action != GameManager::Event::Inserted) return;
 
@@ -122,9 +93,7 @@ void MainMenu::handleInsert(const GameManager::Event& evt){
 		item->setIcon(path.c_str());
 	}
 
-	modal.reset();
-	modal = std::make_unique<NewRobot>(this, rob, isNew);
-	modal->start();
+	new NewRobot(this, rob, isNew);
 }
 
 void MainMenu::buildUI(){
@@ -202,10 +171,8 @@ void MainMenu::loadCache(){
 	// TODO: Only locked/unlocked icons for the games that are locked/unlocked
 	// With this there is ~40kb free heap in MainMenu as of writing this
 	for(const auto& entry : MenuEntries){
-		auto lock = imgLoc(entry.icon);
-		lock.erase(0, 2);
-		auto unlock = imgUnl(entry.icon);
-		unlock.erase(0, 2);
+		auto lock = imgLoc(entry.icon); lock.erase(0, 2);
+		auto unlock = imgUnl(entry.icon); unlock.erase(0, 2);
 		FSLVGL::addToCache(lock.c_str());
 		FSLVGL::addToCache(unlock.c_str());
 	}
@@ -213,10 +180,8 @@ void MainMenu::loadCache(){
 
 void MainMenu::unloadCache(){
 	for(const auto& entry : MenuEntries){
-		auto lock = imgLoc(entry.icon);
-		lock.erase(0, 2);
-		auto unlock = imgUnl(entry.icon);
-		unlock.erase(0, 2);
+		auto lock = imgLoc(entry.icon); lock.erase(0, 2);
+		auto unlock = imgUnl(entry.icon); unlock.erase(0, 2);
 		FSLVGL::removeFromCache(lock.c_str());
 		FSLVGL::removeFromCache(unlock.c_str());
 	}

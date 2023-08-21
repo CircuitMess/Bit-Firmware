@@ -21,6 +21,7 @@ static constexpr const char* RobotIcons[] = {
 		"Hertz"
 };
 
+// Ordered by address (enum Robot)
 static constexpr const char* RobotNames[] = {
 		"Mr. Bee",
 		"Resistron",
@@ -31,6 +32,22 @@ static constexpr const char* RobotNames[] = {
 		"Bob",
 		"Buttons",
 		"Hertz"
+};
+
+// Ordered by game (enum Game)
+static constexpr const char* GameIcons[] = {
+		"Blocks",
+		"Bonk",
+		"Snake",
+		"Arte",
+		"Bee",
+		"Bob",
+		"Butt",
+		"Capa",
+		"Hertz",
+		"Marv",
+		"Resis",
+		"Robby"
 };
 
 class GameManager : private Threaded {

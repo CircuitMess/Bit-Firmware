@@ -22,9 +22,9 @@ void UIThread::loop(){
 	}
 }
 
-void UIThread::startGame(std::function<std::unique_ptr<Game>(Sprite&)> launcher){
+void UIThread::startGame(Games game){
 	lvgl.stopScreen();
-	gamer.startGame(std::move(launcher));
+	gamer.startGame(game);
 	active = Src::Game;
 }
 

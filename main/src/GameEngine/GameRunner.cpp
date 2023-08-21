@@ -1,20 +1,65 @@
 #include "GameRunner.h"
 #include "Util/stdafx.h"
+#include "Games/Flappy/Flappy.h"
+#include "Games/Pong/Pong.h"
+#include "Games/Snake/Snake.h"
+#include "Games/Blocks/Blocks.h"
+#include "Games/MarvGame/MarvGame.h"
+#include "Games/Hertz/HertzGame.h"
+
+static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
+		{ Games::MrBee, [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
+		{ Games::Pong, [](Sprite& canvas){ return std::make_unique<Pong>(canvas); } },
+		{ Games::Snake, [](Sprite& canvas){ return std::make_unique<Snake>(canvas); } },
+		{ Games::Blocks, [](Sprite& canvas){ return std::make_unique<Blocks>(canvas); } },
+		{ Games::Marv, [](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); } },
+		{ Games::Hertz, [](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); } },
+};
 
 GameRunner::GameRunner(Display& display) : display(display){
 
 }
 
-void GameRunner::startGame(std::function<std::unique_ptr<Game>(Sprite&)> launcher){
+void GameRunner::startGame(Games game){
 	endGame();
 
-	auto game = launcher(display.getCanvas());
-	game->load();
-	while(!game->isLoaded()){
+	if(!Launcher.contains(game)) return;
+
+	auto icon = GameIcons[(int) game];
+	std::string splash("/spiffs/Splash/"); splash += icon; splash += "_splash.bmp";
+	std::string instr("/spiffs/Splash/"); instr += icon; instr += "_instr.bmp";
+
+	auto& canvas = display.getCanvas();
+	auto& lgfx = display.getLGFX();
+
+	lgfx.drawBmpFile(splash.c_str());
+	const auto startTime = millis();
+
+	auto launcher = Launcher.at(game);
+	auto inst = launcher(display.getCanvas());
+
+	inst->load();
+	while(!inst->isLoaded() || (millis() - startTime) < 3000){
 		delayMillis(1);
 	}
 
-	currentGame = std::move(game);
+	lgfx.drawBmpFile(instr.c_str());
+
+	EventQueue evts(6);
+	Events::listen(Facility::Input, &evts);
+	for(;;){
+		Event evt;
+		if(!evts.get(evt, portMAX_DELAY)) continue;
+		auto data = (Input::Data*) evt.data;
+		if(data->btn != Input::Menu && data->action == Input::Data::Release){
+			free(evt.data);
+			break;
+		}
+		free(evt.data);
+	}
+	Events::unlisten(&evts);
+
+	currentGame = std::move(inst);
 	currentGame->start();
 	lastMicros = micros();
 }

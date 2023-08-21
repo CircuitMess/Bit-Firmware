@@ -10,24 +10,14 @@ public:
 	LVModal(LVScreen* parent);
 	virtual ~LVModal();
 
-	void start();
-	void stop();
-
-	bool isActive() const;
-
 protected:
 	lv_group_t* inputGroup;
 
-	virtual void onStart();
-	virtual void onStop();
-
 private:
 	static LVModal* current;
-	bool active = false;
 
 	const LVScreen* parentScreen;
 	lv_obj_t* container;
-
 
 };
 

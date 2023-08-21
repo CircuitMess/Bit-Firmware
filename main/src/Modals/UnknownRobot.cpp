@@ -6,7 +6,7 @@ UnknownRobot::UnknownRobot(LVScreen* parent) : LVModal(parent){
 
 	lv_obj_add_event_cb(*this, [](lv_event_t* e){
 		auto modal = (UnknownRobot*) e->user_data;
-		modal->stop();
+		delete modal;
 	}, LV_EVENT_CLICKED, this);
 
 	lv_group_add_obj(inputGroup, *this);

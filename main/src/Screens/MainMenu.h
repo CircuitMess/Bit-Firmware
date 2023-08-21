@@ -42,8 +42,6 @@ private:
 
 	void launch(Games game);
 
-	std::unique_ptr<LVModal> modal;
-
 };
 
 
