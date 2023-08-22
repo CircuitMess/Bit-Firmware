@@ -7,13 +7,15 @@
 #include "Util/Events.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
+#include "Services/GameManager.h"
 
 class PauseScreen : public LVScreen {
 public:
-	PauseScreen();
+	PauseScreen(Games current);
 
 private:
 	EventQueue evts;
+	Games currentGame;
 
 	LVGIF* bg;
 
@@ -28,6 +30,8 @@ private:
 	void onStart() override;
 	void onStop() override;
 	void loop() override;
+
+	void showControls();
 
 };
 

@@ -8,7 +8,7 @@
 #include "Services/BacklightBrightness.h"
 #include "Settings/Settings.h"
 
-PauseScreen::PauseScreen() : evts(6){
+PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
@@ -44,6 +44,28 @@ void PauseScreen::loop(){
 		}
 		free(e.data);
 	}
+}
+
+void PauseScreen::showControls(){
+	auto icon = GameIcons[(int) currentGame];
+	std::string instr("/spiffs/Splash/"); instr += icon; instr += "_instr.bmp";
+
+	auto disp = (Display*) Services.get(Service::Display);
+	auto lgfx = disp->getLGFX();
+	lgfx.drawBmpFile(instr.c_str());
+
+	evts.reset();
+	for(;;){
+		Event evt;
+		if(!evts.get(evt, portMAX_DELAY)) continue;
+		auto data = (Input::Data*) evt.data;
+		if(data->action == Input::Data::Release){
+			free(evt.data);
+			break;
+		}
+		free(evt.data);
+	}
+	lv_obj_invalidate(*this);
 }
 
 void PauseScreen::buildUI(){
@@ -112,8 +134,13 @@ void PauseScreen::buildUI(){
 		return item;
 	};
 
-	mkBtn("Controls...");
+	auto ctrl = mkBtn("Controls...");
 	auto exit = mkBtn("Exit game");
+
+	lv_obj_add_event_cb(ctrl, [](lv_event_t* e){
+		auto pause = (PauseScreen*) e->user_data;
+		pause->showControls();
+	}, LV_EVENT_CLICKED, this);
 
 	lv_obj_add_event_cb(exit, [](lv_event_t* e){
 		auto ui = (UIThread*) Services.get(Service::UI);

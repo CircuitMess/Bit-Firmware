@@ -36,7 +36,7 @@ void UIThread::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 }
 
 void UIThread::pauseGame(){
-	lvgl.startScreen([](){ return std::make_unique<PauseScreen>(); });
+	lvgl.startScreen([this](){ return std::make_unique<PauseScreen>(gamer.getCurrent()); });
 	active = Src::LVGL;
 }
 
