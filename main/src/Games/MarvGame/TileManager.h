@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include "GameEngine/GameObject.h"
-
+namespace MarvGame {
 class TileManager {
 public:
 	TileManager(std::vector<std::shared_ptr<GameObject>>& movingObjects);
@@ -23,6 +23,6 @@ private:
 	std::vector<File> topFiles;
 	std::vector<std::shared_ptr<GameObject>>& movingObjects;
 };
+}
 
-
-#endif //BIT_FIRMWARE_TILEMANAGER_H
+#endif //BIT_FIRMWARE_CAP_TILEMANAGER_H

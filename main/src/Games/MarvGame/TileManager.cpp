@@ -2,14 +2,14 @@
 #include "../../GameEngine/Rendering/SpriteRC.h"
 #include "../../GameEngine/Collision/RectCC.h"
 
-TileManager::TileManager(std::vector<std::shared_ptr<GameObject>>& movingObjects) : movingObjects(movingObjects){
+MarvGame::TileManager::TileManager(std::vector<std::shared_ptr<GameObject>>& movingObjects) : movingObjects(movingObjects){
 }
 
-void TileManager::addFile(File topFile){
+void MarvGame::TileManager::addFile(File topFile){
 	topFiles.push_back(topFile);
 }
 
-void TileManager::create(){
+void MarvGame::TileManager::create(){
 	for(int iArray = 0; iArray < arrays; iArray++){
 
 		auto setOfTiles = std::make_shared<GameObject>(
@@ -24,7 +24,7 @@ void TileManager::create(){
 
 }
 
-void TileManager::reset(int objectIndex){
+void MarvGame::TileManager::reset(int objectIndex){
 	int maxX = 0;
 	for(auto& obj : movingObjects){
 		if(obj->getPos().x > maxX){
@@ -34,7 +34,7 @@ void TileManager::reset(int objectIndex){
 	movingObjects[objectIndex]->setPos({ maxX + tilesPerArray * tileDim.x, topY });
 }
 
-void TileManager::drawTiles(int objectIndex){
+void MarvGame::TileManager::drawTiles(int objectIndex){
 	auto sprite = std::static_pointer_cast<SpriteRC>(movingObjects[objectIndex]->getRenderComponent())->getSprite();
 
 	sprite->clear(TFT_TRANSPARENT);
