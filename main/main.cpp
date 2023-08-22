@@ -77,6 +77,8 @@ void init(){
 	Services.set(Service::Audio, audio);
 
 	auto disp = new Display();
+	Services.set(Service::Display, disp);
+
 	auto input = new Input(true);
 	Services.set(Service::Input, input);
 
