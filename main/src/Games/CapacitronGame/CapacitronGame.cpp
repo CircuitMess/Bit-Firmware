@@ -53,37 +53,86 @@ void CapacitronGame::CapacitronGame::onLoad(){
 		collision.addPair(*bottomTileWall, *obj, [this, i](){ tileManager->reset(i); });
 	}
 
-	createPad(0.75);
+	playerObj = std::make_shared<GameObject>(
+			std::make_unique<AnimRC>(getFile("/jump.gif")),
+			std::make_unique<RectCC>(glm::vec2{ 20, 30 })
+	);
+	playerObj->setPos({ (128 - PlayerSize.x) / 2, 128 - 8 - PlayerSize.y }); //spawn player in the middle of the first platform
+	addObject(playerObj);
+
+	playerLegsObj = std::make_shared<GameObject>(
+			nullptr,
+			std::make_unique<RectCC>(glm::vec2{ PlayerLegsHitboxWidth, 1 }, glm::vec2{ (PlayerSize.x - PlayerLegsHitboxWidth) / 2, 0 })
+	);
+	playerLegsObj->setPos(playerObj->getPos() + glm::vec2{ 0, PlayerSize.y }); //spawn player in the middle of the first platform
+	addObject(playerLegsObj);
+	//TODO - make legs hitbox flip on left/right direction change,
+	//	for this you will need to apply flipping as a GameObject attribute and apply it to CollisionComponents as well as RenderComponents
+	player = std::make_unique<Player>(playerObj, playerLegsObj, this);
+
+	createPad(1);
 	createPad(0.75);
 	createPad(0.75);
 	createPad(0.75);
 }
 
 void CapacitronGame::CapacitronGame::onLoop(float deltaTime){
+	float yShift = player->update(deltaTime);
+
+	if(!cameraShifting) return;
+	totalShift += abs(yShift);
+	if(yShift >= 0){
+		cameraShifting = false;
+		totalShift = 0;
+		return;
+	}
+
+	if(totalShift >= camShiftDistance){
+		cameraShifting = false;
+		yShift = -(totalShift - camShiftDistance);
+		totalShift = 0;
+	}
 
 	for(const auto& obj : tileObjs){
 		auto pos = obj->getPos();
-		pos.y = pos.y + deltaTime * speed;
+		pos.y -= yShift;
 		obj->setPos(pos);
 	}
 
 	for(const auto& pads : padObjs){
 		for(const auto& obj : pads){
 			auto pos = obj->getPos();
-			pos.y = pos.y + deltaTime * speed;
+			pos.y -= yShift;
 			obj->setPos(pos);
 		}
 	}
+	auto playerPos = playerObj->getPos();
+	playerObj->setPos(playerPos - glm::vec2{ 0, yShift });
 }
 
 void CapacitronGame::CapacitronGame::handleInput(const Input::Data& data){
-	Game::handleInput(data);
+	if(data.action == Input::Data::Press){
+		player->btnPressed(data.btn);
+	}else if(data.action == Input::Data::Release){
+		player->btnReleased(data.btn);
+	}
 }
 
 void CapacitronGame::CapacitronGame::createPad(float surface){
 	tileManager->createPads(surface);
 	for(const auto& obj : padObjs.back()){
 		addObject(obj);
+		collision.addPair(*obj, *playerLegsObj, [this](){
+			if(player->getYSpeed() < 0) return;
+
+			player->jump();
+
+			if(playerObj->getPos().y <= (*padObjs.front().begin())->getPos().y - JumpY - JumpYExtra){
+				cameraShifting = true;
+				camShiftDistance = 128 - 8 - (*padObjs[1].begin())->getPos().y;
+				//TODO - add score increment
+			}
+		});
 	}
 
 	//collider for creating a new pad is set only to 1 pad in set

@@ -100,7 +100,7 @@ void CapacitronGame::TileManager::createPads(float surface){
 			//construct pad object and place according to tilesPlaced
 			auto padObj = std::make_shared<GameObject>(
 					std::make_unique<SpriteRC>(PixelDim{ PadTileDim * selectedPadSize, PadTileDim }),
-					std::make_unique<RectCC>(glm::vec2{ PadTileDim * selectedPadSize, PadTileDim })
+					std::make_unique<RectCC>(glm::vec2{ PadTileDim * selectedPadSize, 1 })
 			);
 			pads.insert(padObj);
 			padObj->setPos(WallTileDim + tilesPlaced * PadTileDim, yPos);
