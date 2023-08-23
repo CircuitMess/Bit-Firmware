@@ -2,8 +2,8 @@
 #include "CapacitronGame.h"
 #include "GameEngine/Collision/RectCC.h"
 
-CapacitronGame::Player::Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile) :
-		gamePtr(game), obj(playerObj), legsObj(playerLegsObj), jumpFile(jumpFile), deadFile(deadFile){
+CapacitronGame::Player::Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile, File invincFile) :
+		gamePtr(game), obj(playerObj), legsObj(playerLegsObj), jumpFile(jumpFile), deadFile(deadFile), invincFile(invincFile){
 	anim = std::static_pointer_cast<AnimRC>(obj->getRenderComponent());
 	anim->setLoopMode(GIF::Single);
 	anim->start();
@@ -38,7 +38,7 @@ void CapacitronGame::Player::btnReleased(Input::Button btn){
 void CapacitronGame::Player::damage(){
 	if(state == State::Death) return;
 
-
+	state = State::Damaged;
 }
 
 void CapacitronGame::Player::fallDown(){
@@ -63,6 +63,15 @@ void CapacitronGame::Player::death(){
 void CapacitronGame::Player::invincible(){
 	if(state == State::Death) return;
 
+	if(state == State::Invincibility){
+		invincibilityTime = 0;
+		return;
+	}
+
+	state = State::Invincibility;
+	anim->setAnim(invincFile);
+	anim->setLoopMode(GIF::Single);
+	anim->start();
 }
 
 void CapacitronGame::Player::jump(){
@@ -71,6 +80,7 @@ void CapacitronGame::Player::jump(){
 	gamePtr->audio.play({ { 80, 80, 80 } });
 	ySpeed = CapacitronGame::JumpSpeed;
 	anim->reset();
+	anim->start();
 }
 
 void CapacitronGame::Player::trampolineJump(){
@@ -78,6 +88,7 @@ void CapacitronGame::Player::trampolineJump(){
 
 	ySpeed = CapacitronGame::TrampolineSpeed;
 	anim->reset();
+	anim->start();
 }
 
 float CapacitronGame::Player::getYSpeed() const{
@@ -113,10 +124,12 @@ void CapacitronGame::Player::updateMovement(float delta){
 void CapacitronGame::Player::updateState(float delta){
 	switch(state){
 		case State::Jumping:
+			if(!anim->isVisible()){
+				anim->setVisible(true);
+			}
 			break;
 		case State::Damaged:
 			invincibilityTime += delta;
-
 			if((int) (invincibilityTime / InvincibilityBlinkDuration) % 2 == 0){
 				anim->setVisible(false);
 			}else{
@@ -130,12 +143,26 @@ void CapacitronGame::Player::updateState(float delta){
 			}
 			break;
 		case State::Death:
-			if(obj->getPos().y >= 140){
+			if(!anim->isVisible()){
+				anim->setVisible(true);
+			}
+			if(obj->getPos().y >= 150){
 				gamePtr->exit();
 			}
 			break;
 		case State::Invincibility:
-			//TODO - glowing anim
+			if(!anim->isVisible()){
+				anim->setVisible(true);
+			}
+			invincibilityTime += delta;
+
+			if(invincibilityTime >= PotionDuration){
+				invincibilityTime = 0;
+				state = State::Jumping;
+				anim->setAnim(jumpFile);
+				anim->start();
+				anim->stop();
+			}
 			break;
 	}
 }

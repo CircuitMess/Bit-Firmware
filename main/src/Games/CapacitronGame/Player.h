@@ -10,7 +10,7 @@ class CapacitronGame;
 
 class Player {
 public:
-	Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile);
+	Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile, File invincFile);
 
 	float update(float delta); //used for updating movement and animations, returns y-axis movement used for camera movement
 	void btnPressed(Input::Button btn);
@@ -37,10 +37,12 @@ private:
 
 	float invincibilityTime = 0;
 	static constexpr float InvincibilityBlinkDuration = 0.1f;
-	static constexpr float InvincibilityDuration = 1.8f;
+	static constexpr float InvincibilityDuration = 1.5f;
+	static constexpr float PotionDuration = 5.0f;
 
 	File jumpFile;
 	File deadFile;
+	File invincFile;
 	std::shared_ptr<AnimRC> anim;
 
 	enum class State {

@@ -34,13 +34,16 @@ CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/
 
 void CapacitronGame::CapacitronGame::onLoad(){
 	///Tiles
-	tileManager = std::make_unique<TileManager>(tileObjs, padObjs);
+	tileManager = std::make_unique<TileManager>(tileObjs, padObjs, powerupObjs);
 	tileManager->addFiles({ getFile("/bg1.raw"), getFile("/bg2.raw"), getFile("/bg3.raw"), getFile("/bg4.raw") },
 						  { getFile("/wallL1.raw"), getFile("/wallL2.raw"), getFile("/wallL3.raw") },
 						  { getFile("/wallR1.raw"), getFile("/wallR2.raw"), getFile("/wallR3.raw") },
-						  { getFile("/pad1.raw"), getFile("/pad2.raw"), getFile("/pad3.raw"), getFile("/pad4.raw"), getFile("/padL.raw"), getFile("/padR.raw") }
+						  { getFile("/pad1.raw"), getFile("/pad2.raw"), getFile("/pad3.raw"), getFile("/pad4.raw"), getFile("/padL.raw"),
+							getFile("/padR.raw") },
+						  { getFile("/potion.gif"), getFile("/heart.gif"), getFile("/jumpPad.gif") }
 	);
 	tileManager->createBg(); // creates GameObjects into movingTiles
+	tileManager->onPowerupSpawn([this](Powerup p){ powerupSpawned(p); });
 
 	bottomTileWall = std::make_shared<GameObject>(
 			nullptr,
@@ -69,10 +72,15 @@ void CapacitronGame::CapacitronGame::onLoad(){
 	addObject(playerLegsObj);
 	//TODO - make legs hitbox flip on left/right direction change,
 	//	for this you will need to apply flipping as a GameObject attribute and apply it to CollisionComponents as well as RenderComponents
-	player = std::make_unique<Player>(playerObj, playerLegsObj, this, getFile("/jump.gif"), getFile("/dead.gif"));
+	player = std::make_unique<Player>(playerObj, playerLegsObj, this, getFile("/jump.gif"), getFile("/dead.gif"), getFile("/jumpGlow.gif"));
 
 	collision.wallBot(*playerLegsObj, [this](){
 		if(player->isDead()) return;
+
+		if(player->isInvincible()){
+			player->trampolineJump();
+			return;
+		}
 
 		hearts->setLives(--lives);
 		if(lives <= 0){
@@ -92,6 +100,7 @@ void CapacitronGame::CapacitronGame::onLoad(){
 	addObject(scoreDisplay->getGO());
 	scoreDisplay->setScore(score);
 
+	//TODO - spawn fireballs
 	createPad(1);
 	createPad(0.75);
 	createPad(0.75);
@@ -128,6 +137,13 @@ void CapacitronGame::CapacitronGame::onLoop(float deltaTime){
 			obj->setPos(pos);
 		}
 	}
+
+	for(const auto& obj : powerupObjs){
+		auto pos = obj->getPos();
+		pos.y -= yShift;
+		obj->setPos(pos);
+	}
+
 	auto playerPos = playerObj->getPos();
 	playerObj->setPos(playerPos - glm::vec2{ 0, yShift });
 }
@@ -166,5 +182,62 @@ void CapacitronGame::CapacitronGame::createPad(float surface){
 		padObjs.shrink_to_fit();
 
 		createPad(0.25); //TODO - add difficulty ramp up
+	});
+}
+
+void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
+	addObject(powerup.obj);
+	const auto type = powerup.type;
+	std::weak_ptr<GameObject> weakPtr(powerup.obj);
+
+	collision.addPair(*playerObj, *powerup.obj, [this, type, weakPtr](){
+		if(player->isDead()) return;
+
+		auto obj = weakPtr.lock();
+
+		switch(type){
+			case Powerup::Type::Potion:
+				removeObject(obj);
+				player->invincible();
+				break;
+			case Powerup::Type::HalfHeart:
+				removeObject(obj);
+				if(halfHeartCollected && lives < 3){
+					lives++;
+					hearts->setLives(lives);
+				}else{
+					halfHeartCollected = true;
+				}
+				break;
+			case Powerup::Type::Trampoline:
+				break;
+		}
+	});
+
+	collision.addPair(*playerLegsObj, *powerup.obj, [this, type, weakPtr](){
+		if(player->isDead()) return;
+
+		auto obj = weakPtr.lock();
+
+		switch(type){
+			case Powerup::Type::Potion:
+				break;
+			case Powerup::Type::HalfHeart:
+				break;
+			case Powerup::Type::Trampoline:
+				if(player->getYSpeed() < 0) return;
+
+				player->trampolineJump();
+				auto anim = std::static_pointer_cast<AnimRC>(obj->getRenderComponent());
+				anim->reset();
+				anim->start();
+
+				if(playerObj->getPos().y <= (*padObjs.front().begin())->getPos().y - JumpY - JumpYExtra){
+					cameraShifting = true;
+					camShiftDistance = 128 - 8 - (*padObjs[2].begin())->getPos().y;
+					scoreDisplay->setScore(++score);
+				}
+				break;
+		}
 	});
 }

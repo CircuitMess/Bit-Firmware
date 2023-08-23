@@ -5,15 +5,18 @@
 #include <set>
 #include "CapacitronGame.h"
 
-CapacitronGame::TileManager::TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs) : tileObjs(tileObjs), padObjs(padObjs){
+CapacitronGame::TileManager::TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs,
+										 std::vector<GameObjPtr>& powerupObjs) :
+		tileObjs(tileObjs), padObjs(padObjs), powerupObjs(powerupObjs){
 	srand(time(nullptr));
 }
 
-void CapacitronGame::TileManager::addFiles(FileList bgFiles, FileList wallLFiles, FileList wallRFiles, FileList padFiles){
+void CapacitronGame::TileManager::addFiles(FileList bgFiles, FileList wallLFiles, FileList wallRFiles, FileList padFiles, FileList powerupFiles){
 	this->bgFiles = bgFiles;
 	this->wallLFiles = wallLFiles;
 	this->wallRFiles = wallRFiles;
 	this->padFiles = padFiles;
+	this->powerupFiles = powerupFiles;
 }
 
 void CapacitronGame::TileManager::reset(uint8_t segmentIndex){
@@ -39,8 +42,9 @@ void CapacitronGame::TileManager::createBg(){
 void CapacitronGame::TileManager::createPads(float surface){
 	const uint8_t surfaceTiles = (uint8_t) (surface * (float) PadTilesPerLevel);
 	uint8_t tilesRequired = surfaceTiles;
-	std::map<uint8_t, uint8_t> padsPerSize; //key is size of pads, value is number of pads of that size
+	std::unordered_map<uint8_t, uint8_t> padsPerSize; //key is size of pads, value is number of pads of that size
 	uint8_t numberOfPads = 0;
+
 	while(tilesRequired > 0){
 		uint8_t numTiles;
 		if(tilesRequired <= 3){
@@ -77,6 +81,7 @@ void CapacitronGame::TileManager::createPads(float surface){
 		yPos -= CapacitronGame::JumpY;
 	}
 
+
 	std::set<GameObjPtr> pads;
 	while(tilesPlaced < PadTilesPerLevel){
 		//choose between empty spaces and pads
@@ -107,12 +112,28 @@ void CapacitronGame::TileManager::createPads(float surface){
 			drawPad(padObj, selectedPadSize);
 			padObj->getRenderComponent()->setLayer(PadsRenderLayer);
 
+
 			tilesPlaced += selectedPadSize;
 			numberOfPads--;
 			padsPerSize[selectedPadSize]--;
 		}
 	}
+	//spawn powerup with random chance, position on random tile
+	Powerup powerup = spawnRandomPowerup();
+	if(powerup.obj){
+		int8_t powerupTile = random() % PadTilesPerLevel;
+		powerupCB(powerup);
+		powerupObjs.push_back(powerup.obj);
+		const float x = WallTileDim + powerupTile * PadTileDim - (powerup.size.x - PadTileDim) / 2;
+		const float y = (*pads.begin())->getPos().y - powerup.size.y;
+		powerup.obj->setPos(x, y);
+	}
 	padObjs.push_back(std::move(pads));
+
+}
+
+void CapacitronGame::TileManager::onPowerupSpawn(std::function<void(Powerup)> cb){
+	TileManager::powerupCB = cb;
 }
 
 void CapacitronGame::TileManager::drawTiles(int objectIndex){
@@ -175,6 +196,46 @@ uint8_t CapacitronGame::TileManager::getRandomWallIndex(){
 	return index;
 }
 
+CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(){
+	Powerup powerup;
+	if((rand() % 100) < PowerupSpawnRate){
+		powerup.type = Powerup::Type(rand() % 3);
 
+		std::shared_ptr<AnimRC> anim;
 
-
+		switch(powerup.type){
+			case Powerup::Type::Potion:
+				powerup.obj = std::make_shared<GameObject>(
+						std::make_unique<AnimRC>(powerupFiles[0]),
+						std::make_unique<RectCC>(glm::vec2{ 8, 10 })
+				);
+				anim = std::static_pointer_cast<AnimRC>(powerup.obj->getRenderComponent());
+				anim->setLoopMode(GIF::Infinite);
+				anim->start();
+				powerup.size = { 8, 10 };
+				break;
+			case Powerup::Type::HalfHeart:
+				powerup.obj = std::make_shared<GameObject>(
+						std::make_unique<AnimRC>(powerupFiles[1]),
+						std::make_unique<RectCC>(glm::vec2{ 11, 9 })
+				);
+				anim = std::static_pointer_cast<AnimRC>(powerup.obj->getRenderComponent());
+				anim->setLoopMode(GIF::Infinite);
+				anim->start();
+				powerup.size = { 11, 9 };
+				break;
+			case Powerup::Type::Trampoline:
+				powerup.obj = std::make_shared<GameObject>(
+						std::make_unique<AnimRC>(powerupFiles[2]),
+						std::make_unique<RectCC>(glm::vec2{ 20, 2 }, glm::vec2{ 0, 18 })
+				);
+				anim = std::static_pointer_cast<AnimRC>(powerup.obj->getRenderComponent());
+				anim->setLoopMode(GIF::Single);
+				anim->start();
+				anim->stop();
+				powerup.size = { 20, 20 };
+				break;
+		}
+	}
+	return powerup;
+}
