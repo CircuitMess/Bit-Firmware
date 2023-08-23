@@ -4,6 +4,8 @@
 #include "GameEngine/Game.h"
 #include "TileManager.h"
 #include "Player.h"
+#include "Games/Common/Hearts.h"
+#include "Games/Common/Score.h"
 
 namespace CapacitronGame {
 
@@ -29,13 +31,20 @@ private:
 	GameObjPtr playerLegsObj;
 	std::unique_ptr<Player> player;
 
+	std::unique_ptr<Hearts> hearts;
+	std::unique_ptr<Score> scoreDisplay;
+
 	static constexpr float speed = 5;
 	static constexpr float JumpY = 42; //distance covered by one jump
 	static constexpr float Gravity = 150.0f;
 	static constexpr float JumpYExtra = 20; //extra lee-way so that the player jumps up and over the next platform
 	static constexpr float JumpSpeed = -Gravity + JumpY - JumpYExtra;
+	static constexpr float TrampolineSpeed = 1.2 * JumpSpeed;
 	static constexpr PixelDim PlayerSize = { 20, 30 };
 	static constexpr uint8_t PlayerLegsHitboxWidth = 12;
+
+	uint32_t score = 0;
+	int8_t lives = 3;
 
 	void createPad(float surface);
 	float counter = 0;

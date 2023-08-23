@@ -2,7 +2,8 @@
 #include "CapacitronGame.h"
 #include "GameEngine/Collision/RectCC.h"
 
-CapacitronGame::Player::Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game) : gamePtr(game), obj(playerObj), legsObj(playerLegsObj){
+CapacitronGame::Player::Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile) :
+		gamePtr(game), obj(playerObj), legsObj(playerLegsObj), jumpFile(jumpFile), deadFile(deadFile){
 	anim = std::static_pointer_cast<AnimRC>(obj->getRenderComponent());
 	anim->setLoopMode(GIF::Single);
 	anim->start();
@@ -35,32 +36,67 @@ void CapacitronGame::Player::btnReleased(Input::Button btn){
 }
 
 void CapacitronGame::Player::damage(){
+	if(state == State::Death) return;
+
 
 }
 
 void CapacitronGame::Player::fallDown(){
+	if(state == State::Death) return;
 
+	trampolineJump();
+	state = State::Damaged;
 }
 
 void CapacitronGame::Player::death(){
+	if(state == State::Death) return;
 
+	state = State::Death;
+	ySpeed = CapacitronGame::JumpSpeed;
+	horizontalDirection = 0;
+	anim->setAnim(deadFile);
+	anim->setLoopMode(GIF::Single);
+	anim->reset();
+	anim->start();
 }
 
 void CapacitronGame::Player::invincible(){
+	if(state == State::Death) return;
 
 }
 
 void CapacitronGame::Player::jump(){
+	if(state == State::Death) return;
+
 	gamePtr->audio.play({ { 80, 80, 80 } });
 	ySpeed = CapacitronGame::JumpSpeed;
 	anim->reset();
 }
 
 void CapacitronGame::Player::trampolineJump(){
+	if(state == State::Death) return;
 
+	ySpeed = CapacitronGame::TrampolineSpeed;
+	anim->reset();
+}
+
+float CapacitronGame::Player::getYSpeed() const{
+	return ySpeed;
+}
+
+bool CapacitronGame::Player::isInvincible() const{
+	return state == State::Damaged || state == State::Invincibility;
 }
 
 float CapacitronGame::Player::update(float delta){
+
+	updateMovement(delta);
+	updateState(delta);
+
+	return delta * ySpeed;
+}
+
+void CapacitronGame::Player::updateMovement(float delta){
 	float xPos = delta * HorizontalSpeed * horizontalDirection;
 	xPos += obj->getPos().x;
 	xPos = std::clamp(xPos, 8.f, 128.f - CapacitronGame::PlayerSize.x - 8);
@@ -72,10 +108,38 @@ float CapacitronGame::Player::update(float delta){
 	obj->setPos(xPos, yPos);
 
 	legsObj->setPos(xPos, yPos + CapacitronGame::PlayerSize.y);
-
-	return delta * ySpeed;
 }
 
-float CapacitronGame::Player::getYSpeed() const{
-	return ySpeed;
+void CapacitronGame::Player::updateState(float delta){
+	switch(state){
+		case State::Jumping:
+			break;
+		case State::Damaged:
+			invincibilityTime += delta;
+
+			if((int) (invincibilityTime / InvincibilityBlinkDuration) % 2 == 0){
+				anim->setVisible(false);
+			}else{
+				anim->setVisible(true);
+			}
+
+			if(invincibilityTime >= InvincibilityDuration){
+				invincibilityTime = 0;
+				state = State::Jumping;
+				anim->setVisible(true);
+			}
+			break;
+		case State::Death:
+			if(obj->getPos().y >= 140){
+				gamePtr->exit();
+			}
+			break;
+		case State::Invincibility:
+			//TODO - glowing anim
+			break;
+	}
+}
+
+bool CapacitronGame::Player::isDead() const{
+	return state == State::Death;
 }

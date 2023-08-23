@@ -10,7 +10,7 @@ class CapacitronGame;
 
 class Player {
 public:
-	Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game);
+	Player(GameObjPtr playerObj, GameObjPtr playerLegsObj, CapacitronGame* game, File jumpFile, File deadFile);
 
 	float update(float delta); //used for updating movement and animations, returns y-axis movement used for camera movement
 	void btnPressed(Input::Button btn);
@@ -23,6 +23,9 @@ public:
 	void jump(); //called when landing on a platform
 	void trampolineJump(); //called when landing on a trampoline
 	float getYSpeed() const;
+
+	bool isInvincible() const;
+	bool isDead() const;
 private:
 	CapacitronGame* gamePtr;
 	GameObjPtr obj;
@@ -32,14 +35,22 @@ private:
 	float ySpeed = 0;
 	int8_t horizontalDirection = 0;
 
+	float invincibilityTime = 0;
+	static constexpr float InvincibilityBlinkDuration = 0.1f;
+	static constexpr float InvincibilityDuration = 1.8f;
+
 	File jumpFile;
+	File deadFile;
 	std::shared_ptr<AnimRC> anim;
 
-	enum class State{
-		Jumping, BoostJump, Damaged, Death
-	} state;
+	enum class State {
+		Jumping, Damaged, Death, Invincibility
+	} state = State::Jumping;
 
 	Input::Button lastPressed = Input::Menu;
+
+	void updateMovement(float delta);
+	void updateState(float delta);
 };
 
 }
