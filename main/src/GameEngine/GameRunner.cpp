@@ -7,15 +7,17 @@
 #include "Games/MarvGame/MarvGame.h"
 #include "Games/Hertz/HertzGame.h"
 #include "Games/BobGame/BobGame.h"
+#include "Games/CapacitronGame/CapacitronGame.h"
 
 static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
-		{ Games::MrBee, [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
-		{ Games::Pong, [](Sprite& canvas){ return std::make_unique<Pong>(canvas); } },
-		{ Games::Snake, [](Sprite& canvas){ return std::make_unique<Snake>(canvas); } },
-		{ Games::Blocks, [](Sprite& canvas){ return std::make_unique<Blocks>(canvas); } },
-		{ Games::Marv, [](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); } },
-		{ Games::Hertz, [](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); } },
-		{ Games::Bob, [](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); } },
+		{ Games::MrBee,      [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
+		{ Games::Pong,       [](Sprite& canvas){ return std::make_unique<Pong>(canvas); } },
+		{ Games::Snake,      [](Sprite& canvas){ return std::make_unique<Snake>(canvas); } },
+		{ Games::Blocks,     [](Sprite& canvas){ return std::make_unique<Blocks>(canvas); } },
+		{ Games::Marv,       [](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); } },
+		{ Games::Hertz,      [](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); } },
+		{ Games::Bob,        [](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); } },
+		{ Games::Capacitron, [](Sprite& canvas){ return std::make_unique<CapacitronGame::CapacitronGame>(canvas); } }
 };
 
 GameRunner::GameRunner(Display& display) : display(display){
