@@ -146,9 +146,6 @@ void CapacitronGame::Player::updateState(float delta){
 			if(!anim->isVisible()){
 				anim->setVisible(true);
 			}
-			if(obj->getPos().y >= 150){
-				gamePtr->exit();
-			}
 			break;
 		case State::Invincibility:
 			if(!anim->isVisible()){

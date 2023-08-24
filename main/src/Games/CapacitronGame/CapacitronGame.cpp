@@ -2,6 +2,8 @@
 #include "Devices/Display.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
+#include "Util/stdafx.h"
+#include "GameEngine/Rendering/MultiRC.h"
 
 CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
@@ -25,9 +27,9 @@ CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/
 		{ "/jump.gif", {}, true },
 		{ "/jumpGlow.gif", {}, true },
 		{ "/jumpPad.gif", {}, false },
-		{ "/heart.gif", {}, false },
-		{ "/fireball.gif", {}, false },
-		{ "/potion.gif", {}, false },
+		{ "/heart.gif", {}, true },
+		{ "/fireball.gif", {}, true },
+		{ "/potion.gif", {}, true },
 		RES_HEART,
 		RES_GOBLET
 }){}
@@ -47,7 +49,7 @@ void CapacitronGame::CapacitronGame::onLoad(){
 
 	bottomTileWall = std::make_shared<GameObject>(
 			nullptr,
-			std::make_unique<RectCC>(glm::vec2{ 128, 1 })
+			std::make_unique<RectCC>(glm::vec2{ 128, 30 })
 	);
 	bottomTileWall->setPos(0, 128 + 32); //One tile below bottom wall
 	addObject(bottomTileWall);
@@ -100,25 +102,57 @@ void CapacitronGame::CapacitronGame::onLoad(){
 	addObject(scoreDisplay->getGO());
 	scoreDisplay->setScore(score);
 
-	//TODO - spawn fireballs
-	createPad(1);
-	createPad(0.75);
-	createPad(0.75);
-	createPad(0.75);
+	originalFireball = std::make_shared<GameObject>(
+			std::make_unique<AnimRC>(getFile("/fireball.gif")),
+			nullptr
+	);
+	originalFireball->setPos(-50, -50); //positioned out of screen, used only for its RenderComponent
+	addObject(originalFireball);
+	fireballAnimRC = std::static_pointer_cast<AnimRC>(originalFireball->getRenderComponent());
+	fireballAnimRC->setLoopMode(GIF::Infinite);
+	fireballAnimRC->start();
+
+	createPad(1, false);
+	createPad(0.75, true);
+	createPad(0.75, true);
+	createPad(0.75, true);
+	createPad(0.75, true);
+	createPad(0.75, true);
 }
 
 void CapacitronGame::CapacitronGame::onLoop(float deltaTime){
 	float yShift = player->update(deltaTime);
 
+	if(playerObj->getPos().y >= 150){
+		exit();
+		return;
+	}
+
+	fireballTimer += deltaTime;
+	if(fireballTimer >= fireballInterval){
+		fireballTimer = 0;
+		spawnFireball();
+		fireballInterval = FireballStartingInterval - ((float) score / MaxDifficultyScore) * (FireballStartingInterval - FireballMinimumInterval);
+	}
+
+	for(const auto& obj : fireballObjs){
+		auto pos = obj->getPos();
+		pos.y += deltaTime * FireballSpeed;
+		obj->setPos(pos);
+	}
+
+
 	if(!cameraShifting) return;
 	totalShift += abs(yShift);
 	if(yShift >= 0){
+		cleanupPads();
 		cameraShifting = false;
 		totalShift = 0;
 		return;
 	}
 
 	if(totalShift >= camShiftDistance){
+		cleanupPads();
 		cameraShifting = false;
 		yShift = -(totalShift - camShiftDistance);
 		totalShift = 0;
@@ -144,6 +178,12 @@ void CapacitronGame::CapacitronGame::onLoop(float deltaTime){
 		obj->setPos(pos);
 	}
 
+	for(const auto& obj : fireballObjs){
+		auto pos = obj->getPos();
+		pos.y -= yShift;
+		obj->setPos(pos);
+	}
+
 	auto playerPos = playerObj->getPos();
 	playerObj->setPos(playerPos - glm::vec2{ 0, yShift });
 }
@@ -156,7 +196,7 @@ void CapacitronGame::CapacitronGame::handleInput(const Input::Data& data){
 	}
 }
 
-void CapacitronGame::CapacitronGame::createPad(float surface){
+void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled){
 	tileManager->createPads(surface);
 	for(const auto& obj : padObjs.back()){
 		addObject(obj);
@@ -172,17 +212,6 @@ void CapacitronGame::CapacitronGame::createPad(float surface){
 			}
 		});
 	}
-
-	//collider for creating a new pad is applied to only 1 pad in the whole level
-	collision.addPair(*bottomTileWall, **padObjs.front().begin(), [this](){
-		for(const auto& obj : padObjs.front()){
-			removeObject(obj);
-		}
-		padObjs.erase(padObjs.begin());
-		padObjs.shrink_to_fit();
-
-		createPad(0.25); //TODO - add difficulty ramp up
-	});
 }
 
 void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
@@ -198,13 +227,18 @@ void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
 		switch(type){
 			case Powerup::Type::Potion:
 				removeObject(obj);
+				powerupObjs.erase(std::remove(powerupObjs.begin(), powerupObjs.end(), obj));
+				powerupObjs.shrink_to_fit();
 				player->invincible();
 				break;
 			case Powerup::Type::HalfHeart:
 				removeObject(obj);
+				powerupObjs.erase(std::remove(powerupObjs.begin(), powerupObjs.end(), obj));
+				powerupObjs.shrink_to_fit();
 				if(halfHeartCollected && lives < 3){
 					lives++;
 					hearts->setLives(lives);
+					halfHeartCollected = false;
 				}else{
 					halfHeartCollected = true;
 				}
@@ -235,9 +269,71 @@ void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
 				if(playerObj->getPos().y <= (*padObjs.front().begin())->getPos().y - JumpY - JumpYExtra){
 					cameraShifting = true;
 					camShiftDistance = 128 - 8 - (*padObjs[2].begin())->getPos().y;
-					scoreDisplay->setScore(++score);
+					score += 2;
+					scoreDisplay->setScore(score);
+				}else{
+					cameraShifting = true;
+					camShiftDistance = 128 - 8 - (*padObjs[1].begin())->getPos().y;
+					score += 2;
+					scoreDisplay->setScore(score);
 				}
 				break;
 		}
 	});
+
+	collision.addPair(*bottomTileWall, *powerup.obj, [this, weakPtr](){
+		removeObject(powerupObjs.front());
+		powerupObjs.erase(powerupObjs.begin());
+		powerupObjs.shrink_to_fit();
+	});
+}
+
+void CapacitronGame::CapacitronGame::spawnFireball(){
+	auto fireball = std::make_shared<GameObject>(
+			std::make_unique<MultiRC>(fireballAnimRC),
+			std::make_unique<RectCC>(glm::vec2{ 13, 21 })
+	);
+
+	const float x = rand() % (128 - 13);
+	fireball->setPos(x, -50);
+	fireballObjs.push_back(fireball);
+	addObject(fireball);
+
+	collision.addPair(*bottomTileWall, *fireball, [this](){
+		removeObject(fireballObjs.front());
+		fireballObjs.erase(fireballObjs.begin());
+		fireballObjs.shrink_to_fit();
+
+	});
+	std::weak_ptr<GameObject> weakPtr(fireball);
+	collision.addPair(*fireball, *playerObj, [this, weakPtr](){
+		auto obj = weakPtr.lock();
+		if(player->isDead()) return;
+
+		if(!player->isInvincible()){
+
+			hearts->setLives(--lives);
+			if(lives <= 0){
+				player->death();
+			}else{
+				player->damage();
+			}
+		}
+		removeObject(obj);
+
+	});
+}
+
+void CapacitronGame::CapacitronGame::cleanupPads(){
+	const float surface = StartingSurface - ((float) score / MaxDifficultyScore) * (StartingSurface - MinimumSurface);
+	while((**padObjs.front().begin()).getPos().y >= 128){
+
+		for(const auto& obj : padObjs.front()){
+			removeObject(obj);
+		}
+		padObjs.erase(padObjs.begin());
+		padObjs.shrink_to_fit();
+
+		createPad(surface, score < MaxDifficultyScore);
+	}
 }

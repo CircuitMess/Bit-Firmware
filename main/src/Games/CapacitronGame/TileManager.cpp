@@ -39,7 +39,7 @@ void CapacitronGame::TileManager::createBg(){
 	}
 }
 
-void CapacitronGame::TileManager::createPads(float surface){
+void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled){
 	const uint8_t surfaceTiles = (uint8_t) (surface * (float) PadTilesPerLevel);
 	uint8_t tilesRequired = surfaceTiles;
 	std::unordered_map<uint8_t, uint8_t> padsPerSize; //key is size of pads, value is number of pads of that size
@@ -107,11 +107,11 @@ void CapacitronGame::TileManager::createPads(float surface){
 					std::make_unique<SpriteRC>(PixelDim{ PadTileDim * selectedPadSize, PadTileDim }),
 					std::make_unique<RectCC>(glm::vec2{ PadTileDim * selectedPadSize, 1 })
 			);
-			pads.insert(padObj);
 			padObj->setPos(WallTileDim + tilesPlaced * PadTileDim, yPos);
 			drawPad(padObj, selectedPadSize);
 			padObj->getRenderComponent()->setLayer(PadsRenderLayer);
 
+			pads.insert(std::move(padObj));
 
 			tilesPlaced += selectedPadSize;
 			numberOfPads--;
@@ -120,7 +120,7 @@ void CapacitronGame::TileManager::createPads(float surface){
 	}
 	//spawn powerup with random chance, position on random tile
 	Powerup powerup = spawnRandomPowerup();
-	if(powerup.obj){
+	if(powerup.obj && powerupsEnabled){
 		int8_t powerupTile = random() % PadTilesPerLevel;
 		powerupCB(powerup);
 		powerupObjs.push_back(powerup.obj);

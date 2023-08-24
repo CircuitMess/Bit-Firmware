@@ -32,6 +32,11 @@ private:
 	std::unique_ptr<Player> player;
 	std::vector<GameObjPtr> powerupObjs;
 
+	GameObjPtr originalFireball; //out-of-screen object used for its render component
+	std::vector<GameObjPtr> fireballObjs;
+	std::shared_ptr<AnimRC> fireballAnimRC; //render component passed to fireball instances
+
+
 	std::unique_ptr<Hearts> hearts;
 	std::unique_ptr<Score> scoreDisplay;
 
@@ -43,29 +48,30 @@ private:
 	static constexpr float TrampolineSpeed = 1.3 * JumpSpeed;
 	static constexpr PixelDim PlayerSize = { 20, 30 };
 	static constexpr uint8_t PlayerLegsHitboxWidth = 12;
+	static constexpr float FireballSpeed = 15;
+	static constexpr float MinimumSurface = 0.2;
+	static constexpr float StartingSurface = 0.75;
+	static constexpr float MaxDifficultyScore = 60; //score after which difficulty doesn't increase anymore
+	static constexpr float FireballStartingInterval = 5;
+	static constexpr float FireballMinimumInterval = 2;
 
 	uint32_t score = 0;
 	int8_t lives = 3;
 	bool halfHeartCollected = false;
 
-	void createPad(float surface);
+	void createPad(float surface, bool powerupsEnabled = true);
 	float counter = 0;
 	bool cameraShifting = false;
 	float camShiftDistance = 0;
 	float totalShift = 0;
+	float fireballTimer = 0;
+	float fireballInterval = FireballStartingInterval;
+
 	void powerupSpawned(Powerup powerup);
+	void spawnFireball();
+	void cleanupPads();
 };
-/*
- * logika igre
- *
- * spawnanje padova:
- * x-os što dalja od prošlog pada kako difficulty raste
- * y-os uvijek u koracima od JumpY
- * veličina pada i broj padova na svakoj jump razini - randomizean broj predstavlja "površinu", koju ostvarujemo s proizvoljnim brojem/veličinom padova
- * ukupna "površina" padova je random, prva površina je uvijek maksimalna, ostale random sa minimumom koji pada kako difficulty raste
- *
- *
- */
+
 }
 
 #endif //BIT_FIRMWARE_CAPACITRONGAME_H
