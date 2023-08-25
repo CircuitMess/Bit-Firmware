@@ -23,6 +23,7 @@
 #include "Screens/IntroScreen.h"
 #include <esp_sleep.h>
 #include <Util/stdafx.h>
+#include "JigHWTest/JigHWTest.h"
 
 BacklightBrightness* bl;
 
@@ -61,6 +62,15 @@ bool initSPIFFS(){
 }
 
 void init(){
+
+	if(JigHWTest::checkJig() || true){
+		printf("Jig\n");
+		auto test = new JigHWTest();
+		test->start();
+		vTaskDelete(nullptr);
+	}
+
+
 	gpio_config_t cfg = {
 			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
 			.mode = GPIO_MODE_INPUT
