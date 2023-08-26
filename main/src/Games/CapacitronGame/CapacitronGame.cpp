@@ -1,9 +1,8 @@
 #include "CapacitronGame.h"
 #include "Devices/Display.h"
 #include "GameEngine/Collision/RectCC.h"
-#include "GameEngine/Rendering/SpriteRC.h"
-#include "Util/stdafx.h"
 #include "GameEngine/Rendering/MultiRC.h"
+#include "GameEngine/Collision/PolygonCC.h"
 
 CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
@@ -58,10 +57,16 @@ void CapacitronGame::CapacitronGame::onLoad(){
 		addObject(obj);
 		collision.addPair(*bottomTileWall, *obj, [this, i](){ tileManager->reset(i); });
 	}
-
+	std::initializer_list<glm::vec2> points = { { 13, 27 },
+												{ 5,  27 },
+												{ 2,  21 },
+												{ 2,  5 },
+												{ 5,  2 },
+												{ 10, 4 },
+												{ 12, 18 } };
 	playerObj = std::make_shared<GameObject>(
 			std::make_unique<AnimRC>(getFile("/jump.gif")),
-			std::make_unique<RectCC>(glm::vec2{ 20, 30 })
+			std::make_unique<PolygonCC>(points)
 	);
 	playerObj->setPos({ (128 - PlayerSize.x) / 2, 128 - 8 - PlayerSize.y }); //spawn player in the middle of the first platform
 	addObject(playerObj);
@@ -70,7 +75,7 @@ void CapacitronGame::CapacitronGame::onLoad(){
 			nullptr,
 			std::make_unique<RectCC>(glm::vec2{ PlayerLegsHitboxWidth, 1 }, glm::vec2{ (PlayerSize.x - PlayerLegsHitboxWidth) / 2, 0 })
 	);
-	playerLegsObj->setPos(playerObj->getPos() + glm::vec2{ 0, PlayerSize.y }); //spawn player in the middle of the first platform
+	playerLegsObj->setPos(playerObj->getPos() + glm::vec2{ 0, PlayerSize.y - 3 }); //spawn player in the middle of the first platform
 	addObject(playerLegsObj);
 	//TODO - make legs hitbox flip on left/right direction change,
 	//	for this you will need to apply flipping as a GameObject attribute and apply it to CollisionComponents as well as RenderComponents
@@ -87,7 +92,14 @@ void CapacitronGame::CapacitronGame::onLoad(){
 		hearts->setLives(--lives);
 		if(lives <= 0){
 			player->death();
+			audio.play({ { 400, 300, 200 },
+						 { 0,   0,   50 },
+						 { 300, 200, 200 },
+						 { 0,   0,   50 },
+						 { 200, 50,  400 } });
 		}else{
+			audio.play({ { 200, 50, 50 },
+						 { 200, 50, 50 } });
 			player->fallDown();
 		}
 	});
@@ -112,12 +124,12 @@ void CapacitronGame::CapacitronGame::onLoad(){
 	fireballAnimRC->setLoopMode(GIF::Infinite);
 	fireballAnimRC->start();
 
-	createPad(1, false);
-	createPad(0.75, true);
-	createPad(0.75, true);
-	createPad(0.75, true);
-	createPad(0.75, true);
-	createPad(0.75, true);
+	createPad(1, false, 0);
+	createPad(0.75, false, 0);
+	createPad(0.75, false, 0);
+	createPad(0.75, false, 0);
+	createPad(0.75, false, 0);
+	createPad(0.75, false, 0);
 }
 
 void CapacitronGame::CapacitronGame::onLoop(float deltaTime){
@@ -196,8 +208,9 @@ void CapacitronGame::CapacitronGame::handleInput(const Input::Data& data){
 	}
 }
 
-void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled){
-	tileManager->createPads(surface);
+void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled, uint8_t powerupRate){
+	printf("surface: %.2f\n", surface);
+	tileManager->createPads(surface, powerupsEnabled, powerupRate);
 	for(const auto& obj : padObjs.back()){
 		addObject(obj);
 		collision.addPair(*obj, *playerLegsObj, [this](){
@@ -226,6 +239,10 @@ void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
 
 		switch(type){
 			case Powerup::Type::Potion:
+				audio.play({ { 80, 800, 80 },
+							 { 0,  0,   80 },
+							 { 80, 800, 80 } });
+
 				removeObject(obj);
 				powerupObjs.erase(std::remove(powerupObjs.begin(), powerupObjs.end(), obj));
 				powerupObjs.shrink_to_fit();
@@ -235,6 +252,7 @@ void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
 				removeObject(obj);
 				powerupObjs.erase(std::remove(powerupObjs.begin(), powerupObjs.end(), obj));
 				powerupObjs.shrink_to_fit();
+				audio.play({ { 80, 800, 80 } });
 				if(halfHeartCollected && lives < 3){
 					lives++;
 					hearts->setLives(lives);
@@ -261,6 +279,7 @@ void CapacitronGame::CapacitronGame::powerupSpawned(Powerup powerup){
 			case Powerup::Type::Trampoline:
 				if(player->getYSpeed() < 0) return;
 
+				audio.play({ { 80, 900, 250 } });
 				player->trampolineJump();
 				auto anim = std::static_pointer_cast<AnimRC>(obj->getRenderComponent());
 				anim->reset();
@@ -312,10 +331,18 @@ void CapacitronGame::CapacitronGame::spawnFireball(){
 
 		if(!player->isInvincible()){
 
+
 			hearts->setLives(--lives);
 			if(lives <= 0){
 				player->death();
+				audio.play({ { 400, 300, 200 },
+							 { 0,   0,   50 },
+							 { 300, 200, 200 },
+							 { 0,   0,   50 },
+							 { 200, 50,  400 } });
 			}else{
+				audio.play({ { 200, 50, 100 } });
+
 				player->damage();
 			}
 		}
@@ -333,7 +360,7 @@ void CapacitronGame::CapacitronGame::cleanupPads(){
 		}
 		padObjs.erase(padObjs.begin());
 		padObjs.shrink_to_fit();
-
-		createPad(surface, score < MaxDifficultyScore);
+		const uint8_t rate = PowerupsStartingRate - (PowerupsStartingRate - PowerupsMinimumRate) * (score - PowerupsStartScore) / MaxDifficultyScore;
+		createPad(surface, score > PowerupsStartScore, rate);
 	}
 }
