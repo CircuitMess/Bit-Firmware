@@ -123,6 +123,7 @@ void MainMenu::handleInsert(const GameManager::Event& evt){
 }
 
 void MainMenu::handleInput(const Input::Data& evt){
+	if(InputLVGL::getInstance()->getIndev()->group != inputGroup) return;
 	if(evt.btn == Input::Menu && evt.action == Input::Data::Release){
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<SettingsScreen>(); });

@@ -14,6 +14,11 @@ NewRobot::NewRobot(LVScreen* parent, Robot rob, bool isNew) : LVModal(parent), r
 		modal->click();
 	}, LV_EVENT_CLICKED, this);
 
+	lv_obj_add_event_cb(*this, [](lv_event_t* e){
+		auto modal = (NewRobot*) e->user_data;
+		modal->click();
+	}, LV_EVENT_CANCEL, this);
+
 	lv_group_add_obj(inputGroup, *this);
 	lv_group_focus_obj(*this);
 }

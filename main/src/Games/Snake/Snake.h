@@ -49,10 +49,10 @@ private:
 	};
 
 
-	//24x24 grid with 5x5 tiles, 4 pixels padding on edges
+	//26x26 grid with 5x5 tiles, 4 pixels padding on edges
 	static constexpr PixelDim TileDim = { 5, 5 };
-	static constexpr uint8_t PaddingGap = 4;
-	static constexpr PixelDim GridDim = { 24, 24 };
+	static constexpr int8_t PaddingGap = -1;
+	static constexpr PixelDim GridDim = { 26, 26 };
 
 	static constexpr PixelDim HitboxDim = { 3, 3 };
 	static constexpr uint8_t StartingLength = 2;
