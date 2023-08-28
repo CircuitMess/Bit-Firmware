@@ -9,6 +9,7 @@
 #include <esp_spiffs.h>
 #include "Periph/I2C.h"
 #include <Pins.hpp>
+#include "Services/Robots.h"
 
 struct Test {
 	bool (* test)();
@@ -29,6 +30,8 @@ private:
 	std::vector<Test> tests;
 	const char* currentTest;
 
+	Robots rob;
+
 	void log(const char* property, const char* value);
 	void log(const char* property, float value);
 	void log(const char* property, double value);
@@ -37,24 +40,20 @@ private:
 	void log(const char* property, int32_t value);
 	void log(const char* property, const std::string& value);
 
+	static bool Robot();
 	static bool BatteryCalib();
 	static bool BatteryCheck();
 	static bool SPIFFSTest();
 	static uint32_t calcChecksum(FILE* file);
 
 	static constexpr gpio_num_t led_pin = (gpio_num_t) CTRL_1;
-	static constexpr uint8_t AddrPins[] = { ADDR_1, ADDR_2, ADDR_3, ADDR_4, ADDR_5, ADDR_6 };
 	static constexpr uint32_t BuzzDuration = 100;
-	static constexpr uint8_t TargetRobotAddr = 0;
 	void RobotTest();
 
 	void rgb();
 
-	static bool checkInserted();
-	static uint8_t checkAddr();
 
-
-	static const int16_t referenceVoltage = 4050; // 50mV for backlight voltage drop compensation
+	static const int16_t referenceVoltage = 4020; // 50mV for backlight voltage drop compensation
 
 	static constexpr uint32_t CheckTimeout = 500;
 

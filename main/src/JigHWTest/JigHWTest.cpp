@@ -1,5 +1,5 @@
 #include "JigHWTest.h"
-//#include "SPIFFSChecksum.hpp" TODO - generate SPIFFS checksum file
+#include "SPIFFSChecksum.hpp"
 #include <Pins.hpp>
 #include <soc/efuse_reg.h>
 #include <esp_efuse.h>
@@ -25,9 +25,10 @@ JigHWTest::JigHWTest(){
 
 	test = this;
 
-//	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
-//	tests.push_back({ JigHWTest::BatteryCalib, "Batt kalib.", [](){} });
-//	tests.push_back({ JigHWTest::BatteryCheck, "Batt provjera", [](){} });
+	tests.push_back({ JigHWTest::Robot, "Bob", [](){} });
+	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
+	tests.push_back({ JigHWTest::BatteryCalib, "Batt kalib.", [](){} });
+	tests.push_back({ JigHWTest::BatteryCheck, "Batt provjera", [](){} });
 }
 
 bool JigHWTest::checkJig(){
@@ -60,11 +61,19 @@ bool JigHWTest::checkJig(){
 
 
 void JigHWTest::start(){
-
-
 	uint64_t _chipmacid = 0LL;
 	esp_efuse_mac_get_default((uint8_t*) (&_chipmacid));
 	printf("\nTEST:begin:%llx\n", _chipmacid);
+
+	gpio_config_t io_conf = {
+			.pin_bit_mask = (1ULL << CTRL_1) | (1ULL << PIN_BL),
+			.mode = GPIO_MODE_OUTPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE
+	};
+	gpio_config(&io_conf);
+	gpio_set_level(led_pin, 0);
 
 	canvas->clear(0);
 	gpio_set_level((gpio_num_t) PIN_BL, 0);
@@ -166,7 +175,9 @@ void JigHWTest::log(const char* property, const std::string& value){
 	printf("%s:%s:%s\n", currentTest, property, value.c_str());
 }
 
-/*
+bool JigHWTest::Robot(){
+	return test->rob.getInserted() == Bob;
+}
 
 bool JigHWTest::BatteryCalib(){
 	if(Battery::getVoltOffset() != 0){
@@ -175,16 +186,15 @@ bool JigHWTest::BatteryCalib(){
 		return true;
 	}
 
+	ADC adc((gpio_num_t) PIN_BATT);
+
 	constexpr uint16_t numReadings = 50;
 	constexpr uint16_t readDelay = 50;
 	uint32_t reading = 0;
 
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_0);
-
 	for(int i = 0; i < numReadings; i++){
-		reading += adc1_get_raw(ADC1_CHANNEL_0);
-		vTaskDelay(readDelay / portTICK_PERIOD_MS);
+		reading += adc.sample();
+		vTaskDelay(readDelay);
 	}
 	reading /= numReadings;
 
@@ -205,7 +215,7 @@ bool JigHWTest::BatteryCalib(){
 	uint16_t offsetLow = offset & 0b01111111;
 	uint16_t offsetHigh = offset >> 7;
 
-	// return true; //TODO - remove early return, burn to efuse
+	return true; //TODO - remove early return, burn to efuse
 
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &offsetLow, 7);
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 9);
@@ -216,20 +226,20 @@ bool JigHWTest::BatteryCalib(){
 
 
 bool JigHWTest::BatteryCheck(){
-	adc1_config_width(ADC_WIDTH_BIT_12);
-	adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_0);
+	ADC adc((gpio_num_t) PIN_BATT);
 
 	constexpr uint16_t numReadings = 50;
 	constexpr uint16_t readDelay = 10;
 	uint32_t reading = 0;
 
 	for(int i = 0; i < numReadings; i++){
-		reading += adc1_get_raw(ADC1_CHANNEL_0);
-		vTaskDelay(readDelay / portTICK_PERIOD_MS);
+		reading += (int) adc.sample();
+		vTaskDelay(readDelay);
 	}
 	reading /= numReadings;
 
 	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
+
 	if(voltage < referenceVoltage - 100 || voltage > referenceVoltage + 100){
 		test->log("raw", reading);
 		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
@@ -240,35 +250,34 @@ bool JigHWTest::BatteryCheck(){
 
 	return true;
 }
-*/
+
 
 bool JigHWTest::SPIFFSTest(){
+	auto ret = esp_vfs_spiffs_register(&spiffsConfig);
+	if(ret != ESP_OK){
+		test->log("spiffs", false);
+		return false;
+	}
 
-//	auto ret = esp_vfs_spiffs_register(&spiffsConfig);
-//	if(ret != ESP_OK){
-//		test->log("spiffs", false);
-//		return false;
-//	}
-//
-//	for(const auto& f : SPIFFSChecksums){
-//		auto file = fopen(f.name, "rb");
-//		if(file == nullptr){
-//			test->log("missing", f.name);
-//			return false;
-//		}
-//
-//		uint32_t sum = calcChecksum(file);
-//		fclose(file);
-//
-//		if(sum != f.sum){
-//			test->log("file", f.name);
-//			test->log("expected", (uint32_t) f.sum);
-//			test->log("got", (uint32_t) sum);
-//
-//			return false;
-//		}
-//	}
-//
+	for(const auto& f : SPIFFSChecksums){
+		auto file = fopen(f.name, "rb");
+		if(file == nullptr){
+			test->log("missing", f.name);
+			return false;
+		}
+
+		uint32_t sum = calcChecksum(file);
+		fclose(file);
+
+		if(sum != f.sum){
+			test->log("file", f.name);
+			test->log("expected", (uint32_t) f.sum);
+			test->log("got", (uint32_t) sum);
+
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -296,30 +305,6 @@ void JigHWTest::RobotTest(){
 	 *
 	 * Mr. bee ledica radi isto kao i control ledica kao na clockstaru (blink) u zasebnom threadu
 	 */
-
-	gpio_config_t io_conf = {
-			.pin_bit_mask = (uint64_t) 1 << CTRL_1,
-			.mode = GPIO_MODE_OUTPUT,
-			.pull_up_en = GPIO_PULLUP_DISABLE,
-			.pull_down_en = GPIO_PULLDOWN_DISABLE,
-			.intr_type = GPIO_INTR_DISABLE
-	};
-	gpio_config(&io_conf);
-	gpio_set_level(led_pin, 0);
-
-
-	gpio_config_t cfg = {};
-	for(const auto& pin : AddrPins){
-		cfg.pin_bit_mask |= 1ULL << pin;
-	}
-	for(const auto& pin : { DET_1, DET_2 }){
-		cfg.pin_bit_mask |= 1ULL << pin;
-	}
-	cfg.mode = GPIO_MODE_INPUT;
-	gpio_config(&cfg);
-
-	gpio_set_pull_mode((gpio_num_t) DET_1, GPIO_PULLUP_ONLY);
-	gpio_set_pull_mode((gpio_num_t) DET_2, GPIO_PULLDOWN_ONLY);
 
 
 	TaskHandle_t handle;
@@ -357,60 +342,35 @@ void JigHWTest::RobotTest(){
 	};
 	ledc_channel_config(&ledc_channel);
 
-	bool inserted = false;
-
 	for(;;){
-		if(checkInserted() /*&& checkAddr() == TargetRobotAddr */&& !inserted){
-			printf("insert\n");
-			inserted = true;
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-			vTaskDelay(BuzzDuration);
-
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-			vTaskDelay(BuzzDuration);
-
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-			vTaskDelay(BuzzDuration);
-
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-
-			//buzz twice
+		while(rob.getInserted() != Bob){
+			vTaskDelay(10);
 		}
 
-		if((!checkInserted()/* || checkAddr() != TargetRobotAddr*/) && inserted){
-			printf("deinsert\n");
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+		vTaskDelay(BuzzDuration);
 
-			inserted = false;
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-			vTaskDelay(BuzzDuration);
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+		vTaskDelay(BuzzDuration);
 
-			ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
-			ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-			//buzz once
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+		vTaskDelay(BuzzDuration);
+
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+
+		while(rob.getInserted() == Bob){
+			vTaskDelay(10);
 		}
-		vTaskDelay(1);
 
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, (1 << (10 - 1)) - 1);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+		vTaskDelay(BuzzDuration);
+
+		ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+		ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 	}
-}
-
-bool JigHWTest::checkInserted(){
-	bool det1 = gpio_get_level((gpio_num_t) DET_1);
-	bool det2 = gpio_get_level((gpio_num_t) DET_2);
-	return det1 == 0 && det2 == 1;
-}
-
-uint8_t JigHWTest::checkAddr(){
-	uint8_t addr = 0;
-	for(int i = 0; i < 6; i++){
-		auto state = gpio_get_level((gpio_num_t) AddrPins[i]);
-		if(state){
-			addr |= 1 << i;
-		}
-	}
-	return addr;
 }
