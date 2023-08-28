@@ -28,15 +28,17 @@ private:
 	std::shared_ptr<TextRC> scoreLabel;
 	std::shared_ptr<TextRC> statusLabel;
 
-	static constexpr PixelDim playerDim{ 6, 32 };
-	static constexpr PixelDim enemyDim{ 6, 32 };
-	static constexpr PixelDim ballDim{ 11, 11 };
+	static constexpr PixelDim PlayerDim{ 6, 32 };
+	static constexpr PixelDim EnemyDim{ 6, 32 };
+	static constexpr PixelDim BallDim{ 11, 11 };
+	static constexpr float MaxBounceAngleDeg = 65;
+	static constexpr float MaxBounceAngleRad = MaxBounceAngleDeg * M_PI / 180.0;
 	static constexpr uint8_t PaddleEdgeGap = 5; //gap from paddle to respective screen border
-	static constexpr uint8_t ScoreLimit = 5; //First to 5 points
+	static constexpr uint8_t ScoreLimit = 3; //First to 5 points
 	uint8_t playerScore = 0, enemyScore = 0;
 	float playerSpeed = 0, enemySpeed = 0;
 
-	static constexpr float BallBaseSpeed = 87.0;
+	static constexpr float BallBaseSpeed = 100.0;
 	static constexpr float PlayerBaseSpeed = 60.0;
 	static constexpr float EnemyBaseSpeed = 60.0;
 	glm::vec2 ballSpeed = {};

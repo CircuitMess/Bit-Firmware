@@ -10,6 +10,11 @@ LockedGame::LockedGame(LVScreen* parent, Robot rob) : LVModal(parent), rob(rob){
 		delete modal;
 	}, LV_EVENT_CLICKED, this);
 
+	lv_obj_add_event_cb(*this, [](lv_event_t* e){
+		auto modal = (LockedGame*) e->user_data;
+		delete modal;
+	}, LV_EVENT_CANCEL, this);
+
 	lv_group_add_obj(inputGroup, *this);
 	lv_group_focus_obj(*this);
 }

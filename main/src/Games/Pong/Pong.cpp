@@ -1,9 +1,12 @@
 #include "Pong.h"
 #include "GameEngine/Rendering/SpriteRC.h"
+#include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 
-Pong::Pong(Sprite& base) : Game(base, "/Games/Pong", {/* TODO - dodat bg */}){
+Pong::Pong(Sprite& base) : Game(base, "/Games/Pong", {
+		{ "/bg.raw", {}, true }
+}){
 
 }
 
@@ -21,12 +24,12 @@ void Pong::onLoop(float deltaTime){
 		case State::Game:
 			moveEnemy();
 			player->setPos(player->getPos() + glm::vec2{ 0, playerSpeed } * deltaTime);
-			if(player->getPos().y > 128 - playerDim.y || player->getPos().y < 0){
+			if(player->getPos().y > 128 - PlayerDim.y || player->getPos().y < 0){
 				auto pos = player->getPos();
-				pos.y = std::clamp(pos.y, 0.f, 128.f - playerDim.y);
+				pos.y = std::clamp(pos.y, 0.f, 128.f - PlayerDim.y);
 				player->setPos(pos);
 			}
-			enemy->setPos(enemy->getPos() + glm::vec2{ 0, enemySpeed } * deltaTime);
+			enemy->setPos(enemy->getPos().x, std::clamp(enemy->getPos().y + enemySpeed * deltaTime, 0.f, 128.f - EnemyDim.y));
 			ball->setPos(ball->getPos() + ballSpeed * deltaTime);
 			break;
 		case State::End:
@@ -65,42 +68,41 @@ void Pong::handleInput(const Input::Data& data){
 }
 
 void Pong::buildElements(){
-	auto spriteRC = std::make_unique<SpriteRC>(PixelDim{ 128, 128 });
-	spriteRC->getSprite()->clear(TFT_BLACK);
-	spriteRC->setLayer(-2);
+	auto staticRC = std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim{ 128, 128 });
+	staticRC->setLayer(-2);
 	bg = std::make_shared<GameObject>(
-			std::move(spriteRC),
+			std::move(staticRC),
 			nullptr
 	);
 	addObject(bg);
 
 
-	spriteRC = std::make_unique<SpriteRC>(playerDim);
+	auto spriteRC = std::make_unique<SpriteRC>(PlayerDim);
 	spriteRC->getSprite()->clear(TFT_RED);
 	player = std::make_shared<GameObject>(
 			std::move(spriteRC),
-			std::make_unique<RectCC>(playerDim)
+			std::make_unique<RectCC>(PlayerDim)
 	);
-	player->setPos(PaddleEdgeGap, (128 - playerDim.y) / 2);
+	player->setPos(PaddleEdgeGap, (128 - PlayerDim.y) / 2);
 	addObject(player);
 
-	spriteRC = std::make_unique<SpriteRC>(enemyDim);
+	spriteRC = std::make_unique<SpriteRC>(EnemyDim);
 	spriteRC->getSprite()->clear(TFT_BLUE);
 	enemy = std::make_shared<GameObject>(
 			std::move(spriteRC),
-			std::make_unique<RectCC>(enemyDim)
+			std::make_unique<RectCC>(EnemyDim)
 	);
-	enemy->setPos(128 - PaddleEdgeGap - enemyDim.x, (128 - enemyDim.y) / 2);
+	enemy->setPos(128 - PaddleEdgeGap - EnemyDim.x, (128 - EnemyDim.y) / 2);
 	addObject(enemy);
 
-	spriteRC = std::make_unique<SpriteRC>(ballDim);
+	spriteRC = std::make_unique<SpriteRC>(BallDim);
 	spriteRC->getSprite()->clear(TFT_TRANSPARENT);
 	spriteRC->getSprite()->fillCircle(5, 5, 5, TFT_WHITE);
 	ball = std::make_shared<GameObject>(
 			std::move(spriteRC),
 			std::make_unique<CircleCC>(6, PixelDim{ 5, 5 })
 	);
-	ball->setPos(128 - ballDim.x - enemyDim.x - 2, (128 - ballDim.y) / 2);
+	ball->setPos(128 - BallDim.x - EnemyDim.x - 6, (128 - BallDim.y) / 2);
 	addObject(ball);
 
 	auto labelRC = std::make_unique<TextRC>("0 : 0", TextStyle{ &lgfx::fonts::Font0, TFT_WHITE, 2, top_center });
@@ -124,22 +126,34 @@ void Pong::buildElements(){
 	addObject(status);
 
 
-	ballSpeed.x = BallBaseSpeed;
-	ballSpeed.y = (rand() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
+	ballSpeed.x = -BallBaseSpeed;
+	ballSpeed.y = 0;
 }
 
 void Pong::setCollision(){
 	collision.addPair(*player, *ball, [this](){
 		auto p = ball->getPos();
-		ball->setPos(player->getPos().x + playerDim.x, p.y);
-		ballSpeed.x *= -1;
+
+		auto relativeIntersectY = (player->getPos().y + (PlayerDim.y / 2)) - (ball->getPos().y + BallDim.y / 2);
+		auto normalizedRelativeIntersectionY = std::clamp((relativeIntersectY / (PlayerDim.y / 2)), -1.f, 1.f);
+		auto bounceAngle = normalizedRelativeIntersectionY * MaxBounceAngleRad;
+
+		ballSpeed.x = BallBaseSpeed * cos(bounceAngle);
+		ballSpeed.y = BallBaseSpeed * -sin(bounceAngle);
+
 		audio.play({ { 100, 100, 50 } });
 	});
 
 	collision.addPair(*enemy, *ball, [this](){
 		auto p = ball->getPos();
-		ball->setPos(enemy->getPos().x - ballDim.x, p.y);
-		ballSpeed.x *= -1;
+
+		auto relativeIntersectY = (player->getPos().y + (EnemyDim.y / 2)) - (ball->getPos().y + BallDim.y / 2);
+		auto normalizedRelativeIntersectionY = std::clamp((relativeIntersectY / (PlayerDim.y / 2)), -1.f, 1.f);
+		auto bounceAngle = normalizedRelativeIntersectionY * MaxBounceAngleRad;
+		ballSpeed.x = BallBaseSpeed * cos(bounceAngle);
+		ballSpeed.y = BallBaseSpeed * -sin(bounceAngle);
+
+		ballSpeed.x = -abs(ballSpeed.x);
 		audio.play({ { 150, 150, 50 } });
 	});
 
@@ -158,7 +172,9 @@ void Pong::setCollision(){
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			ball->setPos(player->getPos().x + playerDim.x + 2, rand() % (128 - ballDim.y + 1));
+			ball->setPos(player->getPos().x + PlayerDim.x + 2, rand() % (128 - BallDim.y + 1));
+			ballSpeed.x = BallBaseSpeed;
+			ballSpeed.y = 0;
 			changeState(State::PressToStart);
 		}
 	});
@@ -172,7 +188,9 @@ void Pong::setCollision(){
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			ball->setPos(enemy->getPos().x - ballDim.x - 2, rand() % (128 - ballDim.y + 1));
+			ball->setPos(enemy->getPos().x - BallDim.x - 2, rand() % (128 - BallDim.y + 1));
+			ballSpeed.x = -BallBaseSpeed;
+			ballSpeed.y = 0;
 			changeState(State::PressToStart);
 		}
 	});
@@ -180,10 +198,17 @@ void Pong::setCollision(){
 
 void Pong::moveEnemy(){
 	auto enemyY = enemy->getPos().y;
-	if((enemyY + (enemyDim.y / 2)) < (ball->getPos().y + (ballDim.y / 2))){ //if the ball is below the oponent
-		enemySpeed = EnemyBaseSpeed;
+	const float enemyCenter = enemyY + (EnemyDim.y / 2);
+	const float ballCenter = (ball->getPos().y + (BallDim.y / 2));
+
+	if(abs(enemyCenter - ballCenter) < 0.9){
+		enemySpeed = 0;
 	}else{
-		enemySpeed = -EnemyBaseSpeed;
+		if(enemyCenter < ballCenter){ //if the ball is below the oponent
+			enemySpeed = EnemyBaseSpeed;
+		}else{
+			enemySpeed = -EnemyBaseSpeed;
+		}
 	}
 }
 

@@ -30,7 +30,7 @@ public:
 	 * Creates a set of pads on the next jump level
 	 * @param surface Percentage of screen area that the pads on this jump level must have.
 	 */
-	void createPads(float surface, bool powerupsEnabled = true);
+	void createPads(float surface, bool powerupsEnabled, uint8_t powerupsRate);
 
 	void onPowerupSpawn(std::function<void(Powerup powerup)> cb);
 
@@ -46,7 +46,7 @@ private:
 	static constexpr uint8_t PadTilesPerLevel = (128 - WallTileDim * 2) / PadTileDim;
 	static constexpr int8_t PadsRenderLayer = -1;
 	static constexpr int8_t BgRenderLayer = -2;
-	static constexpr uint8_t PowerupSpawnRate = 30; //% chance that a pad has a powerup on it
+	static constexpr uint8_t TrampolineSpawnRate = 30; //% chance that a pad has a powerup on it
 
 	std::vector<File> bgFiles;
 	std::vector<File> wallLFiles;
@@ -59,7 +59,7 @@ private:
 	std::function<void(Powerup powerup)> powerupCB;
 
 	uint8_t getRandomWallIndex(); //takes into account distribution of random tiles
-	Powerup spawnRandomPowerup(); //returns empty object or powerup according to spawn rate
+	Powerup spawnRandomPowerup(uint8_t rate, bool powerupsEnabled); //returns empty object or powerup according to spawn rate
 };
 
 }

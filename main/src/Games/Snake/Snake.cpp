@@ -262,8 +262,8 @@ void Snake::foodEaten(bool initial){
 	std::static_pointer_cast<StaticRC>(food->getRenderComponent())->setFile(getFile(Foods[foodIndex].path), Foods[foodIndex].dim);
 	std::static_pointer_cast<RectCC>(food->getCollisionComponent())->setOffset((Foods[foodIndex].dim - HitboxDim) / (short) 2);
 
-	//generate random pos for food but not on already existing snake positions
-	auto randId = rand() % (GridDim.x * GridDim.y - snake.size());
+	//generate random pos for food but not on already existing snake positions, also not on edge of grid
+	auto randId = rand() % ((GridDim.x - 2) * (GridDim.y - 2) - snake.size()); //generates coords on 24x24 subgrid
 	std::set<uint32_t> snakeSpaces;
 	for(const auto& segment : snake){
 		auto pos = segment->getPos();
@@ -271,15 +271,18 @@ void Snake::foodEaten(bool initial){
 		pos /= TileDim.x;
 		snakeSpaces.insert(pos.x + pos.y * GridDim.x);
 	}
-	for(const auto& num : snakeSpaces){
-		if(randId < num){
+	for(const auto& snakeSpace : snakeSpaces){
+		const auto shiftedX = (randId % (GridDim.x - 2)) + 1;
+		const auto shiftedY = (randId / (GridDim.y - 2)) + 1;
+		const auto shiftedId = shiftedX * shiftedY; //convert subgrid coords to global grid coords (to compare with snake body)
+		if(shiftedId < snakeSpace){
 			break;
 		}
 		randId++;
 	}
 
 
-	auto pos = PixelDim{ randId % GridDim.x, randId / GridDim.x };
+	auto pos = PixelDim{ (randId % (GridDim.x - 2)) + 1, (randId / (GridDim.y - 2)) + 1 };
 	pos.x *= TileDim.x;
 	pos.y *= TileDim.y;
 	pos += PaddingGap;

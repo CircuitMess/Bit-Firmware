@@ -15,6 +15,8 @@ public:
 		Robot robot;
 	};
 
+	Robot getInserted();
+
 private:
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 

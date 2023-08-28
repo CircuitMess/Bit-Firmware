@@ -122,6 +122,7 @@ void init(){
 	auto games = new GameManager();
 	Services.set(Service::Games, games);
 	auto rob = new Robots();
+	Services.set(Service::Robots, rob);
 
 	auto lvgl = new LVGL(*disp);
 	auto lvInput = new InputLVGL();

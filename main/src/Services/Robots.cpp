@@ -1,5 +1,8 @@
 #include "Robots.h"
 #include "Util/Events.h"
+#include "ChirpSystem.h"
+#include "Util/Services.h"
+#include "Util/Notes.h"
 #include <driver/gpio.h>
 
 Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
@@ -22,6 +25,11 @@ Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
 	start();
 }
 
+Robot Robots::getInserted(){
+	if(!inserted) return Robot::COUNT;
+	return (Robot) current;
+}
+
 void Robots::sleepyLoop(){
 	bool nowInserted = checkInserted();
 
@@ -35,6 +43,15 @@ void Robots::sleepyLoop(){
 		if(addr >= Robot::COUNT){
 			// Unknown robot
 			addr = Robot::COUNT;
+		}else{
+			auto audio = (ChirpSystem*) Services.get(Service::Audio);
+			if(audio){
+				audio->play({
+						Chirp{ NOTE_C3, NOTE_C4, 200 },
+						Chirp{ 0, 0, 100 },
+						Chirp{ NOTE_C4, NOTE_C4, 200 }
+				});
+			}
 		}
 
 		current = addr;

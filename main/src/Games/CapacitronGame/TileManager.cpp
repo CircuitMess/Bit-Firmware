@@ -38,7 +38,7 @@ void CapacitronGame::TileManager::createBg(){
 	}
 }
 
-void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled){
+void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled, uint8_t powerupsRate){
 	const uint8_t surfaceTiles = (uint8_t) (surface * (float) PadTilesPerLevel);
 	uint8_t tilesRequired = surfaceTiles;
 	std::unordered_map<uint8_t, uint8_t> padsPerSize; //key is size of pads, value is number of pads of that size
@@ -80,7 +80,7 @@ void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled
 		yPos -= CapacitronGame::JumpY;
 	}
 
-
+	std::set<uint8_t> usedTiles;
 	std::set<GameObjPtr> pads;
 	while(tilesPlaced < PadTilesPerLevel){
 		//choose between empty spaces and pads
@@ -112,15 +112,23 @@ void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled
 
 			pads.insert(std::move(padObj));
 
+			for(int i = 0; i < selectedPadSize; ++i){
+				usedTiles.insert(i + tilesPlaced);
+			}
 			tilesPlaced += selectedPadSize;
 			numberOfPads--;
 			padsPerSize[selectedPadSize]--;
 		}
 	}
 	//spawn powerup with random chance, position on random tile
-	Powerup powerup = spawnRandomPowerup();
-	if(powerup.obj && powerupsEnabled){
-		int8_t powerupTile = random() % PadTilesPerLevel;
+	Powerup powerup = spawnRandomPowerup(powerupsRate, powerupsEnabled);
+	if(powerup.obj){
+		int8_t powerupTile = rand() % PadTilesPerLevel;
+		if(powerup.type == Powerup::Type::Trampoline){
+			auto it = std::begin(usedTiles);
+			std::advance(it, rand() % usedTiles.size());
+			powerupTile = *it;
+		}
 		powerupCB(powerup);
 		powerupObjs.push_back(powerup.obj);
 		const float x = WallTileDim + powerupTile * PadTileDim - (powerup.size.x - PadTileDim) / 2;
@@ -195,12 +203,11 @@ uint8_t CapacitronGame::TileManager::getRandomWallIndex(){
 	return index;
 }
 
-CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(){
+CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(uint8_t rate, bool powerupsEnabled){
 	Powerup powerup;
-	if((rand() % 100) < PowerupSpawnRate){
-		powerup.type = Powerup::Type(rand() % 3);
-
-		std::shared_ptr<AnimRC> anim;
+	std::shared_ptr<AnimRC> anim;
+	if((rand() % 100) < rate && powerupsEnabled){
+		powerup.type = Powerup::Type(rand() % 2);
 
 		switch(powerup.type){
 			case Powerup::Type::Potion:
@@ -223,18 +230,20 @@ CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(){
 				anim->start();
 				powerup.size = { 11, 9 };
 				break;
-			case Powerup::Type::Trampoline:
-				powerup.obj = std::make_shared<GameObject>(
-						std::make_unique<AnimRC>(powerupFiles[2]),
-						std::make_unique<RectCC>(glm::vec2{ 20, 2 }, glm::vec2{ 0, 18 })
-				);
-				anim = std::static_pointer_cast<AnimRC>(powerup.obj->getRenderComponent());
-				anim->setLoopMode(GIF::Single);
-				anim->start();
-				anim->stop();
-				powerup.size = { 20, 20 };
+			default:
 				break;
 		}
+	}else if((rand() % 100) < TrampolineSpawnRate){
+		powerup.type = Powerup::Type::Trampoline;
+		powerup.obj = std::make_shared<GameObject>(
+				std::make_unique<AnimRC>(powerupFiles[2]),
+				std::make_unique<RectCC>(glm::vec2{ 20, 2 }, glm::vec2{ 0, 18 })
+		);
+		anim = std::static_pointer_cast<AnimRC>(powerup.obj->getRenderComponent());
+		anim->setLoopMode(GIF::Single);
+		anim->start();
+		anim->stop();
+		powerup.size = { 20, 20 };
 	}
 	return powerup;
 }
