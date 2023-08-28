@@ -9,6 +9,7 @@
 #include "Services/Robots.h"
 #include "Services/GameManager.h"
 #include "Devices/Input.h"
+#include "BatteryElement.h"
 
 class MainMenu : public LVScreen {
 public:
@@ -18,6 +19,7 @@ public:
 private:
 	void buildUI();
 
+	BatteryElement* batt;
 	std::vector<MenuItem*> items;
 	std::unordered_map<Robot, MenuItem*> robGames;
 	lv_obj_t* itemCont;
@@ -27,6 +29,8 @@ private:
 	void onStarting() override;
 	void onStart() override;
 	void onStop() override;
+	static void onScrollEnd(lv_event_t*);
+	bool loopBlocked = true;
 
 	static std::string imgUnl(const char* game);
 	static std::string imgLoc(const char* game);

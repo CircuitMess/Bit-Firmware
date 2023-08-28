@@ -12,7 +12,7 @@
 Battery::Battery() : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1), adc((gpio_num_t) PIN_BATT, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3){
 
-	sample(true); // this will initiate shutdown if battery is critical
+	sample(true);
 }
 
 void Battery::begin(){
@@ -50,15 +50,8 @@ void Battery::sample(bool fresh){
 	if(getLevel() == Critical){
 		stop(0);
 		shutdown = true;
-		off();
 		return;
 	}
-}
-
-void Battery::off(){
-	// TODO: show low battery notification, then shut off
-	extern void shutdown();
-	shutdown();
 }
 
 void Battery::sleepyLoop(){

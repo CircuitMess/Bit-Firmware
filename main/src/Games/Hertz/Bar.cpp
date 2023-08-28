@@ -75,7 +75,6 @@ rgb hsv2rgb(hsv in){
 }
 
 void Bar::resetGoal(){
-	srand((unsigned) time(NULL));
 	xGoal = rand() % (sprite->width() - 2);
 	draw();
 }

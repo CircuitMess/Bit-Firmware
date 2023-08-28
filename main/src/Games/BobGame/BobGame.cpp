@@ -18,8 +18,6 @@ BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, "/Games/Bob", {
 }){}
 
 void BobGame::BobGame::onLoad(){
-	srand(time(NULL));
-
 	bg = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim{ 128, 128 }),
 			nullptr

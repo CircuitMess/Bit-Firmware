@@ -35,8 +35,15 @@ void PauseScreen::onStop(){
 }
 
 void PauseScreen::loop(){
-	Event e;
+	batt->loop();
+
+	Event e{};
 	if(evts.get(e, 0)){
+		if(e.facility != Facility::Input){
+			free(e.data);
+			return;
+		}
+
 		auto data = (Input::Data*) e.data;
 		if((data->btn == Input::Menu || data->btn == Input::B) && data->action == Input::Data::Release){
 			auto ui = (UIThread*) Services.get(Service::UI);
@@ -58,23 +65,39 @@ void PauseScreen::showControls(){
 	lgfx.drawBmpFile(instr.c_str());
 
 	evts.reset();
+	Events::listen(Facility::Battery, &evts);
 	for(;;){
-		Event evt;
+		Event evt{};
 		if(!evts.get(evt, portMAX_DELAY)) continue;
-		auto data = (Input::Data*) evt.data;
-		if(data->action == Input::Data::Release){
-			free(evt.data);
-			break;
+
+		if(evt.facility == Facility::Input){
+			auto data = (Input::Data*) evt.data;
+			if(data->action == Input::Data::Release){
+				free(evt.data);
+				break;
+			}
+		}else if(evt.facility == Facility::Battery){
+			auto data = (Battery::Event*) evt.data;
+			if(data->action == Battery::Event::LevelChange && data->level == Battery::Critical){
+				free(evt.data);
+				return;
+			}
 		}
+
 		free(evt.data);
 	}
+	Events::unlisten(&evts);
+
+	evts.reset();
+	Events::listen(Facility::Input, &evts);
+
 	lv_obj_invalidate(*this);
 }
 
 void PauseScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);
 	auto lgfx = disp->getLGFX();
-	lgfx.drawBmpFile("/spiffs/bg.bmp");
+	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
 
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
@@ -88,11 +111,16 @@ void PauseScreen::buildUI(){
 
 	auto top = lv_obj_create(*this);
 	lv_obj_set_size(top, 128, 32);
+	lv_obj_set_flex_flow(top, LV_FLEX_FLOW_ROW);
+	lv_obj_set_flex_align(top, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 	lv_obj_set_style_pad_ver(top, 4, 0);
+	lv_obj_set_style_pad_right(top, 2, 0);
+	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
 	lv_img_set_src(img, "S:/Paused.bin");
-	lv_obj_center(img);
+
+	batt = new BatteryElement(top);
 
 	auto rest = lv_obj_create(*this);
 	lv_obj_set_size(rest, 128, 96);

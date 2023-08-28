@@ -8,6 +8,7 @@
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Services/GameManager.h"
+#include "BatteryElement.h"
 
 class PauseScreen : public LVScreen {
 public:
@@ -18,6 +19,7 @@ private:
 	Games currentGame;
 
 	LVGIF* bg;
+	BatteryElement* batt;
 
 	LVStyle itemStyle;
 	LVStyle focusStyle;

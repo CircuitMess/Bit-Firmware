@@ -118,7 +118,7 @@ void CapacitronGame::Player::updateMovement(float delta){
 
 	obj->setPos(xPos, yPos);
 
-	legsObj->setPos(xPos, yPos + CapacitronGame::PlayerSize.y);
+	legsObj->setPos(xPos, yPos + CapacitronGame::PlayerSize.y - 3);
 }
 
 void CapacitronGame::Player::updateState(float delta){

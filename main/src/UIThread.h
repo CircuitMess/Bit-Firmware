@@ -22,9 +22,12 @@ private:
 	LVGL& lvgl;
 	GameRunner& gamer;
 
+	EventQueue evts;
+
 	enum class Src { LVGL, Game, None } active = Src::None;
 
 	void loop() override;
+	void checkShutdown();
 
 };
 
