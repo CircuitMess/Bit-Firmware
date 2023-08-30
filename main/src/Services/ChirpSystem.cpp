@@ -1,6 +1,8 @@
 #include <esp_log.h>
 #include "ChirpSystem.h"
 #include "Util/stdafx.h"
+#include "Util/Services.h"
+#include "Settings/Settings.h"
 
 static const char* TAG = "ChirpSystem";
 
@@ -25,7 +27,8 @@ void ChirpSystem::play(std::initializer_list<Chirp> sound){
 }
 
 void ChirpSystem::play(const Sound& sound){
-	if(mute) return;
+	auto setts = ((Settings*)Services.get(Service::Settings))->get();
+	if(!setts.sound) return;
 
 	if(!pwmPersistence){
 		attach();
@@ -130,17 +133,6 @@ void ChirpSystem::stop(){
 	pwm.stop();
 	detach();
 	playing = false;
-}
-
-void ChirpSystem::setMute(bool mute){
-	this->mute = mute;
-	if(mute){
-		stop();
-	}
-}
-
-bool ChirpSystem::isMuted() const{
-	return mute;
 }
 
 void ChirpSystem::setPersistentAttach(bool persistent){

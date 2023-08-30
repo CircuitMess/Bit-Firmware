@@ -47,14 +47,10 @@ public:
 	 */
 	void setPersistentAttach(bool persistent);
 
-	void setMute(bool mute);
-	bool isMuted() const;
-
 	bool isPlaying();
 
 private:
 	PWM& pwm;
-	bool mute = false;
 
 	void loop() override;
 	void processClearTone(uint16_t numToClear);

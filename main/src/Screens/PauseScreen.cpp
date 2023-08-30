@@ -142,9 +142,13 @@ void PauseScreen::buildUI(){
 	auto settings = (Settings*) Services.get(Service::Settings);
 	auto initSet = settings->get();
 
-	audioSwitch = new BoolElement(rest, "Sound", [](bool value){
+	audioSwitch = new BoolElement(rest, "Sound", [this](bool value){
+		auto settings = (Settings*) Services.get(Service::Settings);
+		auto set = settings->get();
+		set.sound = audioSwitch->getValue();
+		settings->set(set);
+
 		auto chirp = (ChirpSystem*) Services.get(Service::Audio);
-		chirp->setMute(!value);
 		chirp->play({
 				Chirp{ .startFreq = 400, .endFreq = 600, .duration = 50 },
 				Chirp{ .startFreq = 0, .endFreq = 0, .duration = 100 },

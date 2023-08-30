@@ -79,9 +79,13 @@ void SettingsScreen::buildUI(){
 
 	auto initSet = settings.get();
 
-	audioSwitch = new BoolElement(rest, "Sound", [](bool value){
+	audioSwitch = new BoolElement(rest, "Sound", [this](bool value){
 		auto chirp = (ChirpSystem*) Services.get(Service::Audio);
-		chirp->setMute(!value);
+
+		auto set = settings.get();
+		set.sound = audioSwitch->getValue();
+		settings.set(set);
+
 		chirp->play({
 							Chirp{ .startFreq = 400, .endFreq = 600, .duration = 50 },
 							Chirp{ .startFreq = 0, .endFreq = 0, .duration = 100 },
