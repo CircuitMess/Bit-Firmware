@@ -28,7 +28,7 @@ static constexpr Entry MenuEntries[] = {
 		// { .icon = "Arte", .rob = Artemis, .game = Games::Artemis },
 		{ .icon = "Bee", .rob = MrBee, .game = Games::MrBee },
 		{ .icon = "Bob", .rob = Bob, .game = Games::Bob },
-		// { .icon = "Butt", .rob = Buttons, .game = Games::Buttons },
+		 { .icon = "Butt", .rob = Buttons, .game = Games::Buttons },
 		{ .icon = "Capa", .rob = Capacitron, .game = Games::Capacitron },
 		{ .icon = "Hertz", .rob = Hertz, .game = Games::Hertz },
 		{ .icon = "Marv", .rob = Marv, .game = Games::Marv },
@@ -138,7 +138,7 @@ void MainMenu::handleInsert(const GameManager::Event& evt){
 	auto rob = evt.rob;
 	auto isNew = evt.isNew;
 
-	std::unordered_set<Robot> comingSoon = { Robot::Artemis, Robot::Buttons, Robot::Robby };
+	std::unordered_set<Robot> comingSoon = { Robot::Artemis, Robot::Robby };
 	if(comingSoon.contains(rob)){
 		new UpdateRobot(this);
 		return;
