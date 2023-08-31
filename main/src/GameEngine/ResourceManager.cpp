@@ -3,10 +3,11 @@
 #include "FS/SPIFFS.h"
 #include "Util/stdafx.h"
 #include <esp_log.h>
+#include <esp_attr.h>
 
 ResourceManager::ResourceManager(const char* root) : root(root){}
 
-void ResourceManager::load(const std::vector<ResDescriptor>& descriptors){
+void IRAM_ATTR ResourceManager::load(const std::vector<ResDescriptor>& descriptors){
 //	uint8_t copyBuffer[1024];
 
 	for(auto descriptor : descriptors){

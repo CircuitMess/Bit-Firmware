@@ -175,7 +175,9 @@ void Pong::setCollision(){
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			ball->setPos(player->getPos().x + PlayerDim.x + 2, rand() % (128 - BallDim.y + 1));
+			int16_t posY = rand() % 100;
+			posY += 14;
+			ball->setPos(player->getPos().x + PlayerDim.x + 2, posY);
 			ballSpeed.x = BallBaseSpeed;
 			ballSpeed.y = 0;
 			changeState(State::PressToStart);
@@ -195,7 +197,9 @@ void Pong::setCollision(){
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			ball->setPos(enemy->getPos().x - BallDim.x - 2, rand() % (128 - BallDim.y + 1));
+			int16_t posY = rand() % 100;
+			posY += 14;
+			ball->setPos(enemy->getPos().x - BallDim.x - 2, posY);
 			ballSpeed.x = -BallBaseSpeed;
 			ballSpeed.y = 0;
 			changeState(State::PressToStart);
