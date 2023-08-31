@@ -21,12 +21,13 @@ Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
 		{ circlesIconsPressed[2], {}, true },
 		{ notesIcon, {}, true },
 		{ "/bg.raw", {}, true },
-		{ danceGIFs[0], {}, false },
-		{ danceGIFs[1], {}, false },
-		{ danceGIFs[2], {}, false },
+		{ danceGIFs[0].path, {}, false },
+		{ danceGIFs[1].path, {}, false },
+		{ danceGIFs[2].path, {}, false },
 		{ "/lose.gif", {}, false },
 		{ "/idle.gif", {}, false },
 		{ "/win.gif", {}, false },
+		{ "/fail.gif", {}, false },
 		RES_HEART }),
 							 bottomWall(nullptr, std::make_unique<RectCC>(glm::vec2{ 128, 20 })),
 							 scoreBar(std::make_shared<GameObject>(std::make_unique<SpriteRC>(PixelDim{ 118, 5 }), nullptr)){
@@ -42,11 +43,14 @@ Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
 }
 
 void Dance::onStart(){
-	duckRC->start();
+	playerRC->start();
 }
 
 void Dance::onStop(){
-	duckRC->stop();
+	playerRC->stop();
+	handleInput({ Input::Button::Left, Input::Data::Release });
+	handleInput({ Input::Button::Up, Input::Data::Release });
+	handleInput({ Input::Button::Right, Input::Data::Release });
 }
 
 void Dance::onLoad(){
@@ -72,8 +76,8 @@ void Dance::onLoad(){
 	}
 
 	player = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/idle.gif")), nullptr);
-	player->setPos({ 40, 44 });
-	duckRC = std::static_pointer_cast<AnimRC>(player->getRenderComponent());
+	player->setPos(PlayerPos + idleGIF.offset);
+	playerRC = std::static_pointer_cast<AnimRC>(player->getRenderComponent());
 	addObject(player);
 }
 
@@ -199,11 +203,13 @@ void Dance::noteHit(uint8_t track){
 		}
 
 		uint8_t i = rand() % (sizeof(danceGIFs) / sizeof(danceGIFs[0]));
-		duckRC->setAnim(getFile(danceGIFs[i]));
+		playerRC->setAnim(getFile(danceGIFs[i].path));
+		player->setPos(PlayerPos + danceGIFs[i].offset);
 
-		duckRC->setLoopMode(GIF::LoopMode::Infinite);
-		duckRC->setLoopDoneCallback([&](uint32_t){
-			duckRC->setAnim((getFile("/idle.gif")));
+		playerRC->setLoopMode(GIF::LoopMode::Infinite);
+		playerRC->setLoopDoneCallback([this](uint32_t){
+			playerRC->setAnim((getFile("/idle.gif")));
+			player->setPos(PlayerPos + idleGIF.offset);
 		});
 
 	}else{
@@ -221,6 +227,17 @@ void Dance::noteHit(uint8_t track){
 		if(life <= 0){
 			gameDone(false);
 			return;
+		}else{
+			playerRC->setAnim(getFile("/fail.gif"));
+			player->setPos(PlayerPos + failGIF.offset);
+
+
+			playerRC->setLoopMode(GIF::LoopMode::Infinite);
+			playerRC->setLoopDoneCallback([this](uint32_t){
+				playerRC->setAnim((getFile("/idle.gif")));
+				player->setPos(PlayerPos + idleGIF.offset);
+			});
+
 		}
 	}
 }
@@ -236,23 +253,26 @@ void Dance::gameDone(bool success){
 		Sound s = { { 600, 400,  200 },
 					{ 400, 1000, 200 } };
 		audio.play(s);
-		duckRC->setAnim(getFile("/win.gif"));
+		playerRC->setAnim(getFile("/win.gif"));
+		player->setPos(PlayerPos + winGIF.offset);
+
 	}else{
 		audio.play({ { 400, 300, 200 },
 					 { 0,   0,   50 },
 					 { 300, 200, 200 },
 					 { 0,   0,   50 },
 					 { 200, 50,  400 } });
-		duckRC->setAnim(getFile("/fail.gif"));
+		playerRC->setAnim(getFile("/lose.gif"));
+		player->setPos(PlayerPos + loseGIF.offset);
 	}
 
 	state = DoneAnim;
 
-	duckRC->setLoopMode(GIF::LoopMode::Single);
-	duckRC->setLoopDoneCallback([this](uint32_t){
+	playerRC->setLoopMode(GIF::LoopMode::Single);
+	playerRC->setLoopDoneCallback([this](uint32_t){
 		state = DonePause;
 		gameDoneTimer = 0;
-		duckRC->stop();
+		playerRC->stop();
 	});
 }
 

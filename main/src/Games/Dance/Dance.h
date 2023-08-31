@@ -30,7 +30,7 @@ private:
 	GameObjPtr bars[3];
 	GameObjPtr circles[3];
 	GameObjPtr player;
-	std::shared_ptr<AnimRC> duckRC;
+	std::shared_ptr<AnimRC> playerRC;
 
 	void gameDone(bool success);
 	constexpr static float gameDonePause = 1.5f;
@@ -63,7 +63,18 @@ private:
 
 	std::deque<GameObjPtr> notes[3];
 	constexpr static const char* notesIcon = "/tocka.raw";
-	constexpr static const char* danceGIFs[3] = { "/dance1.gif", "/dance2.gif", "/dance3.gif" };
+	struct PlayerAnim {
+		const char* path;
+		PixelDim offset;
+	};
+	constexpr static PlayerAnim danceGIFs[3] = { { "/dance1.gif", { 1,  28 } },
+												 { "/dance2.gif", { 5,  29 } },
+												 { "/dance3.gif", { 11, 31 } } };
+	constexpr static PlayerAnim idleGIF = { "/idle.gif", { 14, 32 } };
+	constexpr static PlayerAnim loseGIF = { "/lose.gif", { 0, 11 } };
+	constexpr static PlayerAnim failGIF = { "/fail.gif", { 3, 32 } };
+	constexpr static PlayerAnim winGIF = { "/win.gif", { 12, 0 } };
+	constexpr static PixelDim PlayerPos = { 40, 44 };
 
 	constexpr static float notePerfectY = circlesY + 4;
 	constexpr static float noteTolerance = 8.0f;
