@@ -15,13 +15,11 @@ PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 }
 
 void PauseScreen::onStart(){
-	bg->start();
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
 
 void PauseScreen::onStop(){
-	bg->stop();
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
@@ -108,8 +106,9 @@ void PauseScreen::exit(){
 void PauseScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
-	bg = new LVGIF(*this, "S:/bg");
-	lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+	auto bg = lv_img_create(*this);
+	lv_img_set_src(bg, "S:/bg.bin");
+	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);
 	lv_obj_set_size(top, 128, 32);

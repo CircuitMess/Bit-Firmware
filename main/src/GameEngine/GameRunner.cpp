@@ -11,6 +11,8 @@
 #include "Games/CapacitronGame/CapacitronGame.h"
 #include "Games/Invaders/Invaders.h"
 #include "Games/Dance/Dance.h"
+#include "Services/MelodyPlayer.h"
+#include "Util/Notes.h"
 
 static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
 		{ Games::MrBee,      [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
@@ -24,6 +26,8 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Resistron,  [](Sprite& canvas){ return std::make_unique<Invaders::Invaders>(canvas); } },
 		{ Games::Buttons,  [](Sprite& canvas){ return std::make_unique<Dance>(canvas); } }
 };
+
+extern const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds;
 
 GameRunner::GameRunner(Display& display) : display(display){
 
@@ -57,10 +61,19 @@ void GameRunner::startGame(Games game){
 	EventQueue evts(12);
 	Events::listen(Facility::Battery, &evts);
 
-	inst->load();
-	while(!inst->isLoaded() || (millis() - startTime) < 2000){
-		delayMillis(1);
+	MelodyPlayer* melody = nullptr;
+	if(IntroSounds.contains(game)){
+		melody = IntroSounds.at(game)();
+		if(melody){
+			melody->play();
+		}
 	}
+
+	inst->load();
+	while(!inst->isLoaded() || (melody && melody->isPlaying()) || (millis() - startTime) < 2000){
+		delayMillis(100);
+	}
+	delete melody;
 	lgfx.drawBmpFile(instr.c_str());
 
 	Events::listen(Facility::Input, &evts);
@@ -129,3 +142,127 @@ void GameRunner::loop(){
 		delayMillis(FrameTime - loopTime);
 	}
 }
+
+const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds = {
+		{ Games::Blocks, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_B2, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_F2, 2 },
+					Tone { NOTE_G2, 2 },
+					Tone { NOTE_A2, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_G2, 2 },
+					Tone { NOTE_FS2, 2 },
+					Tone { NOTE_E2, 2 }
+			});
+		} },
+		{ Games::Pong, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C3, 2 },
+					Tone { NOTE_E3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_D3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E3, 1 }
+			});
+		} },
+		{ Games::Snake, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS3, 1 },
+					Tone { NOTE_D3, 1 },
+					Tone { NOTE_G3, 4 },
+					Tone { 0, 1 },
+					Tone { NOTE_F3, 1 },
+					Tone { NOTE_A3, 1 },
+					Tone { NOTE_G3, 1 },
+					Tone { NOTE_AS3, 4 },
+					Tone { 0, 1 },
+					Tone { NOTE_GS3, 1 },
+					Tone { NOTE_FS3, 1 },
+					Tone { NOTE_D3, 1 },
+					Tone { NOTE_G3, 4 },
+			});
+		} },
+		{ Games::MrBee, [](){
+				return new MelodyPlayer(130, {
+						Tone { NOTE_C4, 1 },
+						Tone { NOTE_F3, 1 },
+						Tone { NOTE_C3, 1 },
+						Tone { NOTE_F3, 1 },
+						Tone { NOTE_C4, 1 },
+						Tone { NOTE_F3, 1 },
+						Tone { NOTE_C3, 1 },
+						Tone { NOTE_E3, 1 },
+						Tone { NOTE_C4, 1 },
+				});
+		} },
+		{ Games::Bob, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C2, 2 },
+					Tone { NOTE_F2, 2 },
+					Tone { 0, 4 },
+					Tone { NOTE_D2, 2 },
+					Tone { NOTE_A2, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_C3, 2 },
+					Tone { NOTE_A2, 2 },
+					Tone { NOTE_F2, 2 },
+			});
+		} },
+		{ Games::Capacitron, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_E2, 6 },
+					Tone { 0, 1 },
+					Tone { NOTE_B2, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G2, 6 },
+					Tone { 0, 1 },
+					Tone { NOTE_A2, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E2, 6 },
+			});
+		} },
+		{ Games::Hertz, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C4, 0.5 },
+					Tone { NOTE_F4, 1.5 },
+					Tone { NOTE_FS3, 1 },
+					Tone { NOTE_G3, 1 },
+					Tone { NOTE_E3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E4, 1 },
+					Tone { NOTE_B3, 1 },
+					Tone { 0, 2 },
+					Tone { NOTE_F4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_C5, 1 },
+			});
+		} },
+		{ Games::Marv, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS2, 8 },
+					Tone { 0, 2 },
+					Tone { NOTE_E2, 8 },
+					Tone { 0, 2 },
+					Tone { NOTE_FS2, 8 },
+			});
+		} },
+		{ Games::Resistron, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS2, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_GS2, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_FS2, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_E2, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_FS2, 2 },
+			});
+		} },
+};

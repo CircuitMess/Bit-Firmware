@@ -18,7 +18,6 @@ private:
 	EventQueue evts;
 	Games currentGame;
 
-	LVGIF* bg;
 	BatteryElement* batt;
 
 	LVStyle itemStyle;

@@ -59,12 +59,6 @@ void MainMenu::launch(Games game){
 		return;
 	}
 
-	audio->play({ { 100, 100, 80 },
-				  { 0,   0,   80 },
-				  { 300, 300, 80 },
-				  { 0,   0,   80 },
-				  { 500, 500, 80 } });
-
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startGame(game);
 }

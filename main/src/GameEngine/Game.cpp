@@ -15,7 +15,7 @@ static bool exited = false; // yolo
 Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) :
 		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), base(base),
 		resMan(root), resources(std::move(resources)),
-		loadTask([this](){ loadFunc(); }, "loadTask", 4096, 5, 1),
+		loadTask([this](){ loadFunc(); }, "loadTask", 4096, 12, 0),
 		render(this, base){
 
 	exited = false;
