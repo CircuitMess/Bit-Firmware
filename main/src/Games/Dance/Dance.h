@@ -5,6 +5,7 @@
 #include "GameEngine/Rendering/AnimRC.h"
 #include "Games/Common/Hearts.h"
 #include <deque>
+#include "RoboCtrl/Buttons.h"
 
 class Dance : public Game {
 public:
@@ -89,6 +90,8 @@ private:
 	void adjustScoreBar();
 
 	void hideBars(float deltaTime);
+
+	std::shared_ptr<RoboCtrl::Buttons> robot;
 };
 
 

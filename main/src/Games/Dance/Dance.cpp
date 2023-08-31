@@ -40,6 +40,9 @@ Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
 	scoreBarSprite->clear(TFT_BLACK);
 	scoreBarSprite->drawRect(0, 0, scoreBarSprite->width(), scoreBarSprite->height(), TFT_WHITE);
 	addObject(scoreBar);
+
+	robot = std::make_shared<RoboCtrl::Buttons>();
+	setRobot(robot);
 }
 
 void Dance::onStart(){
@@ -188,6 +191,7 @@ void Dance::noteHit(uint8_t track){
 
 	if(diff <= noteTolerance){
 		audio.play({ { 400, 600, 50 } });
+		robot->playGood();
 //		RGB.blink(Pixel::Green);
 
 		score += notePoints + (int) (diff * perfectBonus / noteTolerance);
@@ -213,6 +217,7 @@ void Dance::noteHit(uint8_t track){
 		});
 
 	}else{
+		robot->playBad();
 		audio.play({ { 300, 300, 50 },
 					 { 0,   0,   50 },
 					 { 300, 300, 50 } });
@@ -250,6 +255,7 @@ void Dance::adjustTempo(){
 
 void Dance::gameDone(bool success){
 	if(success){
+		robot->playWin();
 		Sound s = { { 600, 400,  200 },
 					{ 400, 1000, 200 } };
 		audio.play(s);
@@ -257,6 +263,7 @@ void Dance::gameDone(bool success){
 		player->setPos(PlayerPos + winGIF.offset);
 
 	}else{
+		robot->playLose();
 		audio.play({ { 400, 300, 200 },
 					 { 0,   0,   50 },
 					 { 300, 200, 200 },
