@@ -6,6 +6,7 @@
 #include "GameEngine/Rendering/AnimRC.h"
 #include "Games/Common/Hearts.h"
 #include "Games/Common/Score.h"
+#include "RoboCtrl/Robby.h"
 
 namespace Asteroids {
 class Asteroids : public Game {
@@ -126,6 +127,16 @@ private:
 
 	bool leftHold = false;
 	bool rightHold = false;
+
+	std::shared_ptr<RoboCtrl::Robby> robot;
+	static constexpr uint32_t MaxRobotPeriod = 1000;
+	static constexpr uint32_t MinRobotPeriod = 10;
+
+	static constexpr float MaxAsteroidDistance = 128 / 2;
+	static constexpr float MinAsteroidDistance = PlayerRadius;
+	static constexpr uint32_t WinLosePeriod = 200;
+	void updateRobotPeriod();
+
 };
 
 }

@@ -27,6 +27,9 @@ Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, "/Games/Robby", {
 	wrapWalls.left.setPos(glm::vec2{ -100, 0 } - (2 * asteroidRadius[(uint8_t) AsteroidSize::Large] + 1));
 	wrapWalls.right.setPos(
 			glm::vec2{ 128 + (2 * asteroidRadius[(uint8_t) AsteroidSize::Large] + 1), -(2 * asteroidRadius[(uint8_t) AsteroidSize::Large] + 1) });
+
+	robot = std::make_shared<RoboCtrl::Robby>();
+	setRobot(robot);
 }
 
 void Asteroids::Asteroids::onLoad(){
@@ -103,6 +106,7 @@ void Asteroids::Asteroids::onLoop(float deltaTime){
 
 			if(asteroidPool.empty()){
 				if(level == MaxLevel){
+					robot->setPeriod(WinLosePeriod);
 					state = Win;
 					Sound s = { { 200,  200,  80 },
 								{ 400,  400,  80 },
@@ -120,6 +124,8 @@ void Asteroids::Asteroids::onLoop(float deltaTime){
 				}
 				nextLevel();
 			}
+
+			updateRobotPeriod();
 			break;
 
 		case DeathAnim:
@@ -413,6 +419,8 @@ void Asteroids::Asteroids::spawnRandomAsteroid(){
 }
 
 void Asteroids::Asteroids::gameOver(){
+	robot->setPeriod(WinLosePeriod);
+
 	for(auto& asteroid : asteroidPool){
 		collision.removePair(*asteroid.gObj, *player.getObj());
 		for(auto& bullet : bulletPool){
@@ -426,4 +434,20 @@ void Asteroids::Asteroids::gameOver(){
 	playerAnim->setLoopDoneCallback([this](uint32_t){
 		state = DeathPause;
 	});
+}
+
+void Asteroids::Asteroids::updateRobotPeriod(){
+	float minDistance = MaxAsteroidDistance;
+	for(auto& asteroid : asteroidPool){
+		const auto r = asteroidRadius[(uint8_t) asteroid.size];
+		float distance = glm::distance(player.getObj()->getPos() + glm::vec2{ PlayerRadius, PlayerRadius },
+									   asteroid.gObj->getPos() + glm::vec2{ r, r });
+		distance += r;
+		if(distance < minDistance){
+			minDistance = distance;
+		}
+	}
+	minDistance = std::clamp(minDistance, MinAsteroidDistance, MaxAsteroidDistance);
+	float period = MinRobotPeriod + (MaxRobotPeriod - MinRobotPeriod) * pow((minDistance / MaxAsteroidDistance), 2);
+	robot->setPeriod(period);
 }
