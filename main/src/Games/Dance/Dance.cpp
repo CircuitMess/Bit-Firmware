@@ -37,8 +37,8 @@ Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
 
 	scoreBar->setPos({ 5, 3 });
 	scoreBarSprite = std::static_pointer_cast<SpriteRC>(scoreBar->getRenderComponent())->getSprite();
-	scoreBarSprite->clear(TFT_BLACK);
-	scoreBarSprite->drawRect(0, 0, scoreBarSprite->width(), scoreBarSprite->height(), TFT_WHITE);
+	scoreBarSprite->clear(TFT_TRANSPARENT);
+	scoreBarSprite->drawRoundRect(0, 0, scoreBarSprite->width(), scoreBarSprite->height(), 1, TFT_WHITE);
 	addObject(scoreBar);
 
 	robot = std::make_shared<RoboCtrl::Buttons>();
@@ -82,6 +82,12 @@ void Dance::onLoad(){
 	player->setPos(PlayerPos + idleGIF.offset);
 	playerRC = std::static_pointer_cast<AnimRC>(player->getRenderComponent());
 	addObject(player);
+
+	streakObj = std::make_shared<GameObject>(std::make_unique<SpriteRC>(PixelDim{ StreakCircleRadius * 2 + 1, StreakCircleRadius * 2 + 1 }), nullptr);
+	streakSprite = std::static_pointer_cast<SpriteRC>(streakObj->getRenderComponent());
+	addObject(streakObj);
+	streakObj->setPos(50, 16);
+	drawStreakSprite(streakSprite->getSprite(), streakLevel);
 }
 
 void Dance::onLoop(float deltaTime){
@@ -101,6 +107,8 @@ void Dance::onLoop(float deltaTime){
 			updateNotes(deltaTime);
 
 			updateTracks(deltaTime);
+
+			updateStreak(deltaTime);
 			break;
 
 		case DoneAnim:
@@ -174,6 +182,7 @@ void Dance::createNote(uint8_t track){
 	collision.addPair(*note, bottomWall, [this, track](){
 		removeObject(notes[track].front());
 		notes[track].pop_front();
+		resetStreak();
 	});
 
 	notes[track].push_back(note);
@@ -190,11 +199,12 @@ void Dance::noteHit(uint8_t track){
 
 
 	if(diff <= noteTolerance){
-		audio.play({ { 400, 600, 50 } });
-		robot->playGood();
+		incrementStreak();
+		audio.play(StreakSounds[streakLevel]);
+		robot->play(StreakSounds[streakLevel]);
 //		RGB.blink(Pixel::Green);
 
-		score += notePoints + (int) (diff * perfectBonus / noteTolerance);
+		score += notePoints + (int) (diff * perfectBonus / noteTolerance); //TODO - apply streak multiplier since 3x instantly wins the game
 
 		adjustTempo();
 		adjustScoreBar();
@@ -227,10 +237,12 @@ void Dance::noteHit(uint8_t track){
 		});
 
 	}else{
-		robot->playBad();
-		audio.play({ { 300, 300, 50 },
-					 { 0,   0,   50 },
-					 { 300, 300, 50 } });
+		resetStreak();
+		Sound bad = { { 300, 300, 50 },
+					  { 0,   0,   50 },
+					  { 300, 300, 50 } };
+		robot->play(bad);
+		audio.play(bad);
 //		RGB.blinkTwice(Pixel::Red);
 
 		life--;
@@ -266,20 +278,40 @@ void Dance::adjustTempo(){
 
 void Dance::gameDone(bool success){
 	if(success){
-		robot->playWin();
-		Sound s = { { 600, 400,  200 },
-					{ 400, 1000, 200 } };
+		Sound s = { { 300, 300,  50 },
+					{ 0,   0,    20 },
+					{ 450, 450,  50 },
+					{ 0,   0,    20 },
+					{ 300, 300,  50 },
+					{ 0,   0,    20 },
+					{ 600, 600,  50 },
+					{ 0,   0,    20 },
+					{ 300, 300,  50 },
+					{ 0,   0,    20 },
+					{ 600, 600,  50 },
+					{ 0,   0,    20 },
+					{ 1000, 1000, 300 } };
+		robot->play(s);
 		audio.play(s);
 		playerRC->setAnim(getFile("/win.gif"));
 		player->setPos(PlayerPos + winGIF.offset);
 
 	}else{
-		robot->playLose();
-		audio.play({ { 400, 300, 200 },
-					 { 0,   0,   50 },
-					 { 300, 200, 200 },
-					 { 0,   0,   50 },
-					 { 200, 50,  400 } });
+		Sound s = { { 600, 600,  50 },
+					{ 0,   0,    20 },
+					{ 450, 450,  50 },
+					{ 0,   0,    20 },
+					{ 300, 300,  50 },
+					{ 0,   0,    20 },
+					{ 450, 450,  50 },
+					{ 0,   0,    20 },
+					{ 300, 300,  50 },
+					{ 0,   0,    20 },
+					{ 200, 200,  50 },
+					{ 0,   0,    20 },
+					{ 100, 100, 300 } };
+		robot->play(s);
+		audio.play(s);
 		playerRC->setAnim(getFile("/lose.gif"));
 		player->setPos(PlayerPos + loseGIF.offset);
 	}
@@ -331,5 +363,46 @@ void Dance::updateTracks(float delta){
 			}
 		}
 	}
+}
+
+void Dance::updateStreak(float delta){
+	if(!streakAnimActive) return;
+	streakAnimT += delta;
+	const auto scale = 1.0 + 0.5 * abs(sin((2 * M_PI / StreakAnimPeriod) * streakAnimT));
+	streakSprite->setScale(scale);
+
+	if(streakAnimT >= StreakAnimPeriod){
+		streakAnimT = 0;
+		streakAnimActive = false;
+	}
+}
+
+void Dance::drawStreakSprite(std::shared_ptr<Sprite> sprite, uint8_t level){
+	//TODO - promjeniti vizual ovoga u nešto ljepše
+	sprite->clear(TFT_TRANSPARENT);
+	sprite->fillCircle(StreakCircleRadius, StreakCircleRadius, StreakCircleRadius, TFT_RED);
+	sprite->drawCircle(StreakCircleRadius, StreakCircleRadius, StreakCircleRadius, TFT_WHITE);
+	sprite->setTextDatum(lgfx::datum_t::middle_center);
+	sprite->setTextColor(TFT_WHITE);
+	std::string s = std::to_string(level + 1) + "x";
+	sprite->drawString(s.c_str(), StreakCircleRadius, StreakCircleRadius);
+}
+
+void Dance::incrementStreak(){
+	notesStreak = std::min(notesStreak + 1, (int) MaxStreakLevel * NotesPerStreakLevel);
+	if(notesStreak / NotesPerStreakLevel > streakLevel && streakLevel < (MaxStreakLevel - 1)){
+		streakLevel = notesStreak / NotesPerStreakLevel;
+		drawStreakSprite(streakSprite->getSprite(), streakLevel);
+		streakAnimActive = true;
+	}
+
+}
+
+void Dance::resetStreak(){
+	notesStreak = 0;
+	if(streakLevel == 0) return;
+	streakLevel = 0;
+	streakAnimActive = true;
+	drawStreakSprite(streakSprite->getSprite(), streakLevel);
 }
 

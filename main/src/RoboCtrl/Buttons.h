@@ -12,10 +12,7 @@ public:
 	virtual ~Buttons();
 	void hello() override;
 
-	void playGood();
-	void playBad();
-	void playWin();
-	void playLose();
+	void play(const Sound& sound);
 
 protected:
 	void init() override;

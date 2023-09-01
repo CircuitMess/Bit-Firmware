@@ -93,6 +93,27 @@ private:
 	void hideBars(float deltaTime);
 
 	std::shared_ptr<RoboCtrl::Buttons> robot;
+
+	uint8_t notesStreak = 0;
+	uint8_t streakLevel = 0;
+	static constexpr uint8_t MaxStreakLevel = 3;
+	static constexpr uint8_t NotesPerStreakLevel = 3;
+	static constexpr float StreakAnimPeriod = 0.8;
+	static constexpr uint8_t StreakCircleRadius = 8;
+	GameObjPtr streakObj;
+	std::shared_ptr<SpriteRC> streakSprite;
+	void updateStreak(float delta);
+	float streakAnimT = 0;
+	bool streakAnimActive = false;
+	void drawStreakSprite(std::shared_ptr<Sprite> sprite, uint8_t level);
+	void incrementStreak();
+	void resetStreak();
+
+	Sound StreakSounds[MaxStreakLevel] = {
+			{ { 200, 600, 100 }, { 200, 200, 30 } },
+			{ { 200, 600, 100 }, { 400, 800, 100 } },
+			{ { 100, 600, 90 }, { 0, 0, 50 }, { 100, 600, 90 }, { 800, 800, 50 } }
+	};
 };
 
 
