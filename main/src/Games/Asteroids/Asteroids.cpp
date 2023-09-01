@@ -361,11 +361,13 @@ void Asteroids::Asteroids::playerHit(){
 	life--;
 	hearts->setLives(life);
 	if(life == 0){
-		audio.play({ { 400, 300, 200 },
+		audio.play({ { 320, 320, 200 },
 					 { 0,   0,   50 },
-					 { 300, 200, 200 },
+					 { 180, 180, 200 },
 					 { 0,   0,   50 },
-					 { 200, 50,  400 } });
+					 { 220, 220, 200 },
+					 { 0,   0,   50 },
+					 { 100, 100, 500 } });
 		gameOver();
 		return;
 	}
