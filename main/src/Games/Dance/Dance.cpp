@@ -206,7 +206,17 @@ void Dance::noteHit(uint8_t track){
 			return;
 		}
 
-		uint8_t i = rand() % (sizeof(danceGIFs) / sizeof(danceGIFs[0]));
+		if(danceAnimSet.empty()){
+			for(int i = 0; i < sizeof(danceGIFs) / sizeof(danceGIFs[0]); ++i){
+				danceAnimSet.insert(i);
+			}
+		}
+		uint8_t i = rand() % (danceAnimSet.size());
+		auto it = danceAnimSet.begin();
+		std::advance(it, i);
+		i = *it;
+		danceAnimSet.erase(it);
+
 		playerRC->setAnim(getFile(danceGIFs[i].path));
 		player->setPos(PlayerPos + danceGIFs[i].offset);
 
@@ -233,6 +243,7 @@ void Dance::noteHit(uint8_t track){
 			gameDone(false);
 			return;
 		}else{
+			danceAnimSet.clear();
 			playerRC->setAnim(getFile("/fail.gif"));
 			player->setPos(PlayerPos + failGIF.offset);
 

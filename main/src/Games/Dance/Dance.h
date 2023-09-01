@@ -71,6 +71,7 @@ private:
 	constexpr static PlayerAnim danceGIFs[3] = { { "/dance1.gif", { 1,  28 } },
 												 { "/dance2.gif", { 5,  29 } },
 												 { "/dance3.gif", { 11, 31 } } };
+	std::set<uint8_t> danceAnimSet;
 	constexpr static PlayerAnim idleGIF = { "/idle.gif", { 14, 32 } };
 	constexpr static PlayerAnim loseGIF = { "/lose.gif", { 0, 11 } };
 	constexpr static PlayerAnim failGIF = { "/fail.gif", { 3, 32 } };
