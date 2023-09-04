@@ -23,7 +23,6 @@ private:
 	void relocChars();
 	void randOffsets();
 	void repos();
-	void reposChar(uint8_t i);
 
 	template<typename T>
 	static constexpr T easeOutExp(T x){

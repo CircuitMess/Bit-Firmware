@@ -96,21 +96,17 @@ void Windows::randOffsets(){
 
 void Windows::repos(){
 	for(int i = 0; i < 3; i++){
-		reposChar(i);
+		const uint8_t window = charLoc[i];
+		const float hideMove = ResInfos[i].size.y * 1.5f;
+
+		const float startPos = WindowPos[window].y + Offsets[i].y;
+		if(state == Up){
+			chars[i]->setPosY(startPos);
+			return;
+		}
+
+		float t = std::clamp(T - timeOffsets[i], 0.0f, 1.0f);
+		t = state == Dropping ? easeInQuad(t) : 1.0f - easeOutExp(t);
+		chars[i]->setPosY(startPos + t * hideMove);
 	}
-}
-
-void Windows::reposChar(uint8_t i){
-	const uint8_t window = charLoc[i];
-	const float hideMove = ResInfos[i].size.y * 1.5f;
-
-	const float startPos = WindowPos[window].y + Offsets[i].y;
-	if(state == Up){
-		chars[i]->setPosY(startPos);
-		return;
-	}
-
-	float t = std::clamp(T - timeOffsets[i], 0.0f, 1.0f);
-	t = state == Dropping ? easeInQuad(t) : 1.0f - easeOutExp(t);
-	chars[i]->setPosY(startPos + t * hideMove);
 }
