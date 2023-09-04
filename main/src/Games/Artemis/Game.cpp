@@ -8,6 +8,13 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/wave_front.raw", {}, true },
 		{ "/wave_back.raw", {}, true },
 
+		{ "/stick.raw", {}, true },
+		{ "/stick1.raw", {}, true },
+		{ "/stick2.raw", {}, true },
+		{ "/stick3.raw", {}, true },
+		{ "/stick4.raw", {}, true },
+		{ "/stick5.raw", {}, true },
+
 }){
 
 }
@@ -22,13 +29,13 @@ void ArtemisGame::PewPew::onLoad(){
 	auto curtL = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 13 })
 	);
-	curtL->getRenderComponent()->setLayer(10);
+	curtL->getRenderComponent()->setLayer(11);
 	curtL->setPos(0, 92);
 
 	auto curtR = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_r.raw"), PixelDim { 7, 13 })
 	);
-	curtR->getRenderComponent()->setLayer(10);
+	curtR->getRenderComponent()->setLayer(11);
 	curtR->setPos(121, 92);
 
 	addObjects({ bg, curtL, curtR });
@@ -43,15 +50,27 @@ void ArtemisGame::PewPew::onLoad(){
 	waveFront = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/wave_front.raw"), PixelDim { 125, 13 })
 	);
-	waveFront->getRenderComponent()->setLayer(9);
+	waveFront->getRenderComponent()->setLayer(10);
 	waveFront->setPos(-4, 92); // startX: startFront in moveWaves()
 
 	addObjects({ waveFront, waveBack });
 
+	// Sticks
+	for(int i = 0; i < 5; i++){
+		addStick((OnStick::Char) i);
+	}
+}
+
+void ArtemisGame::PewPew::addStick(OnStick::Char chr){
+	sticks.emplace_back(chr, [this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 }
 
 void ArtemisGame::PewPew::onLoop(float dt){
 	moveWaves(dt);
+
+	for(auto& stick : sticks){
+		stick.loop(dt);
+	}
 }
 
 void ArtemisGame::PewPew::moveWaves(float dt){

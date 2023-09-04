@@ -2,6 +2,7 @@
 #define BIT_FIRMWARE_ARTEGAME_H
 
 #include "GameEngine/Game.h"
+#include "OnStick.h"
 
 namespace ArtemisGame {
 
@@ -19,6 +20,9 @@ private:
 	float waveT = 0;
 	float waveDir = 1;
 	void moveWaves(float dt);
+
+	std::vector<OnStick> sticks;
+	void addStick(OnStick::Char chr);
 
 	template<typename T>
 	static constexpr T easeInOutCubic(T x){
