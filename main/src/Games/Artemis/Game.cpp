@@ -25,6 +25,13 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 
 void ArtemisGame::PewPew::onLoad(){
 	// BG and curtains
+	auto winBg = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/windows.raw"), PixelDim { 82, 21 })
+	);
+	winBg->getRenderComponent()->setLayer(-3);
+	winBg->setPos(23, 30);
+	addObject(winBg);
+
 	auto bg = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim { 128, 128 })
 	);

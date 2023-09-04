@@ -26,15 +26,6 @@ static const glm::ivec2 WindowPos[] = {
 };
 
 Windows::Windows(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile){
-	// backdrop layer -3, chars -2, bg -1
-
-	auto bdrop = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/windows.raw"), PixelDim { 82, 21 })
-	);
-	bdrop->getRenderComponent()->setLayer(-3);
-	bdrop->setPos(23, 30);
-	addObject(bdrop);
-
 	for(int i = 0; i < 3; i++){
 		const auto& res = ResInfos[i];
 
