@@ -3,6 +3,7 @@
 
 #include "GameEngine/Game.h"
 #include "OnStick.h"
+#include "Windows.h"
 
 namespace ArtemisGame {
 
@@ -21,6 +22,7 @@ private:
 	float waveDir = 1;
 	void moveWaves(float dt);
 
+	std::unique_ptr<Windows> windows;
 	std::vector<OnStick> sticks;
 	void addStick(OnStick::Char chr);
 

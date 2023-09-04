@@ -15,6 +15,10 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/stick4.raw", {}, true },
 		{ "/stick5.raw", {}, true },
 
+		{ "/windows.raw", {}, true },
+		{ "/win1.raw", {}, true },
+		{ "/win2.raw", {}, true },
+		{ "/win3.raw", {}, true },
 }){
 
 }
@@ -59,6 +63,9 @@ void ArtemisGame::PewPew::onLoad(){
 	for(int i = 0; i < 5; i++){
 		addStick((OnStick::Char) i);
 	}
+
+	// Windows
+	windows = std::make_unique<Windows>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 }
 
 void ArtemisGame::PewPew::addStick(OnStick::Char chr){
@@ -71,6 +78,8 @@ void ArtemisGame::PewPew::onLoop(float dt){
 	for(auto& stick : sticks){
 		stick.loop(dt);
 	}
+
+	windows->loop(dt);
 }
 
 void ArtemisGame::PewPew::moveWaves(float dt){
