@@ -95,6 +95,9 @@ void ArtemisGame::PewPew::fire(){
 	if(hitCurtain(pos)) return;
 	if(waves->hitFront(pos)) return;
 
+	for(auto stick = sticks.end()-1; stick >= sticks.begin(); stick--){
+		if(stick->hit(pos)) return;
+	}
 }
 
 bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){

@@ -1,5 +1,6 @@
 #include "OnStick.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include "Ray.h"
 
 struct CharInfo {
 	const char* path;
@@ -22,7 +23,7 @@ static const std::unordered_map<OnStick::Char, glm::ivec2> Offsets = {
 		{ OnStick::Artemis, { -9, -11 } }
 };
 
-OnStick::OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : Speed((float) (30 + rand() % 30) / 100.0f), charOffset(Offsets.at(chr)){
+OnStick::OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : chr(chr), Speed((float) (30 + rand() % 30) / 100.0f), charOffset(Offsets.at(chr)){
 	static constexpr uint8_t StickHeight = 20;
 
 	const uint8_t stickHeight = StickHeight/2 + rand() % (StickHeight/2);
@@ -34,8 +35,9 @@ OnStick::OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObj
 	addObject(objStick);
 
 	const auto& res = ResInfos.at(chr);
+	fileChar = getFile(res.path);
 	objChar = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile(res.path), res.size)
+			std::make_unique<StaticRC>(fileChar, res.size)
 	);
 	objChar->getRenderComponent()->setLayer(layer+1);
 	objChar->setPos(0, 84 + StickHeight - stickHeight + charOffset.y);
@@ -48,7 +50,28 @@ OnStick::OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObj
 	updatePos();
 }
 
+bool OnStick::hit(glm::ivec2 pos){
+	if(!alive) return false;
+
+	const auto size = ResInfos.at(chr).size;
+	const auto glmSize = glm::vec2(size.x, size.y);
+
+	const auto inside = Ray::within(pos, objChar->getPos(), objChar->getPos() + glmSize);
+	if(!inside) return false;
+
+	const auto hit = Ray::hitTest(pos - glm::ivec2(objChar->getPos()), fileChar, size);
+
+	if(hit){
+		objChar->getRenderComponent()->setVisible(false);
+		objStick->getRenderComponent()->setVisible(false);
+		alive = false;
+	}
+
+	return hit;
+}
+
 void OnStick::loop(float dt){
+	if(!alive) return;
 
 	T += Speed * dt * dir;
 	if(T >= 1.0f || T <= 0.0f){

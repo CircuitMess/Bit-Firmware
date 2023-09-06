@@ -11,9 +11,14 @@ public:
 
 	void loop(float dt);
 
+	bool hit(glm::ivec2 pos);
+
 private:
 	std::shared_ptr<GameObject> objStick;
 	std::shared_ptr<GameObject> objChar;
+
+	const Char chr;
+	File fileChar;
 
 	float T;
 	float dir = 1;
@@ -21,6 +26,8 @@ private:
 	const glm::ivec2 charOffset;
 
 	void updatePos();
+
+	bool alive = true;
 
 };
 
