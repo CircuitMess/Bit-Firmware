@@ -37,16 +37,16 @@ void ArtemisGame::PewPew::onLoad(){
 	bg->getRenderComponent()->setLayer(-1);
 
 	auto curtL = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 13 })
+			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 33 })
 	);
 	curtL->getRenderComponent()->setLayer(51);
-	curtL->setPos(0, 92);
+	curtL->setPos(0, 72);
 
 	auto curtR = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/curt_r.raw"), PixelDim { 7, 13 })
+			std::make_unique<StaticRC>(getFile("/curt_r.raw"), PixelDim { 7, 33 })
 	);
 	curtR->getRenderComponent()->setLayer(51);
-	curtR->setPos(121, 92);
+	curtR->setPos(121, 72);
 
 	addObjects({ winBg, bg, curtL, curtR });
 
