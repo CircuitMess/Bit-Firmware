@@ -1,6 +1,6 @@
 #include "Windows.h"
 #include "GameEngine/Rendering/StaticRC.h"
-#include <list>
+#include "Ray.h"
 
 struct CharInfo {
 	const char* path;
@@ -29,8 +29,9 @@ Windows::Windows(std::function<void(GameObjPtr)> addObject, std::function<File(c
 	for(int i = 0; i < 3; i++){
 		const auto& res = ResInfos[i];
 
+		files[i] = getFile(res.path);
 		auto chr = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(res.path), res.size)
+				std::make_unique<StaticRC>(files[i], res.size)
 		);
 		chr->getRenderComponent()->setLayer(-2);
 		addObject(chr);
@@ -39,6 +40,29 @@ Windows::Windows(std::function<void(GameObjPtr)> addObject, std::function<File(c
 
 	relocChars();
 	repos();
+}
+
+bool Windows::hit(glm::ivec2 pos){
+	for(int i = 0; i < 3; i++){
+		if(!alive[i]) continue;
+
+		const auto size = ResInfos[i].size;
+		const auto glmSize = glm::vec2(size.x, size.y);
+
+		const auto inside = Ray::within(pos, chars[i]->getPos(), chars[i]->getPos() + glmSize);
+		if(!inside) return false;
+
+		const auto hit = Ray::hitTest(pos - glm::ivec2(chars[i]->getPos()), files[i], size);
+
+		if(hit){
+			chars[i]->getRenderComponent()->setVisible(false);
+			alive[i] = false;
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Windows::loop(float dt){
@@ -96,6 +120,8 @@ void Windows::randOffsets(){
 
 void Windows::repos(){
 	for(int i = 0; i < 3; i++){
+		if(!alive[i]) continue;
+
 		const uint8_t window = charLoc[i];
 		const float hideMove = ResInfos[i].size.y * 1.5f;
 

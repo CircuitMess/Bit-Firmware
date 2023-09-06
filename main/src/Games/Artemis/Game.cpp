@@ -34,7 +34,7 @@ void ArtemisGame::PewPew::onLoad(){
 	winBg->getRenderComponent()->setLayer(-3);
 	winBg->setPos(23, 30);
 
-	auto bg = std::make_shared<GameObject>(
+	bg = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim { 128, 128 })
 	);
 	bg->getRenderComponent()->setLayer(-1);
@@ -98,6 +98,9 @@ void ArtemisGame::PewPew::fire(){
 	for(auto stick = sticks.end()-1; stick >= sticks.begin(); stick--){
 		if(stick->hit(pos)) return;
 	}
+
+	if(Ray::hitTest(pos, getFile("/bg.raw"), { 128, 128 })) return;
+	if(windows->hit(pos)) return;
 }
 
 bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){

@@ -21,6 +21,7 @@ private:
 
 	void handleInput(const Input::Data& data) override;
 
+	GameObjPtr bg;
 	GameObjPtr curtL, curtR;
 
 	std::vector<OnStick> sticks;

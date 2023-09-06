@@ -10,10 +10,15 @@ public:
 
 	void loop(float dt);
 
+	bool hit(glm::ivec2 pos);
+
 private:
 	std::vector<GameObjPtr> chars;
 	uint8_t charLoc[3];
 	float timeOffsets[3] = {0};
+
+	bool alive[3] = { true, true, true };
+	File files[3];
 
 	enum { Up, Dropping, Rising } state = Rising;
 	float T = 0;
