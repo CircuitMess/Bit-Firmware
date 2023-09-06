@@ -7,7 +7,7 @@ class OnStick {
 public:
 	enum Char { DuckYellow, DuckPurple, DuckSmallYellow, DuckSmallPurple, Artemis };
 
-	OnStick(Char chr, std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile);
+	OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile);
 
 	void loop(float dt);
 

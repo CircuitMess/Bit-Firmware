@@ -12,7 +12,7 @@ Waves::Waves(std::function<void(GameObjPtr)> addObject, std::function<File(const
 	waveFront = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/wave_front.raw"), PixelDim { 125, 13 })
 	);
-	waveFront->getRenderComponent()->setLayer(10);
+	waveFront->getRenderComponent()->setLayer(50);
 	waveFront->setPos(-4, 92); // startX: startFront in moveWaves()
 	addObject(waveFront);
 }

@@ -39,20 +39,20 @@ void ArtemisGame::PewPew::onLoad(){
 	auto curtL = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 13 })
 	);
-	curtL->getRenderComponent()->setLayer(11);
+	curtL->getRenderComponent()->setLayer(51);
 	curtL->setPos(0, 92);
 
 	auto curtR = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_r.raw"), PixelDim { 7, 13 })
 	);
-	curtR->getRenderComponent()->setLayer(11);
+	curtR->getRenderComponent()->setLayer(51);
 	curtR->setPos(121, 92);
 
 	addObjects({ winBg, bg, curtL, curtR });
 
 	// Sticks, windows, waves
 	for(int i = 0; i < 5; i++){
-		sticks.emplace_back((OnStick::Char) i, [this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+		sticks.emplace_back((OnStick::Char) i, 20 + i*2, [this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 	}
 
 	windows = std::make_unique<Windows>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });

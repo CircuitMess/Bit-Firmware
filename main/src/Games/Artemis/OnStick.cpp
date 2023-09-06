@@ -22,14 +22,14 @@ static const std::unordered_map<OnStick::Char, glm::ivec2> Offsets = {
 		{ OnStick::Artemis, { -9, -11 } }
 };
 
-OnStick::OnStick(Char chr, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : Speed((float) (30 + rand() % 30) / 100.0f), charOffset(Offsets.at(chr)){
+OnStick::OnStick(Char chr, uint8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : Speed((float) (30 + rand() % 30) / 100.0f), charOffset(Offsets.at(chr)){
 	static constexpr uint8_t StickHeight = 20;
 
 	const uint8_t stickHeight = StickHeight/2 + rand() % (StickHeight/2);
 	objStick = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/stick.raw"), PixelDim { 2, stickHeight })
 	);
-	objStick->getRenderComponent()->setLayer(8);
+	objStick->getRenderComponent()->setLayer(layer);
 	objStick->setPos(0, 84 + StickHeight - stickHeight); // startX: endBack in moveWaves()
 	addObject(objStick);
 
@@ -37,7 +37,7 @@ OnStick::OnStick(Char chr, std::function<void(GameObjPtr)> addObject, std::funct
 	objChar = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile(res.path), res.size)
 	);
-	objChar->getRenderComponent()->setLayer(9);
+	objChar->getRenderComponent()->setLayer(layer+1);
 	objChar->setPos(0, 84 + StickHeight - stickHeight + charOffset.y);
 	addObject(objChar);
 
