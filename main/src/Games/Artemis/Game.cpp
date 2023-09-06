@@ -19,6 +19,8 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/win1.raw", {}, true },
 		{ "/win2.raw", {}, true },
 		{ "/win3.raw", {}, true },
+
+		{ "/aim.raw", {}, true },
 }){
 
 }
@@ -58,6 +60,13 @@ void ArtemisGame::PewPew::onLoad(){
 	windows = std::make_unique<Windows>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 
 	waves = std::make_unique<Waves>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+
+	// Crosshair
+	xhair = std::make_unique<Crosshair>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+}
+
+void ArtemisGame::PewPew::onStart(){
+	xhair->btnReset();
 }
 
 void ArtemisGame::PewPew::onLoop(float dt){
@@ -67,4 +76,10 @@ void ArtemisGame::PewPew::onLoop(float dt){
 
 	windows->loop(dt);
 	waves->loop(dt);
+
+	xhair->loop(dt);
+}
+
+void ArtemisGame::PewPew::handleInput(const Input::Data& data){
+	xhair->btnAction(data.btn, data.action);
 }

@@ -5,6 +5,7 @@
 #include "OnStick.h"
 #include "Windows.h"
 #include "Waves.h"
+#include "Crosshair.h"
 
 namespace ArtemisGame {
 
@@ -13,13 +14,18 @@ public:
 	PewPew(Sprite& canvas);
 
 private:
-
 	void onLoad() override;
+	void onStart() override;
+
 	void onLoop(float deltaTime) override;
+
+	void handleInput(const Input::Data& data) override;
 
 	std::vector<OnStick> sticks;
 	std::unique_ptr<Windows> windows;
 	std::unique_ptr<Waves> waves;
+
+	std::unique_ptr<Crosshair> xhair;
 
 };
 
