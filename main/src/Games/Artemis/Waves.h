@@ -10,6 +10,8 @@ public:
 
 	void loop(float dt);
 
+	bool hitFront(glm::ivec2 pos);
+
 private:
 	GameObjPtr waveBack;
 	GameObjPtr waveFront;
@@ -18,6 +20,8 @@ private:
 	float dir = 1;
 
 	static constexpr float Speed = 0.8;
+
+	File fileFrontWave;
 
 	template<typename T>
 	static constexpr T easeInOutQuad(T x){

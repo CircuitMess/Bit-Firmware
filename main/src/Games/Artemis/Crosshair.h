@@ -14,7 +14,7 @@ public:
 	void btnAction(Input::Button btn, Input::Data::Action action);
 	void btnReset();
 
-	glm::vec2 getAim();
+	glm::ivec2 getAim();
 
 private:
 

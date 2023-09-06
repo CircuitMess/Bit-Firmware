@@ -20,8 +20,8 @@ Crosshair::Crosshair(std::function<void(GameObjPtr)> addObject, std::function<Fi
 	addObject(sight);
 }
 
-glm::vec2 Crosshair::getAim(){
-	return glm::round(sight->getPos() - 9.5f);
+glm::ivec2 Crosshair::getAim(){
+	return glm::round(sight->getPos() + 9.5f);
 }
 
 void Crosshair::btnAction(Input::Button btn, Input::Data::Action action){
@@ -69,15 +69,15 @@ void Crosshair::loop(float dt){
 		sightDir *= 0.3f;
 	}
 
-	pos += sightDir * dt;
+	//pos += sightDir * dt;
 
 	pos += getAimDir() * AimFactor * dt;
 
-	glm::vec2 sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
+	/*glm::vec2 sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
 	pos -= sine;
 	sineTime += dt;
 	sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
-	pos += sine;
+	pos += sine;*/
 
 	pos = glm::clamp(pos, {1, 1}, ScreenSize);
 	sight->setPos(pos - 10.0f);

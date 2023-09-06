@@ -1,5 +1,6 @@
 #include "Waves.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include "Ray.h"
 
 Waves::Waves(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile){
 	waveBack = std::make_shared<GameObject>(
@@ -9,12 +10,20 @@ Waves::Waves(std::function<void(GameObjPtr)> addObject, std::function<File(const
 	waveBack->setPos(12, 94); // startX: endBack in moveWaves()
 	addObject(waveBack);
 
+	fileFrontWave = getFile("/wave_front.raw");
 	waveFront = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/wave_front.raw"), PixelDim { 125, 13 })
+			std::make_unique<StaticRC>(fileFrontWave, PixelDim { 125, 13 })
 	);
 	waveFront->getRenderComponent()->setLayer(50);
 	waveFront->setPos(-4, 92); // startX: startFront in moveWaves()
 	addObject(waveFront);
+}
+
+bool Waves::hitFront(glm::ivec2 pos){
+	const auto inside = Ray::within(pos, waveFront->getPos(), waveFront->getPos() + glm::vec2(125, 13));
+	if(!inside) return false;
+
+	return Ray::hitTest(pos - glm::ivec2(waveFront->getPos()), fileFrontWave, PixelDim { 125, 13 });
 }
 
 void Waves::loop(float dt){

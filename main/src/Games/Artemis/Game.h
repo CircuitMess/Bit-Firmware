@@ -21,11 +21,16 @@ private:
 
 	void handleInput(const Input::Data& data) override;
 
+	GameObjPtr curtL, curtR;
+
 	std::vector<OnStick> sticks;
 	std::unique_ptr<Windows> windows;
 	std::unique_ptr<Waves> waves;
 
 	std::unique_ptr<Crosshair> xhair;
+
+	void fire();
+	bool hitCurtain(glm::ivec2 pos);
 
 };
 

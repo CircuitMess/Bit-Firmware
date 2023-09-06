@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include "Ray.h"
 
 ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/bg.raw", {}, true },
@@ -38,13 +39,13 @@ void ArtemisGame::PewPew::onLoad(){
 	);
 	bg->getRenderComponent()->setLayer(-1);
 
-	auto curtL = std::make_shared<GameObject>(
+	curtL = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 33 })
 	);
 	curtL->getRenderComponent()->setLayer(51);
 	curtL->setPos(0, 72);
 
-	auto curtR = std::make_shared<GameObject>(
+	curtR = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_r.raw"), PixelDim { 7, 33 })
 	);
 	curtR->getRenderComponent()->setLayer(51);
@@ -82,4 +83,29 @@ void ArtemisGame::PewPew::onLoop(float dt){
 
 void ArtemisGame::PewPew::handleInput(const Input::Data& data){
 	xhair->btnAction(data.btn, data.action);
+
+	if(data.btn == Input::A && data.action == Input::Data::Press){
+		fire();
+	}
+}
+
+void ArtemisGame::PewPew::fire(){
+	const auto pos = xhair->getAim();
+
+	if(hitCurtain(pos)) return;
+	if(waves->hitFront(pos)) return;
+
+}
+
+bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){
+	const auto inLeft = Ray::within(pos, curtL->getPos(), curtL->getPos() + glm::vec2(8, 33));
+	const auto inRight = Ray::within(pos, curtR->getPos(), curtR->getPos() + glm::vec2(7, 33));
+
+	if(!inLeft && !inRight) return false;
+
+	if(inLeft){
+		return Ray::hitTest(pos - glm::ivec2(curtL->getPos()), getFile("/curt_l.raw"), PixelDim { 8, 33 });
+	}else{
+		return Ray::hitTest(pos - glm::ivec2(curtR->getPos()), getFile("/curt_r.raw"), PixelDim { 7, 33 });
+	}
 }
