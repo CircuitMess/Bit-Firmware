@@ -69,15 +69,15 @@ void Crosshair::loop(float dt){
 		sightDir *= 0.3f;
 	}
 
-	//pos += sightDir * dt;
+	pos += sightDir * dt;
 
 	pos += getAimDir() * AimFactor * dt;
 
-	/*glm::vec2 sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
+	glm::vec2 sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
 	pos -= sine;
 	sineTime += dt;
 	sine = { sin(sineTime * 4) * SineAmp, sin(sineTime * 5) * SineAmp };
-	pos += sine;*/
+	pos += sine;
 
 	pos = glm::clamp(pos, {1, 1}, ScreenSize);
 	sight->setPos(pos - 10.0f);
