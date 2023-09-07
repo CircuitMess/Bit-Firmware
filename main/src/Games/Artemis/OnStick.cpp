@@ -77,7 +77,7 @@ OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObje
 }
 
 bool OnStick::hit(glm::ivec2 pos){
-	if(state != Alive) return false;
+	if(state != Alive && chr != Artemis) return false;
 
 	const auto size = ResInfos.at(chr).size;
 	const auto glmSize = glm::vec2(size.x, size.y);
@@ -86,6 +86,9 @@ bool OnStick::hit(glm::ivec2 pos){
 	if(!inside) return false;
 
 	const auto hit = Ray::hitTest(pos - glm::ivec2(objChar->getPos()), fileChar, size);
+
+	// Artemis is hit and wubulu anim is playing => dont allow hit passthrough
+	if(hit && state != Alive && chr == Artemis) return true;
 
 	if(hit){
 		objChar->getRenderComponent()->setVisible(false);
