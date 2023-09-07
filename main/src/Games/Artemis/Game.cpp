@@ -4,6 +4,7 @@
 
 ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/bg.raw", {}, true },
+		{ "/bg_bot.raw", {}, true },
 		{ "/curt_l.raw", {}, true },
 		{ "/curt_r.raw", {}, true },
 		{ "/wave_front.raw", {}, true },
@@ -15,6 +16,11 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/stick3.raw", {}, true },
 		{ "/stick4.raw", {}, true },
 		{ "/stick5.raw", {}, true },
+		{ "/hit_stick1.gif", {}, true },
+		{ "/hit_stick2.gif", {}, true },
+		{ "/hit_stick3.gif", {}, true },
+		{ "/hit_stick4.gif", {}, true },
+		{ "/hit_stick5.gif", {}, true },
 
 		{ "/windows.raw", {}, true },
 		{ "/win1.raw", {}, true },
@@ -35,9 +41,15 @@ void ArtemisGame::PewPew::onLoad(){
 	winBg->setPos(23, 30);
 
 	bg = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim { 128, 128 })
+			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim { 128, 105 })
 	);
 	bg->getRenderComponent()->setLayer(-1);
+
+	auto bgBot = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/bg_bot.raw"), PixelDim { 128, 23 })
+	);
+	bgBot->getRenderComponent()->setLayer(50);
+	bgBot->setPos(0, 105);
 
 	curtL = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/curt_l.raw"), PixelDim { 8, 33 })
@@ -51,7 +63,7 @@ void ArtemisGame::PewPew::onLoad(){
 	curtR->getRenderComponent()->setLayer(51);
 	curtR->setPos(121, 72);
 
-	addObjects({ winBg, bg, curtL, curtR });
+	addObjects({ winBg, bg, bgBot, curtL, curtR });
 
 	// Sticks, windows, waves
 	for(int i = 0; i < 5; i++){
@@ -94,6 +106,7 @@ void ArtemisGame::PewPew::fire(){
 
 	if(hitCurtain(pos)) return;
 	if(waves->hitFront(pos)) return;
+	if(Ray::within(pos, { 0, 105 }, { 128, 128 })) return;
 
 	for(auto stick = sticks.end()-1; stick >= sticks.begin(); stick--){
 		if(stick->hit(pos)) return;
