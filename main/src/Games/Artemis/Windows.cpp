@@ -82,6 +82,11 @@ void Windows::loop(float dt){
 		T = 0;
 
 		if(state == Dropping){
+			if(dieT[2] < 0 && !done){
+				dieT[2] = 0;
+				alive[2] = true;
+				chars[2]->getRenderComponent()->setVisible(true);
+			}
 			relocChars();
 			randOffsets();
 			state = Rising;
@@ -166,6 +171,7 @@ void Windows::repos(){
 }
 
 void Windows::hide(){
+	done = true;
 	for(int i = 0; i < 3; i++){
 		if(!alive[i]) continue;
 		alive[i] = false;

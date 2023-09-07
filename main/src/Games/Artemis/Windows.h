@@ -35,6 +35,7 @@ private:
 	std::function<void()> hitGood;
 	std::function<void()> hitBad;
 
+	bool done = false;
 	bool allDead();
 
 	template<typename T>
