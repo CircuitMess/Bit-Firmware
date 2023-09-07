@@ -6,6 +6,7 @@
 #include "Windows.h"
 #include "Waves.h"
 #include "Crosshair.h"
+#include "Games/Common/Hearts.h"
 
 namespace ArtemisGame {
 
@@ -29,9 +30,15 @@ private:
 	std::unique_ptr<Waves> waves;
 
 	std::unique_ptr<Crosshair> xhair;
+	std::unique_ptr<Hearts> hearts;
+	int lives = 3;
+	int score = 0;
 
 	void fire();
 	bool hitCurtain(glm::ivec2 pos);
+
+	void onPos();
+	void onNeg();
 
 };
 

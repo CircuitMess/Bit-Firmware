@@ -26,7 +26,8 @@ static const std::unordered_map<OnStick::Char, glm::ivec2> Offsets = {
 
 glm::ivec2 ArteAnimOffset = { -11, -19 };
 
-OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : chr(chr), layer(layer), addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand() % 30) / 100.0f){
+OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile, std::function<void()> hitGood, std::function<void()> hitBad) : chr(chr), layer(layer),
+addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand() % 30) / 100.0f), hitGood(hitGood), hitBad(hitBad){
 	static constexpr uint8_t StickHeight = 20;
 
 	const uint8_t stickHeight = StickHeight/4 + rand() % (3*StickHeight/4);
@@ -99,6 +100,8 @@ bool OnStick::hit(glm::ivec2 pos){
 		T = 0;
 
 		if(chr == Artemis){
+			hitBad();
+
 			objStick->getRenderComponent()->setVisible(true);
 			objCharArte->getRenderComponent()->setVisible(false);
 			objCharArteAnim->getRenderComponent()->setVisible(true);
@@ -109,6 +112,8 @@ bool OnStick::hit(glm::ivec2 pos){
 			auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
 			anim->start();
 		}else{
+			hitGood();
+
 			const auto pos = objChar->getPos();
 			objChar.reset();
 
@@ -185,4 +190,8 @@ void OnStick::updateDropPos(){
 
 	objStick->setPosY(pos);
 	objChar->setPosY(pos + (float) charOffset.y);
+}
+
+OnStick::Char OnStick::getChar() const{
+	return chr;
 }

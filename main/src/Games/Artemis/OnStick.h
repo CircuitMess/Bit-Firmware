@@ -7,11 +7,13 @@ class OnStick {
 public:
 	enum Char { DuckYellow, DuckPurple, DuckSmallYellow, DuckSmallPurple, Artemis };
 
-	OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile);
+	OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile, std::function<void()> hitGood, std::function<void()> hitBad);
 
 	void loop(float dt);
 
 	bool hit(glm::ivec2 pos);
+
+	Char getChar() const;
 
 private:
 	std::shared_ptr<GameObject> objStick;
@@ -40,6 +42,9 @@ private:
 	void updateDropPos();
 
 	enum { Alive, Drop, Dead } state = Alive;
+
+	std::function<void()> hitGood;
+	std::function<void()> hitBad;
 
 };
 

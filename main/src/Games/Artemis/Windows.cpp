@@ -27,7 +27,7 @@ static constexpr glm::ivec2 WindowPos[] = {
 		{ 88, 34 },
 };
 
-Windows::Windows(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile){
+Windows::Windows(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile, std::function<void()> hitGood, std::function<void()> hitBad) : hitGood(hitGood), hitBad(hitBad){
 	for(int i = 0; i < 3; i++){
 		const auto& res = ResInfos[i];
 
@@ -57,6 +57,12 @@ bool Windows::hit(glm::ivec2 pos){
 		const auto hit = Ray::hitTest(pos - glm::ivec2(chars[i]->getPos()), files[i], size);
 
 		if(hit){
+			if(i == 2){
+				hitBad(); // Artemis
+			}else{
+				hitGood();
+			}
+
 			alive[i] = false;
 			return true;
 		}

@@ -1,6 +1,6 @@
 #include "Game.h"
-#include "GameEngine/Rendering/StaticRC.h"
 #include "Ray.h"
+#include "GameEngine/Rendering/StaticRC.h"
 
 ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/bg.raw", {}, true },
@@ -28,6 +28,7 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/win3.raw", {}, true },
 
 		{ "/aim.raw", {}, true },
+		RES_HEART
 }){
 
 }
@@ -66,16 +67,25 @@ void ArtemisGame::PewPew::onLoad(){
 	addObjects({ winBg, bg, bgBot, curtL, curtR });
 
 	// Sticks, windows, waves
+	const auto hg = [this](){ onPos(); };
+	const auto hb = [this](){ onNeg(); };
+
 	for(int i = 0; i < 5; i++){
-		sticks.emplace_back((OnStick::Char) i, 20 + i*2, [this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+		sticks.emplace_back((OnStick::Char) i, 20 + i*2, [this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); }, hg, hb);
 	}
 
-	windows = std::make_unique<Windows>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+	windows = std::make_unique<Windows>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); }, hg, hb);
 
 	waves = std::make_unique<Waves>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 
 	// Crosshair
 	xhair = std::make_unique<Crosshair>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
+
+	// Hearts
+	hearts = std::make_unique<Hearts>(getFile(FILE_HEART));
+	hearts->getGO()->setPos({ 2, 2 });
+	hearts->getGO()->getRenderComponent()->setLayer(60);
+	addObject(hearts->getGO());
 }
 
 void ArtemisGame::PewPew::onStart(){
@@ -126,5 +136,22 @@ bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){
 		return Ray::hitTest(pos - glm::ivec2(curtL->getPos()), getFile("/curt_l.raw"), PixelDim { 8, 33 });
 	}else{
 		return Ray::hitTest(pos - glm::ivec2(curtR->getPos()), getFile("/curt_r.raw"), PixelDim { 7, 33 });
+	}
+}
+
+void ArtemisGame::PewPew::onPos(){
+	score++;
+
+	if(score >= 6){
+		exit();
+	}
+}
+
+void ArtemisGame::PewPew::onNeg(){
+	lives--;
+	hearts->setLives(lives);
+
+	if(lives == 0){
+		exit();
 	}
 }

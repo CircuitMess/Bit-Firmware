@@ -6,7 +6,7 @@
 
 class Windows {
 public:
-	Windows(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile);
+	Windows(std::function<void(GameObjPtr)> addObject, std::function<File(const char* path)> getFile, std::function<void()> hitGood, std::function<void()> hitBad);
 
 	void loop(float dt);
 
@@ -29,6 +29,9 @@ private:
 	void relocChars();
 	void randOffsets();
 	void repos();
+
+	std::function<void()> hitGood;
+	std::function<void()> hitBad;
 
 	template<typename T>
 	static constexpr T easeOutExp(T x){
