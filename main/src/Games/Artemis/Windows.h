@@ -19,6 +19,7 @@ private:
 
 	bool alive[3] = { true, true, true };
 	File files[3];
+	float dieT[3] = {0};
 
 	enum { Up, Dropping, Rising } state = Rising;
 	float T = 0;
@@ -37,6 +38,13 @@ private:
 	template<typename T>
 	static constexpr T easeInQuad(T x){
 		return std::pow((double) x, 2.0);
+	}
+
+	template<typename T>
+	static constexpr T easeInBack(T x){
+		const double c1 = 1.70158;
+		const double c3 = c1 + 1;
+		return c3 * std::pow((double) x, 3.0) - c1 * std::pow((double) x, 2.0);
 	}
 };
 

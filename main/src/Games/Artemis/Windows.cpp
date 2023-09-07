@@ -8,18 +8,20 @@ struct CharInfo {
 };
 
 static const CharInfo ResInfos[] = {
-		{ "/win1.raw", { 17, 17 } },
-		{ "/win2.raw", { 17, 17 } },
-		{ "/win3.raw", { 15, 16 } }
+		{ "/win1.raw", { 17, 20 } },
+		{ "/win2.raw", { 17, 20 } },
+		{ "/win3.raw", { 15, 19 } }
 };
 
-static const glm::ivec2 Offsets[] = {
+static constexpr float CharOverHidden = 3;
+
+static constexpr glm::ivec2 Offsets[] = {
 		{ 0, 0 },
 		{ 0, 0 },
 		{ 1, 1 }
 };
 
-static const glm::ivec2 WindowPos[] = {
+static constexpr glm::ivec2 WindowPos[] = {
 		{ 22, 34 },
 		{ 55, 34 },
 		{ 88, 34 },
@@ -50,14 +52,12 @@ bool Windows::hit(glm::ivec2 pos){
 		const auto glmSize = glm::vec2(size.x, size.y);
 
 		const auto inside = Ray::within(pos, chars[i]->getPos(), chars[i]->getPos() + glmSize);
-		if(!inside) return false;
+		if(!inside) continue;
 
 		const auto hit = Ray::hitTest(pos - glm::ivec2(chars[i]->getPos()), files[i], size);
 
 		if(hit){
-			chars[i]->getRenderComponent()->setVisible(false);
 			alive[i] = false;
-
 			return true;
 		}
 	}
@@ -87,6 +87,17 @@ void Windows::loop(float dt){
 		}
 	}
 
+	for(int i = 0; i < 3; i++){
+		if(alive[i] || dieT[i] < 0) continue;
+
+		dieT[i] += SpeedMove * dt;
+
+		if(dieT[i] >= 1){
+			chars[i]->getRenderComponent()->setVisible(false);
+			dieT[i] = -1; // -1 means death anim done
+		}
+	}
+
 	repos();
 }
 
@@ -101,7 +112,7 @@ void Windows::relocChars(){
 		// i.e.: character (i) is getting relocated to the (window) window
 
 		const int posX = WindowPos[window].x + Offsets[i].x;
-		const int posY = WindowPos[window].y + Offsets[i].y + ResInfos[i].size.y;
+		const int posY = WindowPos[window].y + Offsets[i].y + ResInfos[i].size.y - CharOverHidden;
 
 		chars[i]->setPos(posX, posY);
 		charLoc[i] = window;
@@ -120,15 +131,22 @@ void Windows::randOffsets(){
 
 void Windows::repos(){
 	for(int i = 0; i < 3; i++){
-		if(!alive[i]) continue;
+		if(!alive[i] && dieT[i] < 0) continue;
 
 		const uint8_t window = charLoc[i];
-		const float hideMove = ResInfos[i].size.y * 1.5f;
+		const float hideMove = (ResInfos[i].size.y-CharOverHidden) * 1.5f;
 
 		const float startPos = WindowPos[window].y + Offsets[i].y;
+
+		if(!alive[i]){
+			float t = easeInBack(dieT[i]);
+			chars[i]->setPosY(startPos + t * hideMove);
+			continue;
+		}
+
 		if(state == Up){
 			chars[i]->setPosY(startPos);
-			return;
+			continue;
 		}
 
 		float t = std::clamp(T - timeOffsets[i], 0.0f, 1.0f);
