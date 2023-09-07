@@ -27,6 +27,7 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/win2.raw", {}, true },
 		{ "/win3.raw", {}, true },
 
+		{ "/debree.raw", {}, true },
 		{ "/aim.raw", {}, true },
 		RES_HEART
 }){
@@ -81,6 +82,9 @@ void ArtemisGame::PewPew::onLoad(){
 	// Crosshair
 	xhair = std::make_unique<Crosshair>([this](GameObjPtr obj){ addObject(obj); }, [this](const char* path){ return getFile(path); });
 
+	// Bullet debree
+	debree = std::make_unique<Debree>([this](GameObjPtr obj){ addObject(obj); }, [this](GameObjPtr obj){ removeObject(obj); }, [this](const char* path){ return getFile(path); });
+
 	// Hearts
 	hearts = std::make_unique<Hearts>(getFile(FILE_HEART));
 	hearts->getGO()->setPos({ 2, 2 });
@@ -94,6 +98,8 @@ void ArtemisGame::PewPew::onStart(){
 
 void ArtemisGame::PewPew::onLoop(float dt){
 	shootTime += dt;
+
+	debree->loop(dt);
 
 	for(auto& stick : sticks){
 		if(done && lives != 0 && stick.getChar() == OnStick::Artemis) continue; // Win condition anim for Artemis
@@ -132,6 +138,8 @@ void ArtemisGame::PewPew::fire(){
 	const auto pos = xhair->getAim();
 
 	shootHit = false;
+	shootPos = pos;
+
 #define out() { shootSound(); return; }
 
 	if(hitCurtain(pos)) out();
@@ -263,4 +271,6 @@ void ArtemisGame::PewPew::shootSound(){
 		Chirp { 800, 600, 50 },
 		Chirp { 120, 100, 100 }
 	});
+
+	debree->place(shootPos);
 }

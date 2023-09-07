@@ -6,6 +6,7 @@
 #include "Windows.h"
 #include "Waves.h"
 #include "Crosshair.h"
+#include "Debree.h"
 #include "Games/Common/Hearts.h"
 
 namespace ArtemisGame {
@@ -28,6 +29,7 @@ private:
 	std::vector<OnStick> sticks;
 	std::unique_ptr<Windows> windows;
 	std::unique_ptr<Waves> waves;
+	std::unique_ptr<Debree> debree;
 
 	std::unique_ptr<Crosshair> xhair;
 	std::unique_ptr<Hearts> hearts;
@@ -46,6 +48,7 @@ private:
 	float doneT = 0;
 	void finish();
 
+	glm::vec2 shootPos;
 	bool shootHit = false;
 	void shootSound();
 
