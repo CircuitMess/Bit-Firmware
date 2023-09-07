@@ -165,6 +165,13 @@ void Windows::repos(){
 	}
 }
 
+void Windows::hide(){
+	for(int i = 0; i < 3; i++){
+		if(!alive[i]) continue;
+		alive[i] = false;
+	}
+}
+
 bool Windows::allDead(){
 	for(int i = 0; i < 3; i++){
 		if(alive[i]) return false;

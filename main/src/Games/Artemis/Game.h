@@ -40,6 +40,10 @@ private:
 	void onPos();
 	void onNeg();
 
+	bool done = false;
+	float doneT = 0;
+	void finish();
+
 };
 
 }

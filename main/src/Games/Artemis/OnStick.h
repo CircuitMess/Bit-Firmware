@@ -15,6 +15,8 @@ public:
 
 	Char getChar() const;
 
+	void hide();
+
 private:
 	std::shared_ptr<GameObject> objStick;
 	std::shared_ptr<GameObject> objChar;
@@ -22,6 +24,8 @@ private:
 	GameObjPtr objCharArte;
 	GameObjPtr objCharArteAnim;
 	float arteHitT;
+	void arteAnimStart();
+	void arteAnimStop();
 
 	const Char chr;
 	const int8_t layer;

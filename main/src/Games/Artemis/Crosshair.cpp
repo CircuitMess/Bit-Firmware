@@ -101,3 +101,7 @@ glm::vec2 Crosshair::getAimDir(){
 
 	return aim;
 }
+
+void Crosshair::hide(){
+	sight->getRenderComponent()->setVisible(false);
+}

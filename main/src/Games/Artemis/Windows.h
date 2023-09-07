@@ -12,6 +12,8 @@ public:
 
 	bool hit(glm::ivec2 pos);
 
+	void hide();
+
 private:
 	std::vector<GameObjPtr> chars;
 	uint8_t charLoc[3];

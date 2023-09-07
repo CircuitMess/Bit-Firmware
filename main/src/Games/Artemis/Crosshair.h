@@ -16,6 +16,8 @@ public:
 
 	glm::ivec2 getAim();
 
+	void hide();
+
 private:
 
 	GameObjPtr sight;

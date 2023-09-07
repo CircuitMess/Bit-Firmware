@@ -94,13 +94,23 @@ void ArtemisGame::PewPew::onStart(){
 
 void ArtemisGame::PewPew::onLoop(float dt){
 	for(auto& stick : sticks){
+		if(done && lives != 0 && stick.getChar() == OnStick::Artemis) continue; // Win condition anim for Artemis
 		stick.loop(dt);
 	}
-
 	windows->loop(dt);
-	waves->loop(dt);
+
+	if(!done){
+		waves->loop(dt);
+	}
 
 	xhair->loop(dt);
+
+	if(done){
+		doneT += dt;
+		if(doneT >= 1.5){
+			exit();
+		}
+	}
 }
 
 void ArtemisGame::PewPew::handleInput(const Input::Data& data){
@@ -112,6 +122,8 @@ void ArtemisGame::PewPew::handleInput(const Input::Data& data){
 }
 
 void ArtemisGame::PewPew::fire(){
+	if(done) return;
+
 	const auto pos = xhair->getAim();
 
 	if(hitCurtain(pos)) return;
@@ -140,18 +152,38 @@ bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){
 }
 
 void ArtemisGame::PewPew::onPos(){
+	if(done) return;
+
 	score++;
 
 	if(score >= 6){
-		exit();
+		finish();
 	}
 }
 
 void ArtemisGame::PewPew::onNeg(){
+	if(done) return;
+
 	lives--;
 	hearts->setLives(lives);
 
 	if(lives == 0){
-		exit();
+		finish();
+	}
+}
+
+void ArtemisGame::PewPew::finish(){
+	if(done) return;
+	done = true;
+
+	xhair->hide();
+
+	windows->hide();
+	for(int i = 0; i < 4; i++){
+		sticks[i].hide();
+	}
+
+	if(lives == 0){
+		sticks[4].hide(); // Artemis death anim
 	}
 }

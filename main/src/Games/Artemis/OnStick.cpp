@@ -101,16 +101,7 @@ bool OnStick::hit(glm::ivec2 pos){
 
 		if(chr == Artemis){
 			hitBad();
-
-			objStick->getRenderComponent()->setVisible(true);
-			objCharArte->getRenderComponent()->setVisible(false);
-			objCharArteAnim->getRenderComponent()->setVisible(true);
-
-			const auto pos = objStick->getPos() + glm::vec2(ArteAnimOffset);
-			objCharArteAnim->setPos(pos);
-
-			auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
-			anim->start();
+			arteAnimStart();
 		}else{
 			hitGood();
 
@@ -154,14 +145,11 @@ void OnStick::loop(float dt){
 			T = 1;
 
 			if(chr == Artemis){
-				objCharArte->getRenderComponent()->setVisible(true);
-				objCharArteAnim->getRenderComponent()->setVisible(false);
-
-				auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
-				anim->stop();
+				arteAnimStop();
 
 				state = Alive;
 				T = arteHitT;
+
 				updatePos();
 			}else{
 				objChar->getRenderComponent()->setVisible(false);
@@ -194,4 +182,41 @@ void OnStick::updateDropPos(){
 
 OnStick::Char OnStick::getChar() const{
 	return chr;
+}
+
+void OnStick::hide(){
+	if(chr == Artemis){
+		arteAnimStart();
+		state = Dead;
+		return;
+	}
+
+	if(state != Alive) return;
+
+	state = Drop;
+	T = 0;
+}
+
+void OnStick::arteAnimStart(){
+	if(chr != Artemis) return;
+
+	objStick->getRenderComponent()->setVisible(true);
+	objCharArte->getRenderComponent()->setVisible(false);
+	objCharArteAnim->getRenderComponent()->setVisible(true);
+
+	const auto pos = objStick->getPos() + glm::vec2(ArteAnimOffset);
+	objCharArteAnim->setPos(pos);
+
+	auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
+	anim->start();
+}
+
+void OnStick::arteAnimStop(){
+	if(chr != Artemis) return;
+
+	objCharArte->getRenderComponent()->setVisible(true);
+	objCharArteAnim->getRenderComponent()->setVisible(false);
+
+	auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
+	anim->stop();
 }
