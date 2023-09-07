@@ -29,7 +29,7 @@ glm::ivec2 ArteAnimOffset = { -11, -19 };
 OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : chr(chr), layer(layer), addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand() % 30) / 100.0f){
 	static constexpr uint8_t StickHeight = 20;
 
-	const uint8_t stickHeight = StickHeight/2 + rand() % (StickHeight/2);
+	const uint8_t stickHeight = StickHeight/4 + rand() % (3*StickHeight/4);
 	stickStartY = 84.0f + StickHeight - (float) stickHeight;
 
 	objStick = std::make_shared<GameObject>(
