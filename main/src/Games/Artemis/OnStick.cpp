@@ -140,7 +140,7 @@ void OnStick::loop(float dt){
 		updatePos();
 	}else if(state == Drop){
 		T += DropSpeed * dt;
-		if(T >= 1){
+		if((chr != Artemis && T >= 1) || (chr == Artemis && T >= 3)){
 			state = Dead;
 			T = 1;
 
