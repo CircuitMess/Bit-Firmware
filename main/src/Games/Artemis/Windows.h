@@ -33,6 +33,8 @@ private:
 	std::function<void()> hitGood;
 	std::function<void()> hitBad;
 
+	bool allDead();
+
 	template<typename T>
 	static constexpr T easeOutExp(T x){
 		return x == 1 ? 1 : 1.0 - std::pow(2.0, -10.0 * (double) x);

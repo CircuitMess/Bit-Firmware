@@ -108,6 +108,8 @@ void Windows::loop(float dt){
 }
 
 void Windows::relocChars(){
+	if(allDead()) return;
+
 	std::vector<uint8_t> indexes = { 0, 1, 2 }; // indices of free windows
 
 	for(int i = 0; i < 3; i++){
@@ -120,8 +122,10 @@ void Windows::relocChars(){
 		const int posX = WindowPos[window].x + Offsets[i].x;
 		const int posY = WindowPos[window].y + Offsets[i].y + ResInfos[i].size.y - CharOverHidden;
 
-		chars[i]->setPos(posX, posY);
 		charLoc[i] = window;
+
+		if(!alive[i]) continue;
+		chars[i]->setPos(posX, posY);
 	}
 }
 
@@ -159,4 +163,11 @@ void Windows::repos(){
 		t = state == Dropping ? easeInQuad(t) : 1.0f - easeOutExp(t);
 		chars[i]->setPosY(startPos + t * hideMove);
 	}
+}
+
+bool Windows::allDead(){
+	for(int i = 0; i < 3; i++){
+		if(alive[i]) return false;
+	}
+	return true;
 }
