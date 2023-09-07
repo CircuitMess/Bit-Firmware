@@ -44,6 +44,9 @@ private:
 	float doneT = 0;
 	void finish();
 
+	bool shootHit = false;
+	void shootSound();
+
 };
 
 }

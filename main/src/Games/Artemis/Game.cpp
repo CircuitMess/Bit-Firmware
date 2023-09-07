@@ -126,16 +126,21 @@ void ArtemisGame::PewPew::fire(){
 
 	const auto pos = xhair->getAim();
 
-	if(hitCurtain(pos)) return;
-	if(waves->hitFront(pos)) return;
-	if(Ray::within(pos, { 0, 105 }, { 128, 128 })) return;
+	shootHit = false;
+#define out() { shootSound(); return; }
+
+	if(hitCurtain(pos)) out();
+	if(waves->hitFront(pos)) out();
+	if(Ray::within(pos, { 0, 105 }, { 128, 128 })) out();
 
 	for(auto stick = sticks.end()-1; stick >= sticks.begin(); stick--){
-		if(stick->hit(pos)) return;
+		if(stick->hit(pos)) out();
 	}
 
-	if(Ray::hitTest(pos, getFile("/bg.raw"), { 128, 128 })) return;
-	if(windows->hit(pos)) return;
+	if(Ray::hitTest(pos, getFile("/bg.raw"), { 128, 128 })) out();
+	if(windows->hit(pos)) out();
+
+	shootSound();
 }
 
 bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){
@@ -154,22 +159,80 @@ bool ArtemisGame::PewPew::hitCurtain(const glm::ivec2 pos){
 void ArtemisGame::PewPew::onPos(){
 	if(done) return;
 
+	shootHit = true;
 	score++;
 
 	if(score >= 6){
 		finish();
+		// play win melody
+		return;
 	}
+
+	audio.play({
+		   Chirp { 800, 600, 50 },
+		   Chirp { 120, 100, 10 },
+		   Chirp { 1600, 1800, 100 },
+		   Chirp { 1000, 800, 50 }
+   });
 }
 
 void ArtemisGame::PewPew::onNeg(){
 	if(done) return;
 
+	shootHit = true;
 	lives--;
 	hearts->setLives(lives);
 
 	if(lives == 0){
+		audio.play({
+		   Chirp{ 300, 350, 100 },
+		   Chirp{ 350, 1200, 100 },
+		   Chirp{ 1200, 1100, 70 },
+		   Chirp{ 0, 0, 80 },
+		   Chirp{ 1100, 1050, 80 },
+
+		   Chirp { 0, 0, 100 },
+		   Chirp { 790, 700, 300 },
+		   Chirp { 0, 0, 100 },
+		   Chirp { 700, 610, 300 },
+		   Chirp { 0, 0, 100 },
+		   Chirp { 610, 420, 300 },
+		   Chirp { 420, 420, 200 }
+		});
+
 		finish();
+		return;
 	}
+
+	audio.play({
+	   Chirp { 800, 600, 50 },
+	   Chirp { 120, 100, 10 },
+	   Chirp { 0, 0, 50 },
+
+	   Chirp { 300, 350, 100 },
+	   Chirp { 350, 1200, 100 },
+	   Chirp { 1200, 1100, 70 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 1100, 1050, 80 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 1050, 1000, 80 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 1000, 950, 80 },
+
+	   Chirp { 0, 0, 100 },
+	   Chirp { 950, 910, 80 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 910, 870, 80 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 870, 830, 80 },
+	   Chirp { 0, 0, 80 },
+	   Chirp { 830, 790, 80 },
+
+	   Chirp { 0, 0, 90 },
+	   Chirp { 790, 750, 90 },
+	   Chirp { 0, 0, 90 },
+	   Chirp { 750, 710, 100 }
+	});
 }
 
 void ArtemisGame::PewPew::finish(){
@@ -183,7 +246,16 @@ void ArtemisGame::PewPew::finish(){
 		sticks[i].hide();
 	}
 
-	if(lives == 0){
+	if(lives == 0){ // Lose (as opposed to win)
 		sticks[4].hide(); // Artemis death anim
 	}
+}
+
+void ArtemisGame::PewPew::shootSound(){
+	if(shootHit) return;
+
+	audio.play({
+		Chirp { 800, 600, 50 },
+		Chirp { 120, 100, 100 }
+	});
 }
