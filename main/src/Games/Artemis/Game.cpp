@@ -93,6 +93,8 @@ void ArtemisGame::PewPew::onStart(){
 }
 
 void ArtemisGame::PewPew::onLoop(float dt){
+	shootTime += dt;
+
 	for(auto& stick : sticks){
 		if(done && lives != 0 && stick.getChar() == OnStick::Artemis) continue; // Win condition anim for Artemis
 		stick.loop(dt);
@@ -123,6 +125,9 @@ void ArtemisGame::PewPew::handleInput(const Input::Data& data){
 
 void ArtemisGame::PewPew::fire(){
 	if(done) return;
+
+	if(shootTime < ShootCooldown) return;
+	shootTime = 0;
 
 	const auto pos = xhair->getAim();
 

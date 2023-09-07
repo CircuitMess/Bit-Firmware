@@ -34,6 +34,8 @@ private:
 	int lives = 3;
 	int score = 0;
 
+	static constexpr float ShootCooldown = 0.5f;
+	float shootTime = ShootCooldown;
 	void fire();
 	bool hitCurtain(glm::ivec2 pos);
 
