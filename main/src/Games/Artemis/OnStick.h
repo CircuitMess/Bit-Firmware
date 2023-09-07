@@ -17,6 +17,10 @@ private:
 	std::shared_ptr<GameObject> objStick;
 	std::shared_ptr<GameObject> objChar;
 
+	GameObjPtr objCharArte;
+	GameObjPtr objCharArteAnim;
+	float arteHitT;
+
 	const Char chr;
 	const int8_t layer;
 	File fileChar;

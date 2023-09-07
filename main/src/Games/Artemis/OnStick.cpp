@@ -24,6 +24,8 @@ static const std::unordered_map<OnStick::Char, glm::ivec2> Offsets = {
 		{ OnStick::Artemis, { -9, -11 } }
 };
 
+glm::ivec2 ArteAnimOffset = { -11, -19 };
+
 OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile) : chr(chr), layer(layer), addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand() % 30) / 100.0f){
 	static constexpr uint8_t StickHeight = 20;
 
@@ -54,6 +56,19 @@ OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObje
 	animPath += "gif";
 	fileAnimChar = getFile(animPath.c_str());
 
+	if(chr == Artemis){
+		objCharArte = objChar;
+
+		auto anim = std::make_unique<AnimRC>(fileAnimChar);
+		anim->setVisible(false);
+		anim->setLoopMode(GIF::Infinite);
+		anim->setLayer(layer+1);
+		anim->stop();
+
+		objCharArteAnim = std::make_shared<GameObject>(std::move(anim));
+		addObject(objCharArteAnim);
+	}
+
 	// stick on layer 8, char on layer 9 -> waveFront is 10, curtains 11
 
 	T = (float) (rand() % 100) / 100.0f;
@@ -77,19 +92,32 @@ bool OnStick::hit(glm::ivec2 pos){
 		objStick->getRenderComponent()->setVisible(false);
 
 		state = Drop;
+		arteHitT = T;
 		T = 0;
 
-		const auto pos = objChar->getPos();
-		objChar.reset();
+		if(chr == Artemis){
+			objStick->getRenderComponent()->setVisible(true);
+			objCharArte->getRenderComponent()->setVisible(false);
+			objCharArteAnim->getRenderComponent()->setVisible(true);
 
-		auto anim = std::make_unique<AnimRC>(fileAnimChar);
-		anim->setLoopMode(GIF::Single);
-		anim->setLayer(layer+1);
-		anim->start();
+			const auto pos = objStick->getPos() + glm::vec2(ArteAnimOffset);
+			objCharArteAnim->setPos(pos);
 
-		objChar = std::make_shared<GameObject>(std::move(anim));
-		objChar->setPos(pos);
-		addObject(objChar);
+			auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
+			anim->start();
+		}else{
+			const auto pos = objChar->getPos();
+			objChar.reset();
+
+			auto anim = std::make_unique<AnimRC>(fileAnimChar);
+			anim->setLoopMode(GIF::Single);
+			anim->setLayer(layer+1);
+			anim->start();
+
+			objChar = std::make_shared<GameObject>(std::move(anim));
+			objChar->setPos(pos);
+			addObject(objChar);
+		}
 	}
 
 	return hit;
@@ -117,8 +145,20 @@ void OnStick::loop(float dt){
 			state = Dead;
 			T = 1;
 
-			objChar->getRenderComponent()->setVisible(false);
-			objStick->getRenderComponent()->setVisible(false);
+			if(chr == Artemis){
+				objCharArte->getRenderComponent()->setVisible(true);
+				objCharArteAnim->getRenderComponent()->setVisible(false);
+
+				auto anim = std::reinterpret_pointer_cast<AnimRC>(objCharArteAnim->getRenderComponent());
+				anim->stop();
+
+				state = Alive;
+				T = arteHitT;
+				updatePos();
+			}else{
+				objChar->getRenderComponent()->setVisible(false);
+				objStick->getRenderComponent()->setVisible(false);
+			}
 		}
 
 		updateDropPos();
@@ -136,6 +176,8 @@ void OnStick::updatePos(){
 }
 
 void OnStick::updateDropPos(){
+	if(chr == Artemis) return;
+
 	const auto pos = stickStartY + DropSize * T;
 
 	objStick->setPosY(pos);
