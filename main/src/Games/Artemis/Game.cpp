@@ -176,8 +176,18 @@ void ArtemisGame::PewPew::onPos(){
 	score++;
 
 	if(score >= 6){
+		audio.play({
+		   Chirp { 1600, 1800, 100 },
+		   Chirp { 1000, 800, 50 },
+
+		   Chirp { 400, 500, 200 },
+		   Chirp { 0, 0, 150 },
+		   Chirp { 550, 700, 200 },
+		   Chirp { 0, 0, 150 },
+		   Chirp { 800, 1000, 200 },
+		});
+
 		finish();
-		// play win melody
 		return;
 	}
 
