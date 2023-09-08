@@ -31,7 +31,8 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 		{ "/aim.raw", {}, true },
 		RES_HEART
 }){
-
+	robot = std::make_shared<RoboCtrl::Artemis>();
+	setRobot(robot);
 }
 
 void ArtemisGame::PewPew::onLoad(){
@@ -90,6 +91,8 @@ void ArtemisGame::PewPew::onLoad(){
 	hearts->getGO()->setPos({ 2, 2 });
 	hearts->getGO()->getRenderComponent()->setLayer(60);
 	addObject(hearts->getGO());
+
+	robot->setSpeed(500);
 }
 
 void ArtemisGame::PewPew::onStart(){
@@ -100,6 +103,14 @@ void ArtemisGame::PewPew::onLoop(float dt){
 	shootTime += dt;
 
 	debree->loop(dt);
+
+	if(roboFastT != 0){
+		roboFastT += dt;
+		if(roboFastT >= 2){
+			roboFastT = 0;
+			robot->setSpeed(500.0f * (1.0f - (float) score / 6.0f));
+		}
+	}
 
 	for(auto& stick : sticks){
 		if(done && lives != 0 && stick.getChar() == OnStick::Artemis) continue; // Win condition anim for Artemis
@@ -175,6 +186,9 @@ void ArtemisGame::PewPew::onPos(){
 	shootHit = true;
 	score++;
 
+	roboFastT = 0;
+	robot->setSpeed(500.0f * (1.0f - (float) score / 6.0f));
+
 	if(score >= 6){
 		audio.play({
 		   Chirp { 1600, 1800, 100 },
@@ -206,7 +220,12 @@ void ArtemisGame::PewPew::onNeg(){
 	lives--;
 	hearts->setLives(lives);
 
+	roboFastT = 0.001;
+	robot->setSpeed(0);
+
 	if(lives == 0){
+		roboFastT = 0;
+
 		audio.play({
 		   Chirp{ 300, 350, 100 },
 		   Chirp{ 350, 1200, 100 },

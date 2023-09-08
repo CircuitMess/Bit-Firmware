@@ -8,6 +8,7 @@
 #include "Crosshair.h"
 #include "Debree.h"
 #include "Games/Common/Hearts.h"
+#include "RoboCtrl/Artemis.h"
 
 namespace ArtemisGame {
 
@@ -22,6 +23,9 @@ private:
 	void onLoop(float deltaTime) override;
 
 	void handleInput(const Input::Data& data) override;
+
+	std::shared_ptr<RoboCtrl::Artemis> robot;
+	float roboFastT = 0;
 
 	GameObjPtr bg;
 	GameObjPtr curtL, curtR;
