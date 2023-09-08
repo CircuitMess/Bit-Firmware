@@ -44,7 +44,9 @@ protected:
 	File getFile(const std::string& path);
 
 	void addObject(const GameObjPtr& obj);
+	void addObjects(std::initializer_list<const GameObjPtr> objs);
 	void removeObject(const GameObjPtr& obj);
+	void removeObjects(std::initializer_list<const GameObjPtr> objs);
 
 	CollisionSystem collision;
 

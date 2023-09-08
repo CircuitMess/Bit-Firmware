@@ -437,19 +437,19 @@ void JigHWTest::RobotTest(){
 
 		auto data = (Robots::Event*) evt.data;
 		if(data->action == Robots::Event::Remove){
-			frprint(TFT_WHITE, "Robot maknut");
 			bobRem = true;
 			if(bobRem && bobIns){
 				testDone = true;
 			}
+			frprint(TFT_WHITE, "Robot maknut");
 			buzz();
 		}else if(data->action == Robots::Event::Insert){
 			if(data->robot == Bob){
-				frprint(TFT_WHITE, "Bob ustekan");
 				bobIns = true;
 				if(bobRem && bobIns){
 					testDone = true;
 				}
+				frprint(TFT_WHITE, "Bob ustekan");
 				buzzDbl();
 			}else{
 				bobRem = false;

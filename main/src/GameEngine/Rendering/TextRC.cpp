@@ -9,7 +9,7 @@ void TextRC::push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool flip
 	parent.setTextColor(style.color);
 	parent.setTextSize(style.scale);
 
-	parent.drawString(text.c_str(), pos.x, pos.y);
+	parent.drawString(text.c_str(), std::round(pos.x), std::round(pos.y));
 }
 
 void TextRC::setText(std::string text){

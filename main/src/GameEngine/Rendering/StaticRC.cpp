@@ -12,13 +12,13 @@ void StaticRC::push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool fl
 	}
 
 	if(rot == 0){
-		Display::drawFile(parent, file, pos.x, pos.y, dim.x, dim.y);
+		Display::drawFile(parent, file, std::round(pos.x), std::round(pos.y), dim.x, dim.y);
 	}else{
 		Sprite rotated = Sprite(parent);
 		rotated.createSprite(dim.x, dim.y);
 		rotated.clear(TFT_TRANSPARENT);
 		Display::drawFile(rotated, file, 0, 0, dim.x, dim.y);
-		rotated.pushRotateZoomWithAA(pos.x + dim.x / 2, pos.y + dim.y / 2, rot, 1, 1, TFT_TRANSPARENT);
+		rotated.pushRotateZoomWithAA(std::round(pos.x + (float) dim.x / 2.0), std::round(pos.y + (float) dim.y / 2.0), rot, 1, 1, TFT_TRANSPARENT);
 	}
 }
 
