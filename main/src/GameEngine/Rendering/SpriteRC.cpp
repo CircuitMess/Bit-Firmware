@@ -10,7 +10,8 @@ std::shared_ptr<Sprite> SpriteRC::getSprite() const{
 }
 
 void SpriteRC::push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool flipY) const{
-	sprite->pushRotateZoomWithAA(&parent, pos.x + sprite->width() / 2, pos.y + sprite->height() / 2, rot, scale, scale, TFT_TRANSPARENT);
+	sprite->pushRotateZoomWithAA(&parent, (pos.x + (float) sprite->width() / 2.0), (pos.y + (float) sprite->height() / 2.0), rot, scale, scale, TFT_TRANSPARENT);
+
 }
 
 void SpriteRC::setScale(float scale){

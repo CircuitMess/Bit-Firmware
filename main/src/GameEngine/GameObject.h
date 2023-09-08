@@ -8,12 +8,14 @@
 
 class GameObject {
 public:
-	GameObject(std::unique_ptr<RenderComponent> rc, std::unique_ptr<CollisionComponent> cc);
+	GameObject(std::unique_ptr<RenderComponent> rc, std::unique_ptr<CollisionComponent> cc = nullptr);
 
 	virtual ~GameObject() = default;
 	glm::vec2 getPos() const;
 	void setPos(glm::vec2 pos);
 	void setPos(float x, float y);
+	void setPosX(float x);
+	void setPosY(float y);
 
 	float getRot() const;
 	void setRot(float rot);

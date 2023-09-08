@@ -16,6 +16,14 @@ void GameObject::setPos(float x, float y){
 	this->pos = { x, y };
 }
 
+void GameObject::setPosX(float x){
+	pos.x = x;
+}
+
+void GameObject::setPosY(float y){
+	pos.y = y;
+}
+
 std::shared_ptr<RenderComponent> GameObject::getRenderComponent() const{
 	return renderComponent;
 }

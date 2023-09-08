@@ -70,9 +70,21 @@ void Game::addObject(const GameObjPtr& obj){
 	objects.insert(obj);
 }
 
+void Game::addObjects(std::initializer_list<const GameObjPtr> objs){
+	for(auto obj : objs){
+		addObject(obj);
+	}
+}
+
 void Game::removeObject(const GameObjPtr& obj){
 	collision.removeObject(*obj);
 	objects.erase(obj);
+}
+
+void Game::removeObjects(std::initializer_list<const GameObjPtr> objs){
+	for(auto obj : objs){
+		removeObject(obj);
+	}
 }
 
 void Game::handleInput(const Input::Data& data){
