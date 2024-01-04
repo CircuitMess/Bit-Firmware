@@ -51,10 +51,11 @@ private:
 	static constexpr uint8_t KillHeight = 21; //if a block is placed in row 21, that's game over
 	static constexpr PixelDim NextBlockPos = { -3, 16 };
 
-	static constexpr uint8_t MaxLevel = 9;
+	static constexpr uint8_t MaxLevel = 8;
 	static constexpr float BaseSpeed = TileDim.y;
 	static constexpr float SoftDropSpeed = 30 * TileDim.y;
-	static constexpr float LevelSpeedFactors[MaxLevel] = { 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3 };
+	static constexpr float LevelSpeedFactors[MaxLevel + 1] = { 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3 };
+	static constexpr float MaxLevelSpeedFactorIncrement = 0.25;
 	static constexpr uint32_t BlockTypesNum = 7;
 	static constexpr uint32_t BlockColorsNum = 6;
 	static constexpr const char* Sprites[BlockColorsNum + 1] = {

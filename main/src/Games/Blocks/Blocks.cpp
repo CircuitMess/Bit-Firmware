@@ -76,6 +76,7 @@ void Blocks::onLoad(){
 		addObject(segment);
 	}
 
+	updateScore();
 	state = State::Running;
 	newBlock();
 	memset((void*) blocksMatrix, 0, GridDim.x * GridDim.y * sizeof(bool));
@@ -84,7 +85,9 @@ void Blocks::onLoad(){
 void Blocks::onLoop(float deltaTime){
 	if(state == State::Running){
 		handleInputRepeat(deltaTime);
-		auto speed = BaseSpeed * LevelSpeedFactors[level];
+		auto factor = (level <= MaxLevel) ? (LevelSpeedFactors[level]) :
+					  (LevelSpeedFactors[MaxLevel] + MaxLevelSpeedFactorIncrement * (level - MaxLevel));
+		auto speed = BaseSpeed * factor;
 		if(fastDrop){
 			speed = std::max(speed, SoftDropSpeed);
 		}
@@ -334,10 +337,8 @@ void Blocks::checkLineClear(){
 	}
 
 	linesCleared += multipleLinesCleared;
-	if(linesCleared >= (level * 10)){
-		if((level + 1) <= MaxLevel){
-			level++;
-		}
+	if(linesCleared >= (level + 1) * 10){
+		level++;
 	}
 }
 
@@ -355,6 +356,11 @@ void Blocks::updateScore(){
 	s.insert(s.begin(), 5 - s.length(), '0');
 	linesTextRC->setText(s);
 
-	s = "LV. " + std::to_string(level);
+
+	s = "LV.";
+	if(level + 1 < 10){
+		s += " ";
+	}
+	s += std::to_string(level + 1);
 	levelTextRC->setText(s);
 }
