@@ -11,8 +11,7 @@ PWM::PWM(uint8_t pin, ledc_channel_t channel, bool invertDuty) : pin(pin), chann
 			.duty_resolution  = DutyResDefault,
 			.timer_num        = getTimer(channel),
 			.freq_hz          = DefaultFreq,
-			.clk_cfg          = LEDC_AUTO_CLK,
-			.deconfigure      = false
+			.clk_cfg          = LEDC_AUTO_CLK
 	};
 	if(ledc_timer_config(&ledc_timer) != ESP_OK){
 		ESP_LOGE(TAG, "timer config failed!");

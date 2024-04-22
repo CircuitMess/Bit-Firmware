@@ -1,5 +1,5 @@
-#ifndef BIT_FIRMWARE_PAUSESCREEN_H
-#define BIT_FIRMWARE_PAUSESCREEN_H
+#ifndef BIT_FIRMWARE_GAMEINFOSCREEN_H
+#define BIT_FIRMWARE_GAMEINFOSCREEN_H
 
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
@@ -10,21 +10,24 @@
 #include "Services/GameManager.h"
 #include "BatteryElement.h"
 
-class PauseScreen : public LVScreen {
+enum class InfoType : uint8_t {
+	HighScore,
+	Instructions
+};
+
+class GameInfoScreen : public LVScreen {
 public:
-	PauseScreen(Games current);
+	GameInfoScreen(Games current, InfoType type);
 
 private:
 	EventQueue evts;
 	Games currentGame;
+	InfoType type;
 
 	BatteryElement* batt;
 
 	LVStyle itemStyle;
 	LVStyle focusStyle;
-
-	BoolElement* audioSwitch;
-	SliderElement* blSlider;
 
 	void buildUI();
 
@@ -32,8 +35,7 @@ private:
 	void onStop() override;
 	void loop() override;
 
-	void showControls();
 	void exit();
 };
 
-#endif //BIT_FIRMWARE_PAUSESCREEN_H
+#endif //BIT_FIRMWARE_GAMEINFOSCREEN_H
