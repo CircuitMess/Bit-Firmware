@@ -75,17 +75,22 @@ void GameMenuScreen::buildUI(){
 		}, e->user_data);
 	}, LV_EVENT_CLICKED, this);
 
-	auto score = mkBtn("High score");
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+		if(gm->getHighScore(currentGame, highScore)){
+			auto score = mkBtn("High score");
 
-	lv_obj_add_event_cb(score, [](lv_event_t* e){
-		lv_async_call([](void* arg){
-			auto screen = (GameMenuScreen*) arg;
+			lv_obj_add_event_cb(score, [](lv_event_t* e){
+				lv_async_call([](void* arg){
+					auto screen = (GameMenuScreen*) arg;
 
-			if(auto ui = (UIThread*) Services.get(Service::UI)){
-				ui->startScreen([screen](){ return std::make_unique<GameInfoScreen>(screen->currentGame, InfoType::HighScore); });
-			}
-		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+					if(auto ui = (UIThread*) Services.get(Service::UI)){
+						ui->startScreen([screen](){ return std::make_unique<GameInfoScreen>(screen->currentGame, InfoType::HighScore); });
+					}
+				}, e->user_data);
+			}, LV_EVENT_CLICKED, this);
+		}
+	}
 
 	auto instructions = mkBtn("Instructions");
 
@@ -141,7 +146,6 @@ void GameMenuScreen::loop(){
 		free(e.data);
 	}
 }
-
 
 void GameMenuScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);

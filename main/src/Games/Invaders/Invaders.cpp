@@ -2,6 +2,8 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "Util/stdafx.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 200, 600, 100 }, { 600, 80,  300 } },
@@ -129,6 +131,14 @@ void Invaders::Invaders::handleInput(const Input::Data& data){
 void Invaders::Invaders::onStop(){
 	player->btnReleased(Input::Left);
 	player->btnReleased(Input::Right);
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Resistron, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Resistron, score);
+		}
+	}
 }
 
 void Invaders::Invaders::shoot(){

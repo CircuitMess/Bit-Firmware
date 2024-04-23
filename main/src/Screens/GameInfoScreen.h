@@ -27,7 +27,6 @@ private:
 	BatteryElement* batt;
 
 	LVStyle itemStyle;
-	LVStyle focusStyle;
 
 	void buildUI();
 

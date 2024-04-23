@@ -3,6 +3,8 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/MultiRC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
@@ -219,6 +221,14 @@ void CapacitronGame::CapacitronGame::handleInput(const Input::Data& data){
 void CapacitronGame::CapacitronGame::onStop(){
 	player->btnReleased(Input::Left);
 	player->btnReleased(Input::Right);
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Capacitron, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Capacitron, score);
+		}
+	}
 }
 
 void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled, uint8_t powerupRate){

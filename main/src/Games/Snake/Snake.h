@@ -12,6 +12,7 @@ public:
 protected:
 	void onLoad() override;
 	void onLoop(float deltaTime) override;
+	virtual void onStop() override;
 	void handleInput(const Input::Data& data) override;
 
 private:

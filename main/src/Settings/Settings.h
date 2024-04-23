@@ -24,10 +24,8 @@ public:
 	static constexpr const char* SleepText[SleepSteps] = { "OFF", "30 sec", "1 min", "2 min", "5 min" };
 
 private:
-	nvs_handle_t handle{};
 	SettingsStruct settingsStruct;
 
-	static constexpr const char* NVSNamespace = "Bit";
 	static constexpr const char* BlobName = "Settings";
 
 	void load();

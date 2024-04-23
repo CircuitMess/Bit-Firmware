@@ -2,6 +2,8 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 Snake::Snake(Sprite& canvas) : Game(canvas, "/Games/Snake", {
 		{ "/bg.raw", {}, true },
@@ -99,6 +101,16 @@ void Snake::onLoop(float deltaTime){
 
 			exit();
 			return;
+		}
+	}
+}
+
+void Snake::onStop(){
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Snake, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Snake, score);
 		}
 	}
 }

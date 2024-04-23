@@ -2,7 +2,8 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
-
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 MarvGame::MarvGame::MarvGame(Sprite& canvas) : Game(canvas, "/Games/Marv", {
 		{ "/bg.raw", {}, true },
@@ -169,6 +170,14 @@ void MarvGame::MarvGame::onLoop(float deltaTime){
 
 void MarvGame::MarvGame::onStop(){
 	duck->duckReleased();
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Marv, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Marv, score);
+		}
+	}
 }
 
 void MarvGame::MarvGame::setupObstacles(){

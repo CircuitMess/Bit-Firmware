@@ -5,6 +5,8 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
 #include "gtx/vector_angle.hpp"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 constexpr Flappy::ObstacleDesc Flappy::TopObstacles[];
 constexpr Flappy::ObstacleDesc Flappy::BotObstacles[];
@@ -66,6 +68,14 @@ void Flappy::onStart(){
 void Flappy::onStop(){
 	anim->stop();
 	anim->reset();
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::MrBee, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::MrBee, score);
+		}
+	}
 }
 
 void Flappy::onLoop(float deltaTime){

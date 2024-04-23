@@ -6,13 +6,13 @@
 #include "Util/Services.h"
 #include "Settings/Settings.h"
 #include "GameMenuScreen.h"
+#include "Periph/NVSFlash.h"
 
-GameInfoScreen::GameInfoScreen(Games current, InfoType type) : evts(6), currentGame(current){
+GameInfoScreen::GameInfoScreen(Games current, InfoType type) : evts(6), currentGame(current), type(type){
 	buildUI();
 }
 
 void GameInfoScreen::buildUI(){
-
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
@@ -45,10 +45,37 @@ void GameInfoScreen::buildUI(){
 	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
 	lv_style_set_radius(itemStyle, 2);
 
-	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
-	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
+	auto mkLabel = [this, &rest](const char* text){
+		auto item = lv_obj_create(rest);
+		lv_obj_add_style(item, itemStyle, 0);
 
-	// TODO: create img element for current game and instructions or text for high score info
+		auto label = lv_label_create(item);
+		lv_label_set_text(label, text);
+		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+		lv_obj_center(label);
+
+		return item;
+	};
+
+	if(type == InfoType::HighScore){
+		mkLabel("HIGH SCORE:");
+
+		const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
+		if(nvs == nullptr){
+			return;
+		}
+
+		if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+			uint32_t highScore = 0;
+
+			if(gm->getHighScore(currentGame, highScore)){
+				mkLabel(std::to_string(highScore).c_str());
+			}
+		}
+	}else if(type == InfoType::Instructions){
+		// TODO: create img element for current game and instructions
+		mkLabel("WIP instructions");
+	}
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0));
 }
@@ -85,10 +112,6 @@ void GameInfoScreen::loop(){
 }
 
 void GameInfoScreen::exit(){
-	auto disp = (Display*) Services.get(Service::Display);
-	auto lgfx = disp->getLGFX();
-	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
-
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([this](){ return std::make_unique<GameMenuScreen>(currentGame); });
 }

@@ -4,6 +4,8 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, "/Games/Robby", {
 		{ "/bg.raw", {}, true },
@@ -201,6 +203,14 @@ void Asteroids::Asteroids::onStart(){
 void Asteroids::Asteroids::onStop(){
 	handleInput({ Input::Button::Left, Input::Data::Release });
 	handleInput({ Input::Button::Right, Input::Data::Release });
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Robby, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Robby, score);
+		}
+	}
 }
 
 void Asteroids::Asteroids::updateBullets(float deltaTime){

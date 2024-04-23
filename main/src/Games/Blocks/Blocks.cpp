@@ -2,6 +2,8 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
 Blocks::Blocks(Sprite& canvas) : Game(canvas, "/Games/Blocks", {
 		{ Sprites[0], {}, true },
@@ -163,6 +165,14 @@ void Blocks::handleInput(const Input::Data& data){
 
 void Blocks::onStop(){
 	handleInput({ lastButton, Input::Data::Release });
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		uint32_t highScore = 0;
+
+		if(!gm->getHighScore(Games::Blocks, highScore) || score > highScore || highScore == 0){
+			gm->setHighScore(Games::Blocks, score);
+		}
+	}
 }
 
 void Blocks::gameOver(){

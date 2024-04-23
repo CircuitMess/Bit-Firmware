@@ -1,6 +1,5 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <nvs_flash.h>
 #include "Settings/Settings.h"
 #include "Util/Services.h"
 #include "Periph/PWM.h"
@@ -24,6 +23,7 @@
 #include <esp_sleep.h>
 #include <Util/stdafx.h>
 #include "JigHWTest/JigHWTest.h"
+#include "Periph/NVSFlash.h"
 
 BacklightBrightness* bl;
 
@@ -68,12 +68,8 @@ void init(){
 	};
 	gpio_config(&cfg);
 
-	auto ret = nvs_flash_init();
-	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
-		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
-	}
-	ESP_ERROR_CHECK(ret);
+	auto nvs = new NVSFlash();
+	Services.set(Service::NVS, nvs);
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);

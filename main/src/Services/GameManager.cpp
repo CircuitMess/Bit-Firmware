@@ -1,6 +1,7 @@
 #include "GameManager.h"
 #include "Settings/Settings.h"
 #include "Util/Services.h"
+#include "Periph/NVSFlash.h"
 #include <Screens/MainMenu.h>
 
 const std::unordered_map<Games, Robot> GameManager::GameRobot = {
@@ -32,6 +33,26 @@ bool GameManager::isUnlocked(Games game){
 	if(!GameRobot.contains(game)) return true;
 	auto rob = GameRobot.at(game);
 	return unlocked.count(rob);
+}
+
+void GameManager::setHighScore(Games game, uint32_t score) const{
+	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
+	if(nvs == nullptr){
+		return;
+	}
+
+	const std::string blob = std::string("HighScore") + std::to_string((uint8_t) game);
+	nvs->set(blob, score);
+}
+
+bool GameManager::getHighScore(Games game, uint32_t& score) const{
+	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
+	if(nvs == nullptr){
+		return false;
+	}
+
+	const std::string blob = std::string("HighScore") + std::to_string((uint8_t) game);
+	return nvs->get(blob, score);
 }
 
 void GameManager::storeState(){
