@@ -3,7 +3,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include <time.h>
 
-BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, "/Games/Bob", {
+BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, Games::Bob, "/Games/Bob", {
 		{ "/bg.raw", {}, true },
 		{ "/Bomb.raw", {}, true },
 		{ "/Dynamite.raw", {}, true },

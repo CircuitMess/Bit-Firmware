@@ -7,6 +7,7 @@
 #include "Settings/Settings.h"
 #include "GameMenuScreen.h"
 #include "Periph/NVSFlash.h"
+#include <sstream>
 
 GameInfoScreen::GameInfoScreen(Games current, InfoType type) : evts(6), currentGame(current), type(type){
 	buildUI();
@@ -39,7 +40,7 @@ void GameInfoScreen::buildUI(){
 	lv_obj_set_style_pad_all(rest, 4, 0);
 
 	lv_style_set_width(itemStyle, lv_pct(100));
-	lv_style_set_height(itemStyle, 17);
+	lv_style_set_height(itemStyle, 16);
 	lv_style_set_border_width(itemStyle, 1);
 	lv_style_set_border_color(itemStyle, lv_color_make(217, 153, 186));
 	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
@@ -60,16 +61,26 @@ void GameInfoScreen::buildUI(){
 	if(type == InfoType::HighScore){
 		mkLabel("HIGH SCORE:");
 
-		const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
-		if(nvs == nullptr){
-			return;
-		}
-
 		if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-			uint32_t highScore = 0;
+			std::array<HighScore, 5> highScores;
 
-			if(gm->getHighScore(currentGame, highScore)){
-				mkLabel(std::to_string(highScore).c_str());
+			gm->getHighScores(currentGame, highScores);
+
+			std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
+				return (first.valid && !second.valid) || first.score > second.score;
+			});
+
+			for(HighScore& highScore : highScores){
+				if(highScore.valid){
+					std::stringstream label;
+					label << highScore.id[0];
+					label << highScore.id[1];
+					label << highScore.id[2];
+					label << ": ";
+					label << highScore.score;
+
+					mkLabel(label.str().c_str());
+				}
 			}
 		}
 	}else if(type == InfoType::Instructions){

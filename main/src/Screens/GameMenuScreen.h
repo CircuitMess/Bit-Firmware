@@ -12,7 +12,7 @@
 
 class GameMenuScreen : public LVScreen {
 public:
-	GameMenuScreen(Games current);
+	explicit GameMenuScreen(Games current);
 
 private:
 	EventQueue evts;

@@ -7,11 +7,13 @@
 #include "gtx/vector_angle.hpp"
 #include "Services/GameManager.h"
 #include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/AwardsScreen.h"
 
 constexpr Flappy::ObstacleDesc Flappy::TopObstacles[];
 constexpr Flappy::ObstacleDesc Flappy::BotObstacles[];
 
-Flappy::Flappy(Sprite& canvas) : Game(canvas, "/Games/Flappy", {
+Flappy::Flappy(Sprite& canvas) : Game(canvas, Games::MrBee, "/Games/Flappy", {
 		{ "/bee.gif", {}, true },
 		{ "/bg.raw", {}, true },
 		RES_HEART,
@@ -68,14 +70,6 @@ void Flappy::onStart(){
 void Flappy::onStop(){
 	anim->stop();
 	anim->reset();
-
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		uint32_t highScore = 0;
-
-		if(!gm->getHighScore(Games::MrBee, highScore) || score > highScore || highScore == 0){
-			gm->setHighScore(Games::MrBee, score);
-		}
-	}
 }
 
 void Flappy::onLoop(float deltaTime){
@@ -303,4 +297,39 @@ void Flappy::die(){
 		collision.removePair(*bee, *obstacle.top);
 		collision.removePair(*bee, *obstacle.bot);
 	}
+}
+
+void Flappy::exit(){
+	Game::exited = true;
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		std::array<HighScore, 5> highScores;
+
+		gm->getHighScores(Games::MrBee, highScores);
+
+		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
+			return (first.valid && !second.valid) || first.score > second.score;
+		});
+
+		for(const HighScore& highScore : highScores){
+			if(highScore.valid && highScore.score == score){
+				Game::exit();
+				return; // Only the first entry of equal high score should be valid
+			}
+		}
+
+		if(!highScores.back().valid || highScores.back().score < score){
+			highScores.back().valid = true;
+			highScores.back().score = score;
+			highScores.back().id[0] = ' ';
+			highScores.back().id[1] = ' ';
+			highScores.back().id[2] = ' ';
+
+			auto ui = (UIThread*) Services.get(Service::UI);
+			ui->startScreen([highScores](){ return std::make_unique<AwardsScreen>(Games::MrBee, highScores); });
+			return;
+		}
+	}
+
+	Game::exit();
 }

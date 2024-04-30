@@ -2,7 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 
-HertzGame::HertzGame(Sprite& canvas) : Game(canvas, "/Games/Hertz", {
+HertzGame::HertzGame(Sprite& canvas) : Game(canvas, Games::Hertz, "/Games/Hertz", {
 		{ "/Arrow.raw", {}, true },
 		{ "/bg.raw",    {}, true },
 		{ "/win.gif",   {}, false },

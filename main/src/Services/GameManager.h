@@ -62,9 +62,6 @@ public:
 
 	bool isUnlocked(Games game);
 
-	void setHighScore(Games game, uint32_t score) const;
-	bool getHighScore(Games game, uint32_t& score) const;
-
 	static const std::unordered_map<Games, Robot> GameRobot;
 
 private:

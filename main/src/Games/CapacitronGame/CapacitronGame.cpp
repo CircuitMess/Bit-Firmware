@@ -5,8 +5,10 @@
 #include "GameEngine/Collision/PolygonCC.h"
 #include "Services/GameManager.h"
 #include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/AwardsScreen.h"
 
-CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/Games/Capacitron", {
+CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, Games::Capacitron, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
 		{ "/bg2.raw", {}, true },
 		{ "/bg3.raw", {}, true },
@@ -221,14 +223,6 @@ void CapacitronGame::CapacitronGame::handleInput(const Input::Data& data){
 void CapacitronGame::CapacitronGame::onStop(){
 	player->btnReleased(Input::Left);
 	player->btnReleased(Input::Right);
-
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		uint32_t highScore = 0;
-
-		if(!gm->getHighScore(Games::Capacitron, highScore) || score > highScore || highScore == 0){
-			gm->setHighScore(Games::Capacitron, score);
-		}
-	}
 }
 
 void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled, uint8_t powerupRate){
@@ -389,4 +383,39 @@ void CapacitronGame::CapacitronGame::cleanupPads(){
 		const uint8_t rate = PowerupsStartingRate - (PowerupsStartingRate - PowerupsMinimumRate) * (score - PowerupsStartScore) / MaxDifficultyScore;
 		createPad(surface, score > PowerupsStartScore, rate);
 	}
+}
+
+void CapacitronGame::CapacitronGame::exit(){
+	Game::exited = true;
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		std::array<HighScore, 5> highScores;
+
+		gm->getHighScores(Games::Capacitron, highScores);
+
+		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
+			return (first.valid && !second.valid) || first.score > second.score;
+		});
+
+		for(const HighScore& highScore : highScores){
+			if(highScore.valid && highScore.score == score){
+				Game::exit();
+				return; // Only the first entry of equal high score should be valid
+			}
+		}
+
+		if(!highScores.back().valid || highScores.back().score < score){
+			highScores.back().valid = true;
+			highScores.back().score = score;
+			highScores.back().id[0] = ' ';
+			highScores.back().id[1] = ' ';
+			highScores.back().id[2] = ' ';
+
+			auto ui = (UIThread*) Services.get(Service::UI);
+			ui->startScreen([highScores](){ return std::make_unique<AwardsScreen>(Games::Capacitron, highScores); });
+			return;
+		}
+	}
+
+	Game::exit();
 }

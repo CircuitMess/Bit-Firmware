@@ -60,6 +60,8 @@ private:
 
 	void handleInput(const Input::Data& data) override;
 
+	void exit();
+
 	struct ObstacleDesc {
 		const char* path;
 		PixelDim dim;

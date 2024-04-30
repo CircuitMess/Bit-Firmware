@@ -87,6 +87,8 @@ private:
 	float downCounter = 0;
 	void moveInvaders(float delta); //move left to the edge, then down, then right to the edge, then down etc.
 
+	void exit();
+
 	static const Sound InvaderDeathSounds[4];
 
 	std::shared_ptr<RoboCtrl::Resistron> robot;

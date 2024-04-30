@@ -4,6 +4,8 @@
 #include "Util/stdafx.h"
 #include "Services/GameManager.h"
 #include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/AwardsScreen.h"
 
 const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 200, 600, 100 }, { 600, 80,  300 } },
@@ -12,7 +14,7 @@ const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 400, 200, 100 }, { 0,   0,   50 },  { 250, 50,  100 } }
 };
 
-Invaders::Invaders::Invaders(Sprite& canvas) : Game(canvas, "/Games/Resistron", {
+Invaders::Invaders::Invaders(Sprite& canvas) : Game(canvas, Games::Resistron, "/Games/Resistron", {
 		{ "/bg.raw", {}, true },
 
 		{ InvaderSprites[0].path, {}, true },
@@ -131,14 +133,6 @@ void Invaders::Invaders::handleInput(const Input::Data& data){
 void Invaders::Invaders::onStop(){
 	player->btnReleased(Input::Left);
 	player->btnReleased(Input::Right);
-
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		uint32_t highScore = 0;
-
-		if(!gm->getHighScore(Games::Resistron, highScore) || score > highScore || highScore == 0){
-			gm->setHighScore(Games::Resistron, score);
-		}
-	}
 }
 
 void Invaders::Invaders::shoot(){
@@ -399,4 +393,39 @@ void Invaders::Invaders::moveInvaders(float delta){
 			invadersDirection = nextDirection;
 		}
 	}
+}
+
+void Invaders::Invaders::exit(){
+	Game::exited = true;
+
+	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
+		std::array<HighScore, 5> highScores;
+
+		gm->getHighScores(Games::Resistron, highScores);
+
+		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
+			return (first.valid && !second.valid) || first.score > second.score;
+		});
+
+		for(const HighScore& highScore : highScores){
+			if(highScore.valid && highScore.score == score){
+				Game::exit();
+				return; // Only the first entry of equal high score should be valid
+			}
+		}
+
+		if(!highScores.back().valid || highScores.back().score < score){
+			highScores.back().valid = true;
+			highScores.back().score = score;
+			highScores.back().id[0] = ' ';
+			highScores.back().id[1] = ' ';
+			highScores.back().id[2] = ' ';
+
+			auto ui = (UIThread*) Services.get(Service::UI);
+			ui->startScreen([highScores](){ return std::make_unique<AwardsScreen>(Games::Resistron, highScores); });
+			return;
+		}
+	}
+
+	Game::exit();
 }

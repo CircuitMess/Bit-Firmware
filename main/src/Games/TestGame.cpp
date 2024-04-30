@@ -6,7 +6,7 @@
 #include "GameEngine/Rendering/TextRC.h"
 #include "Util/stdafx.h"
 
-TestGame::TestGame(Sprite& canvas) : Game(canvas, "", {
+TestGame::TestGame(Sprite& canvas) : Game(canvas, Games::COUNT, "", {
 		{ "/Pat1.gif",            {}, true },
 		{ "/Level1.raw",       {}, true },
 		{ "/MenuIcons/Icon1.raw", {}, true },

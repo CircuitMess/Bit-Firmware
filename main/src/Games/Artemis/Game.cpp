@@ -2,7 +2,7 @@
 #include "Ray.h"
 #include "GameEngine/Rendering/StaticRC.h"
 
-ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
+ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, Games::Artemis, "/Games/Arte", {
 		{ "/bg.raw", {}, true },
 		{ "/bg_bot.raw", {}, true },
 		{ "/curt_l.raw", {}, true },

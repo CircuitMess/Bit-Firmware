@@ -35,26 +35,6 @@ bool GameManager::isUnlocked(Games game){
 	return unlocked.count(rob);
 }
 
-void GameManager::setHighScore(Games game, uint32_t score) const{
-	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
-	if(nvs == nullptr){
-		return;
-	}
-
-	const std::string blob = std::string("HighScore") + std::to_string((uint8_t) game);
-	nvs->set(blob, score);
-}
-
-bool GameManager::getHighScore(Games game, uint32_t& score) const{
-	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
-	if(nvs == nullptr){
-		return false;
-	}
-
-	const std::string blob = std::string("HighScore") + std::to_string((uint8_t) game);
-	return nvs->get(blob, score);
-}
-
 void GameManager::storeState(){
 	auto set = (Settings*) Services.get(Service::Settings);
 	auto all = set->get();

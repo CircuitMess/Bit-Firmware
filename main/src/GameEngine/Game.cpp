@@ -3,21 +3,14 @@
 #include <esp_log.h>
 #include "Util/Services.h"
 #include "UIThread.h"
-#include "Screens/MainMenu.h"
+#include "Screens/GameMenuScreen.h"
 #include "Util/Notes.h"
 
-static bool exited = false; // yolo
-// Exit is going to get called in the game's onLoop, and when exit is called, the Game object
-// will get deleted. Once onLoop exits (in Game::loop), the object is already deleted. When that
-// happens, the loop function should return immeidatelly after onLoop is done. Since the object
-// is already deleted at that point, we can't store the exited variable inside the Game class.
-
-Game::Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources) :
-		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), base(base),
+Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
+		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), gameType(gameType), base(base),
 		resMan(root), resources(std::move(resources)),
 		loadTask([this](){ loadFunc(); }, "loadTask", 4096, 12, 0),
 		render(this, base){
-
 	exited = false;
 }
 
@@ -93,7 +86,10 @@ void Game::handleInput(const Input::Data& data){
 
 void Game::exit(){
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	Games type = getType();
+	ui->startScreen([type](){
+		return std::make_unique<GameMenuScreen>(type);
+	});
 	exited = true;
 }
 

@@ -8,7 +8,7 @@ std::map<Input::Button, uint8_t> btnBarMap = { { Input::Button::Left,  0 },
 											   { Input::Button::Up,    1 },
 											   { Input::Button::Right, 2 } };
 
-Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
+Dance::Dance(Sprite& base) : Game(base, Games::Buttons, "/Games/Buttons", {
 		{ barsIcons[0], {}, true },
 		{ barsIcons[1], {}, true },
 		{ barsIcons[2], {}, true },

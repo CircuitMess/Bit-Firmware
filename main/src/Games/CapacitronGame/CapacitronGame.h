@@ -75,6 +75,7 @@ private:
 	void powerupSpawned(Powerup powerup);
 	void spawnFireball();
 	void cleanupPads();
+	void exit();
 
 	std::shared_ptr<RoboCtrl::Capacitron> robot;
 };

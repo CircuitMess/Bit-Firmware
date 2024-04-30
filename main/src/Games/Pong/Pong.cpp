@@ -4,7 +4,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 
-Pong::Pong(Sprite& base) : Game(base, "/Games/Pong", {
+Pong::Pong(Sprite& base) : Game(base, Games::Pong, "/Games/Pong", {
 		{ "/bg.raw", {}, true }
 }){
 
