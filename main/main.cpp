@@ -24,6 +24,7 @@
 #include <Util/stdafx.h>
 #include "JigHWTest/JigHWTest.h"
 #include "Periph/NVSFlash.h"
+#include "Services/XPSystem.h"
 
 BacklightBrightness* bl;
 
@@ -85,6 +86,9 @@ void init(){
 		test->start();
 		vTaskDelete(nullptr);
 	}
+
+	auto xpsystem = new XPSystem();
+	Services.set(Service::XPSystem, xpsystem);
 
 	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
 	blPwm->detach();
