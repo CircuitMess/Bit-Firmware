@@ -87,7 +87,7 @@ private:
 	float downCounter = 0;
 	void moveInvaders(float delta); //move left to the edge, then down, then right to the edge, then down etc.
 
-	void exit();
+	virtual void exit() override;
 
 	static const Sound InvaderDeathSounds[4];
 

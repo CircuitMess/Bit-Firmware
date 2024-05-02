@@ -3,7 +3,7 @@
 #include <esp_log.h>
 #include "Util/Services.h"
 #include "UIThread.h"
-#include "Screens/GameMenuScreen.h"
+#include "Screens/Game/GameMenuScreen.h"
 #include "Util/Notes.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :

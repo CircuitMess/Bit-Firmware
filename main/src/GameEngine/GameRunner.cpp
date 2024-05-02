@@ -93,6 +93,14 @@ void GameRunner::endGame(){
 	currentGameEnum = Games::COUNT;
 }
 
+void GameRunner::exitGame(){
+	if(!currentGame){
+		return;
+	}
+
+	currentGame->exit();
+}
+
 void GameRunner::resume(){
 	lastMicros = micros();
 	currentGame->start();

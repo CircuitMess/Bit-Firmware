@@ -14,7 +14,7 @@
 #include <Screens/Settings/SettingsScreen.h>
 #include <unordered_set>
 #include "Util/Notes.h"
-#include "GameMenuScreen.h"
+#include "Game/GameMenuScreen.h"
 
 struct Entry {
 	const char* icon;

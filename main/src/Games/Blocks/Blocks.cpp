@@ -2,10 +2,10 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
-#include "Services/GameManager.h"
+#include "Services/HighScoreManager.h"
 #include "Util/Services.h"
 #include "UIThread.h"
-#include "Screens/AwardsScreen.h"
+#include "Screens/Game/AwardsScreen.h"
 
 Blocks::Blocks(Sprite& canvas) : Game(canvas, Games::Blocks, "/Games/Blocks", {
 		{ Sprites[0], {}, true },
@@ -167,33 +167,6 @@ void Blocks::handleInput(const Input::Data& data){
 
 void Blocks::onStop(){
 	handleInput({ lastButton, Input::Data::Release });
-
-	// TODO setup logic to go to high score screen if needed and save the high score with name input there
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		std::array<HighScore, 5> highScores;
-
-		gm->getHighScores(Games::Blocks, highScores);
-
-		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
-			return (first.valid && !second.valid) || first.score > second.score;
-		});
-
-		for(const HighScore& highScore : highScores){
-			if(highScore.valid && highScore.score == score){
-				return; // Only the first entry of equal high score should be valid
-			}
-		}
-
-		if(!highScores.back().valid || highScores.back().score > score){
-			// TODO: open the high score entry screen
-		}
-
-		highScores.back().valid = true;
-		highScores.back().score = score;
-		highScores.back().id[0] = 't';
-
-		gm->setHighScores(Games::Blocks, highScores);
-	}
 }
 
 void Blocks::gameOver(){
@@ -399,31 +372,11 @@ void Blocks::updateScore(){
 void Blocks::exit(){
 	Game::exited = true;
 
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		std::array<HighScore, 5> highScores;
-
-		gm->getHighScores(Games::Blocks, highScores);
-
-		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
-			return (first.valid && !second.valid) || first.score > second.score;
-		});
-
-		for(const HighScore& highScore : highScores){
-			if(highScore.valid && highScore.score == score){
-				Game::exit();
-				return; // Only the first entry of equal high score should be valid
-			}
-		}
-
-		if(!highScores.back().valid || highScores.back().score < score){
-			highScores.back().valid = true;
-			highScores.back().score = score;
-			highScores.back().id[0] = ' ';
-			highScores.back().id[1] = ' ';
-			highScores.back().id[2] = ' ';
-
+	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
+		if(hsm->isHighScore(Games::Blocks, score)){
+			const uint32_t sc = score;
 			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([highScores](){ return std::make_unique<AwardsScreen>(Games::Blocks, highScores); });
+			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::Blocks, sc); });
 			return;
 		}
 	}

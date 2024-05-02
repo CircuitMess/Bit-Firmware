@@ -1,19 +1,18 @@
-#include "GameInfoScreen.h"
-#include "Screens/MainMenu.h"
+#include "HighScoreScreen.h"
 #include "Devices/Input.h"
 #include "LV_Interface/InputLVGL.h"
 #include "UIThread.h"
 #include "Util/Services.h"
-#include "Settings/Settings.h"
 #include "GameMenuScreen.h"
 #include "Periph/NVSFlash.h"
 #include <sstream>
+#include "Services/HighScoreManager.h"
 
-GameInfoScreen::GameInfoScreen(Games current, InfoType type) : evts(6), currentGame(current), type(type){
+HighScoreScreen::HighScoreScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
-void GameInfoScreen::buildUI(){
+void HighScoreScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
@@ -58,50 +57,39 @@ void GameInfoScreen::buildUI(){
 		return item;
 	};
 
-	if(type == InfoType::HighScore){
-		mkLabel("HIGH SCORE:");
+	mkLabel("HIGH SCORE:");
 
-		if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-			std::array<HighScore, 5> highScores;
+	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
+		const std::array<HighScore, 5>& highScores = hsm->getAll(currentGame);
 
-			gm->getHighScores(currentGame, highScores);
+		for(const HighScore& highScore : highScores){
+			if(highScore.valid){
+				std::stringstream label;
+				label << highScore.id[0];
+				label << highScore.id[1];
+				label << highScore.id[2];
+				label << ": ";
+				label << highScore.score;
 
-			std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
-				return (first.valid && !second.valid) || first.score > second.score;
-			});
-
-			for(HighScore& highScore : highScores){
-				if(highScore.valid){
-					std::stringstream label;
-					label << highScore.id[0];
-					label << highScore.id[1];
-					label << highScore.id[2];
-					label << ": ";
-					label << highScore.score;
-
-					mkLabel(label.str().c_str());
-				}
+				mkLabel(label.str().c_str());
 			}
 		}
-	}else if(type == InfoType::Instructions){
-		// TODO: create img element for current game and instructions
-		mkLabel("WIP instructions");
 	}
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0));
 }
 
-void GameInfoScreen::onStart(){
+void HighScoreScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
 
-void GameInfoScreen::onStop(){
+void HighScoreScreen::onStop(){
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 }
 
-void GameInfoScreen::loop(){
+void HighScoreScreen::loop(){
 	batt->loop();
 
 	for(Event e{}; evts.get(e, 0); ){
@@ -122,7 +110,7 @@ void GameInfoScreen::loop(){
 	}
 }
 
-void GameInfoScreen::exit(){
+void HighScoreScreen::exit(){
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([this](){ return std::make_unique<GameMenuScreen>(currentGame); });
 }

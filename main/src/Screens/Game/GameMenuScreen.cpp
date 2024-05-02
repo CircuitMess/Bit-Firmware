@@ -5,7 +5,9 @@
 #include "UIThread.h"
 #include "Util/Services.h"
 #include "Settings/Settings.h"
-#include "GameInfoScreen.h"
+#include "HighScoreScreen.h"
+#include "InstructionsScreen.h"
+#include "Services/HighScoreManager.h"
 
 GameMenuScreen::GameMenuScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
@@ -75,26 +77,19 @@ void GameMenuScreen::buildUI(){
 		}, e->user_data);
 	}, LV_EVENT_CLICKED, this);
 
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		std::array<HighScore, 5> highScores;
-		if(gm->getHighScores(currentGame, highScores)){
-			for(const HighScore& highScore : highScores){
-				if(highScore.valid){
-					auto score = mkBtn("High score");
+	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
+		if(hsm->hasHighScore(currentGame)){
+			auto score = mkBtn("High score");
 
-					lv_obj_add_event_cb(score, [](lv_event_t* e){
-						lv_async_call([](void* arg){
-							auto screen = (GameMenuScreen*) arg;
+			lv_obj_add_event_cb(score, [](lv_event_t* e){
+				lv_async_call([](void* arg){
+					auto screen = (GameMenuScreen*) arg;
 
-							if(auto ui = (UIThread*) Services.get(Service::UI)){
-								ui->startScreen([screen](){ return std::make_unique<GameInfoScreen>(screen->currentGame, InfoType::HighScore); });
-							}
-						}, e->user_data);
-					}, LV_EVENT_CLICKED, this);
-
-					break;
-				}
-			}
+					if(auto ui = (UIThread*) Services.get(Service::UI)){
+						ui->startScreen([screen](){ return std::make_unique<HighScoreScreen>(screen->currentGame); });
+					}
+				}, e->user_data);
+			}, LV_EVENT_CLICKED, this);
 		}
 	}
 
@@ -105,7 +100,7 @@ void GameMenuScreen::buildUI(){
 			auto screen = (GameMenuScreen*) arg;
 
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
-				ui->startScreen([screen](){ return std::make_unique<GameInfoScreen>(screen->currentGame, InfoType::Instructions); });
+				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame); });
 			}
 		}, e->user_data);
 	}, LV_EVENT_CLICKED, this);

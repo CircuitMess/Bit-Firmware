@@ -1,5 +1,5 @@
 #include "PauseScreen.h"
-#include "Screens/GameMenuScreen.h"
+#include "Screens/Game/GameMenuScreen.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Devices/Input.h"
@@ -100,7 +100,7 @@ void PauseScreen::exit(){
 	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([this](){ return std::make_unique<GameMenuScreen>(currentGame); });
+	ui->exitGame();
 }
 
 void PauseScreen::buildUI(){

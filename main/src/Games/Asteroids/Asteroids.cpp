@@ -4,7 +4,6 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
-#include "Services/GameManager.h"
 #include "Util/Services.h"
 
 Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, Games::Robby, "/Games/Robby", {
@@ -203,33 +202,6 @@ void Asteroids::Asteroids::onStart(){
 void Asteroids::Asteroids::onStop(){
 	handleInput({ Input::Button::Left, Input::Data::Release });
 	handleInput({ Input::Button::Right, Input::Data::Release });
-
-	// TODO setup logic to go to high score screen if needed and save the high score with name input there
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		std::array<HighScore, 5> highScores;
-
-		gm->getHighScores(Games::Robby, highScores);
-
-		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
-			return (first.valid && !second.valid) || first.score > second.score;
-		});
-
-		for(const HighScore& highScore : highScores){
-			if(highScore.valid && highScore.score == score){
-				return; // Only the first entry of equal high score should be valid
-			}
-		}
-
-		if(!highScores.back().valid || highScores.back().score > score){
-			// TODO: open the high score entry screen
-		}
-
-		highScores.back().valid = true;
-		highScores.back().score = score;
-		highScores.back().id[0] = 't';
-
-		gm->setHighScores(Games::Robby, highScores);
-	}
 }
 
 void Asteroids::Asteroids::updateBullets(float deltaTime){

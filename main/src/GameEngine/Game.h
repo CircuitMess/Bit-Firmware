@@ -34,6 +34,8 @@ public:
 
 	inline Games getType() const { return gameType; }
 
+	virtual void exit();
+
 protected:
 	Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources);
 
@@ -56,9 +58,7 @@ protected:
 	virtual void handleInput(const Input::Data& data);
 
 	ChirpSystem& audio;
-
-	void exit();
-
+	
 	void setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot);
 
 	inline static bool exited = false; // yolo

@@ -92,7 +92,7 @@ private:
 	void checkLineClear();
 	void clearSegment(Block& block, GameObjPtr segment);
 	void updateScore();
-	void exit();
+	virtual void exit() override;
 
 	static constexpr PixelDim globalToGridPos(PixelDim globalPos){
 		return (globalPos - Blocks::GridPos) / Blocks::TileDim.x;

@@ -1,5 +1,5 @@
-#ifndef BIT_FIRMWARE_GAMEINFOSCREEN_H
-#define BIT_FIRMWARE_GAMEINFOSCREEN_H
+#ifndef BIT_FIRMWARE_GAMEMENUSCREEN_H
+#define BIT_FIRMWARE_GAMEMENUSCREEN_H
 
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
@@ -8,25 +8,20 @@
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Services/GameManager.h"
-#include "BatteryElement.h"
+#include "Screens/BatteryElement.h"
 
-enum class InfoType : uint8_t {
-	HighScore,
-	Instructions
-};
-
-class GameInfoScreen : public LVScreen {
+class GameMenuScreen : public LVScreen {
 public:
-	GameInfoScreen(Games current, InfoType type);
+	explicit GameMenuScreen(Games current);
 
 private:
 	EventQueue evts;
 	Games currentGame;
-	InfoType type;
 
 	BatteryElement* batt;
 
 	LVStyle itemStyle;
+	LVStyle focusStyle;
 
 	void buildUI();
 
@@ -37,4 +32,4 @@ private:
 	void exit();
 };
 
-#endif //BIT_FIRMWARE_GAMEINFOSCREEN_H
+#endif //BIT_FIRMWARE_GAMEMENUSCREEN_H

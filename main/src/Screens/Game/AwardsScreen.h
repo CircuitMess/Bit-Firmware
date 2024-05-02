@@ -7,17 +7,19 @@
 #include "Util/Events.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
-#include "Services/GameManager.h"
-#include "BatteryElement.h"
+#include "Services/HighScoreManager.h"
+#include "Screens/BatteryElement.h"
 
 class AwardsScreen : public LVScreen {
 public:
-	AwardsScreen(Games current, std::array<HighScore, 5> highScores);
+	AwardsScreen(Games current, uint32_t highScore);
 
 private:
-	std::array<HighScore, 5> highScores;
+	uint32_t highScore;
 	EventQueue evts;
 	Games currentGame;
+
+	char characters[3] {' ', ' ', ' '};
 
 	lv_obj_t* name[3];
 	lv_obj_t* item;

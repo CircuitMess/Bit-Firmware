@@ -60,7 +60,7 @@ private:
 
 	void handleInput(const Input::Data& data) override;
 
-	void exit();
+	virtual void exit() override;
 
 	struct ObstacleDesc {
 		const char* path;

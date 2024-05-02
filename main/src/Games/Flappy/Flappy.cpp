@@ -5,10 +5,10 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
 #include "gtx/vector_angle.hpp"
-#include "Services/GameManager.h"
+#include "Services/HighScoreManager.h"
 #include "Util/Services.h"
 #include "UIThread.h"
-#include "Screens/AwardsScreen.h"
+#include "Screens/Game/AwardsScreen.h"
 
 constexpr Flappy::ObstacleDesc Flappy::TopObstacles[];
 constexpr Flappy::ObstacleDesc Flappy::BotObstacles[];
@@ -302,31 +302,11 @@ void Flappy::die(){
 void Flappy::exit(){
 	Game::exited = true;
 
-	if(const GameManager* gm = (GameManager*) Services.get(Service::Games)){
-		std::array<HighScore, 5> highScores;
-
-		gm->getHighScores(Games::MrBee, highScores);
-
-		std::sort(highScores.begin(), highScores.end(), [](const HighScore& first, const HighScore& second) {
-			return (first.valid && !second.valid) || first.score > second.score;
-		});
-
-		for(const HighScore& highScore : highScores){
-			if(highScore.valid && highScore.score == score){
-				Game::exit();
-				return; // Only the first entry of equal high score should be valid
-			}
-		}
-
-		if(!highScores.back().valid || highScores.back().score < score){
-			highScores.back().valid = true;
-			highScores.back().score = score;
-			highScores.back().id[0] = ' ';
-			highScores.back().id[1] = ' ';
-			highScores.back().id[2] = ' ';
-
+	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
+		if(hsm->isHighScore(Games::MrBee, score)){
+			const uint32_t sc = score;
 			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([highScores](){ return std::make_unique<AwardsScreen>(Games::MrBee, highScores); });
+			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::MrBee, sc); });
 			return;
 		}
 	}

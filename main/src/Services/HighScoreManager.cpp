@@ -5,10 +5,13 @@
 
 HighScoreManager::HighScoreManager(){
 	for(size_t i = 0; i < (size_t) Games::COUNT; ++i){
-		getHighScores((Games) i, highScores[i]);
-		std::sort(highScores[i].begin(), highScores[i].end(), [](const HighScore& first, const HighScore& second) {
-			return (first.valid && !second.valid) || first.score > second.score;
-		});
+		if(getHighScores((Games) i, highScores[i])){
+			std::sort(highScores[i].begin(), highScores[i].end(), [](const HighScore& first, const HighScore& second) {
+				return (first.valid && !second.valid) || first.score > second.score;
+			});
+		}else{
+			setHighScores((Games) i, highScores[i]);
+		}
 	}
 }
 
@@ -23,7 +26,7 @@ bool HighScoreManager::isHighScore(Games game, uint32_t score) const{
 }
 
 void HighScoreManager::saveScore(Games game, HighScore score){
-	highScores[(size_t) game].back() = highScores;
+	highScores[(size_t) game].back() = score;
 	std::sort(highScores[(size_t) game].begin(), highScores[(size_t) game].end(), [](const HighScore& first, const HighScore& second) {
 		return (first.valid && !second.valid) || first.score > second.score;
 	});
@@ -34,7 +37,11 @@ const std::array<HighScore, 5>& HighScoreManager::getAll(Games game) const{
 	return highScores[(size_t) game];
 }
 
-void HighScoreManager::setHighScores(Games game, const std::array<HighScore, 5>& score) const{
+bool HighScoreManager::hasHighScore(Games game) const{
+	return std::ranges::any_of(highScores[(size_t) game], [](HighScore score) { return score.valid; });
+}
+
+void HighScoreManager::setHighScores(Games game, const std::array<HighScore, 5>& score) {
 	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
 	if(nvs == nullptr){
 		return;
@@ -44,7 +51,7 @@ void HighScoreManager::setHighScores(Games game, const std::array<HighScore, 5>&
 	nvs->set<HighScore, 5>(blob, score);
 }
 
-bool HighScoreManager::getHighScores(Games game, std::array<HighScore, 5>& score) const{
+bool HighScoreManager::getHighScores(Games game, std::array<HighScore, 5>& score) {
 	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
 	if(nvs == nullptr){
 		return false;

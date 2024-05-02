@@ -65,7 +65,7 @@ private:
 	void moveSnake(glm::vec2 move);
 	void gameOver();
 	void foodEaten(bool initial = false);
-	void exit();
+	virtual void exit() override;
 };
 
 
