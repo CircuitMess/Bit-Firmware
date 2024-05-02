@@ -1,5 +1,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <nvs_flash.h>
 #include "Settings/Settings.h"
 #include "Util/Services.h"
 #include "Periph/PWM.h"

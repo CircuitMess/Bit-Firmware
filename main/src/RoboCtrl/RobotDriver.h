@@ -9,7 +9,7 @@ namespace RoboCtrl {
 class RobotDriver {
 public:
 	RobotDriver(Robot type);
-
+	virtual ~RobotDriver() = default;
 	/**
 	 * Called when robot is plugged in.
 	 */
