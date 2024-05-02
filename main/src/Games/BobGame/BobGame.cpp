@@ -92,6 +92,10 @@ void BobGame::BobGame::onStop(){
 	player->btnReleased(Input::Right);
 }
 
+uint32_t BobGame::BobGame::getXP(){
+	return ((float)hungerMeter / (float)hungerMeterMax) * 150.0f;
+}
+
 void BobGame::BobGame::addTemplate(std::string file, PixelDim dim, int value){
 	Template temp{ file, dim, value };
 	if(value > 0){
@@ -262,7 +266,6 @@ rgb hsv2rgb(hsv in){
 	}
 	return out;
 }
-
 
 void BobGame::BobGame::drawBar(){
 	float fillPercent = ((float) hungerMeter / (float) hungerMeterMax) * 116.0f;

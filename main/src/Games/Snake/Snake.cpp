@@ -146,6 +146,14 @@ void Snake::handleInput(const Input::Data& data){
 
 }
 
+uint32_t Snake::getXP(){
+	if(score <= XPCutoff){
+		return score * 2;
+	}else{
+		return (score - XPCutoff) + XPCutoff * 2;
+	}
+}
+
 void Snake::drawHead(Sprite& head){
 	head.clear(TFT_GREEN);
 	if(speed.x > 0){

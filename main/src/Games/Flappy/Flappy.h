@@ -17,6 +17,7 @@ protected:
 	void onLoop(float deltaTime) override;
 	void onStart() override;
 	void onStop() override;
+	uint32_t getXP() override;
 
 private:
 	static constexpr float gravity = 150.0f;
@@ -25,6 +26,8 @@ private:
 	static constexpr float duckPosX = 25;
 	static constexpr float obstacleSpacing = 75;
 	static constexpr uint8_t MinimumGap = 50;
+
+	static constexpr uint8_t ScoreCutoff = 60;
 
 	enum {
 		FlyIn, Wait, Play, FallOut

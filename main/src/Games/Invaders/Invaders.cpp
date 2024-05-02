@@ -131,6 +131,10 @@ void Invaders::Invaders::onStop(){
 	player->btnReleased(Input::Right);
 }
 
+uint32_t Invaders::Invaders::getXP(){
+	return std::min(score, (uint32_t)XPCap); //20 for first wave, 29 for second, ...
+}
+
 void Invaders::Invaders::shoot(){
 	if(playerBullet) return;
 

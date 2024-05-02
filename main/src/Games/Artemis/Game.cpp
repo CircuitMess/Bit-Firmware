@@ -35,6 +35,10 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 	setRobot(robot);
 }
 
+uint32_t ArtemisGame::PewPew::getXP(){
+	return ((float) score / 6.0f) * 150.0f;
+}
+
 void ArtemisGame::PewPew::onLoad(){
 	// BG, curtains, window backdrop
 	auto winBg = std::make_shared<GameObject>(

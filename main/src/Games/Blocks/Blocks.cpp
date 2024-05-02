@@ -364,3 +364,7 @@ void Blocks::updateScore(){
 	s += std::to_string(level + 1);
 	levelTextRC->setText(s);
 }
+
+uint32_t Blocks::getXP(){
+	return linesCleared * 5;
+}

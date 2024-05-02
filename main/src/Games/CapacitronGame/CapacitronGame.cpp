@@ -221,6 +221,10 @@ void CapacitronGame::CapacitronGame::onStop(){
 	player->btnReleased(Input::Right);
 }
 
+uint32_t CapacitronGame::CapacitronGame::getXP(){
+	return score * 8;
+}
+
 void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabled, uint8_t powerupRate){
 	tileManager->createPads(surface, powerupsEnabled, powerupRate);
 	for(const auto& obj : padObjs.back()){

@@ -59,6 +59,8 @@ protected:
 
 	void setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot);
 
+	virtual uint32_t getXP()= 0;
+
 private:
 	Sprite& base;
 	ResourceManager resMan;

@@ -83,6 +83,33 @@ void HertzGame::onStop(){
 	duckAnim->stop();
 }
 
+uint32_t HertzGame::getXP(){
+	if(!done) return 0;
+
+	float success = (float)(MinimumAttempts) /(float)(tries);
+	return success * 100.0f;
+}
+
+void HertzGame::handleInput(const Input::Data& data){
+	if(data.action != Input::Data::Press) return;
+
+	if(done){
+		exit();
+		return;
+	}
+
+
+//	if(data.btn == Input::B){
+//		audio.play(Sound{ Chirp{ 400, 350, 50 } });
+//		exit();
+//		return;
+//	}
+	if(data.btn == Input::A){
+		tries++;
+		addPoints(indicator->getDifference());
+	}
+}
+
 void HertzGame::resetAnim(){
 	duckAnim->setAnim(getFile("/idle.gif"));
 	duckAnim->setLoopMode(GIF::Single);
@@ -132,24 +159,4 @@ void HertzGame::addPoints(int difference){
 	}
 
 	indicator->setGoal(bar->getY());
-}
-
-void HertzGame::handleInput(const Input::Data& data){
-	if(data.action != Input::Data::Press) return;
-
-	if(done){
-		exit();
-		return;
-	}
-
-
-//	if(data.btn == Input::B){
-//		audio.play(Sound{ Chirp{ 400, 350, 50 } });
-//		exit();
-//		return;
-//	}
-	if(data.btn == Input::A){
-		tries++;
-		addPoints(indicator->getDifference());
-	}
 }
