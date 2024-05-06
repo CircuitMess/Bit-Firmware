@@ -7,7 +7,7 @@ HighScoreManager::HighScoreManager(){
 	for(size_t i = 0; i < (size_t) Games::COUNT; ++i){
 		if(getHighScores((Games) i, highScores[i])){
 			std::sort(highScores[i].begin(), highScores[i].end(), [](const HighScore& first, const HighScore& second) {
-				return (first.valid && !second.valid) || first.score > second.score;
+				return first.score > second.score;
 			});
 		}else{
 			setHighScores((Games) i, highScores[i]);
@@ -16,19 +16,23 @@ HighScoreManager::HighScoreManager(){
 }
 
 bool HighScoreManager::isHighScore(Games game, uint32_t score) const{
+	if(score == 0){
+		return false;
+	}
+
 	for(const HighScore& highScore : highScores[(size_t) game]){
 		if(highScore.score == score){
 			return false;
 		}
 	}
 
-	return !highScores[(size_t) game].back().valid || highScores[(size_t) game].back().score < score;
+	return highScores[(size_t) game].back().score != 0 || highScores[(size_t) game].back().score < score;
 }
 
 void HighScoreManager::saveScore(Games game, HighScore score){
 	highScores[(size_t) game].back() = score;
 	std::sort(highScores[(size_t) game].begin(), highScores[(size_t) game].end(), [](const HighScore& first, const HighScore& second) {
-		return (first.valid && !second.valid) || first.score > second.score;
+		return first.score > second.score;
 	});
 	setHighScores(game, highScores[(size_t) game]);
 }
@@ -38,7 +42,24 @@ const std::array<HighScore, 5>& HighScoreManager::getAll(Games game) const{
 }
 
 bool HighScoreManager::hasHighScore(Games game) const{
-	return std::ranges::any_of(highScores[(size_t) game], [](HighScore score) { return score.valid; });
+	if(!hasScore(game)){
+		return false;
+	}
+
+	return std::ranges::any_of(highScores[(size_t) game], [](HighScore score) { return score.score > 0; });
+}
+
+bool HighScoreManager::hasScore(Games game) const{
+	static constexpr const std::array<Games, 8> NoScoreGames = { Games::Artemis,
+																 Games::Robby,
+																 Games::Bob,
+																 Games::Buttons,
+																 Games::Hertz,
+																 Games::Marv,
+																 Games::Pong,
+																 Games::COUNT};
+
+	return std::find(NoScoreGames.begin(), NoScoreGames.end(), game) == NoScoreGames.end();
 }
 
 void HighScoreManager::setHighScores(Games game, const std::array<HighScore, 5>& score) {

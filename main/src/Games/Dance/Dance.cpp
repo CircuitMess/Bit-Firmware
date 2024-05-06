@@ -156,7 +156,7 @@ void Dance::handleInput(const Input::Data& data){
 	}
 }
 
-uint32_t Dance::getXP(){
+uint32_t Dance::getXP() const{
 	return ((float)(score) / (float)(goal))*150.0f;
 }
 

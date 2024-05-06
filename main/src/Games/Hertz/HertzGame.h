@@ -18,7 +18,7 @@ protected:
 	void onStart() override;
 	void onStop() override;
 	void handleInput(const Input::Data& data) override;
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
 
 private:
 	void resetAnim();

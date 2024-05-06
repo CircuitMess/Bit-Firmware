@@ -200,7 +200,7 @@ void Flappy::handleInput(const Input::Data& data){
 				 { 200, 600, 100 } });
 }
 
-uint32_t Flappy::getXP(){
+uint32_t Flappy::getXP() const{
 	return ((float)std::min((int)ScoreCutoff, score) / (float)(ScoreCutoff)) * 250.0f;
 }
 
@@ -301,19 +301,4 @@ void Flappy::die(){
 		collision.removePair(*bee, *obstacle.top);
 		collision.removePair(*bee, *obstacle.bot);
 	}
-}
-
-void Flappy::exit(){
-	Game::exited = true;
-
-	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->isHighScore(Games::MrBee, score)){
-			const uint32_t sc = score;
-			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::MrBee, sc); });
-			return;
-		}
-	}
-
-	Game::exit();
 }

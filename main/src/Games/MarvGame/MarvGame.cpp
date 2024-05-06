@@ -172,7 +172,7 @@ void MarvGame::MarvGame::onStop(){
 	duck->duckReleased();
 }
 
-uint32_t MarvGame::MarvGame::getXP(){
+uint32_t MarvGame::MarvGame::getXP() const{
 	float success = (float)(score)/(float)(scoreMax);
 	return success * 250.0f;
 }

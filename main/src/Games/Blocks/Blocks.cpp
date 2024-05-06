@@ -369,21 +369,6 @@ void Blocks::updateScore(){
 	levelTextRC->setText(s);
 }
 
-void Blocks::exit(){
-	Game::exited = true;
-
-	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->isHighScore(Games::Blocks, score)){
-			const uint32_t sc = score;
-			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::Blocks, sc); });
-			return;
-		}
-	}
-
-	Game::exit();
-}
-
-uint32_t Blocks::getXP(){
+uint32_t Blocks::getXP() const{
 	return linesCleared * 2;
 }

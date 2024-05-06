@@ -78,7 +78,7 @@ void GameMenuScreen::buildUI(){
 	}, LV_EVENT_CLICKED, this);
 
 	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->hasHighScore(currentGame)){
+		if(hsm->hasScore(currentGame)){
 			auto score = mkBtn("High score");
 
 			lv_obj_add_event_cb(score, [](lv_event_t* e){

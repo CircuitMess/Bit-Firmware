@@ -195,7 +195,7 @@ void Asteroids::Asteroids::handleInput(const Input::Data& data){
 	}
 }
 
-uint32_t Asteroids::Asteroids::getXP(){
+uint32_t Asteroids::Asteroids::getXP() const{
 	return ((float)score / (float)MaxScore) * 150.0f;
 }
 

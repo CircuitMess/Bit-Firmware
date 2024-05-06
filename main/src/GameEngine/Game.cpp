@@ -5,6 +5,8 @@
 #include "UIThread.h"
 #include "Screens/Game/GameMenuScreen.h"
 #include "Util/Notes.h"
+#include "Services/HighScoreManager.h"
+#include "Screens/Game/AwardsScreen.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
 		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), gameType(gameType), base(base),
@@ -85,12 +87,30 @@ void Game::handleInput(const Input::Data& data){
 }
 
 void Game::exit(){
+	exited = true;
+
 	auto ui = (UIThread*) Services.get(Service::UI);
-	Games type = getType();
+	if(ui == nullptr){
+		return;
+	}
+
+	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
+	if(hsm == nullptr){
+		return;
+	}
+
+	const uint32_t score = getScore();
+	const uint32_t xp = getXP();
+	const Games type = getType();
+
+	if(hsm->isHighScore(type, score) || xp != 0/* || got new achievement*/){
+		ui->startScreen([type, score, xp](){ return std::make_unique<AwardsScreen>(type, score, xp); });
+		return;
+	}
+
 	ui->startScreen([type](){
 		return std::make_unique<GameMenuScreen>(type);
 	});
-	exited = true;
 }
 
 void Game::loop(uint micros){

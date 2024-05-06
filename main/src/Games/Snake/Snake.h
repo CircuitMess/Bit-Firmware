@@ -13,7 +13,8 @@ protected:
 	void onLoad() override;
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
+	inline uint32_t getScore() const override { return score; }
 
 private:
 	enum class State {
@@ -67,7 +68,6 @@ private:
 	void moveSnake(glm::vec2 move);
 	void gameOver();
 	void foodEaten(bool initial = false);
-	virtual void exit() override;
 };
 
 

@@ -8,7 +8,6 @@
 struct HighScore {
 	char id[3] = {' ', ' ', ' '};
 	uint32_t score = 0;
-	bool valid = false;
 };
 
 class HighScoreManager {
@@ -18,6 +17,7 @@ public:
 	void saveScore(Games game, HighScore score);
 	const std::array<HighScore, 5>& getAll(Games game) const;
 	bool hasHighScore(Games game) const;
+	bool hasScore(Games game) const;
 
 private:
 	std::array<std::array<HighScore, 5>, (size_t)Games::COUNT> highScores;

@@ -225,7 +225,7 @@ void CapacitronGame::CapacitronGame::onStop(){
 	player->btnReleased(Input::Right);
 }
 
-uint32_t CapacitronGame::CapacitronGame::getXP(){
+uint32_t CapacitronGame::CapacitronGame::getXP() const{
 	return score * 8;
 }
 
@@ -387,19 +387,4 @@ void CapacitronGame::CapacitronGame::cleanupPads(){
 		const uint8_t rate = PowerupsStartingRate - (PowerupsStartingRate - PowerupsMinimumRate) * (score - PowerupsStartScore) / MaxDifficultyScore;
 		createPad(surface, score > PowerupsStartScore, rate);
 	}
-}
-
-void CapacitronGame::CapacitronGame::exit(){
-	Game::exited = true;
-
-	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->isHighScore(Games::Capacitron, score)){
-			const uint32_t sc = score;
-			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::Capacitron, sc); });
-			return;
-		}
-	}
-
-	Game::exit();
 }

@@ -121,6 +121,6 @@ void TestGame::handleInput(const Input::Data& data){
 	}
 }
 
-uint32_t TestGame::getXP(){
+uint32_t TestGame::getXP() const{
 	return 0;
 }

@@ -35,7 +35,7 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, Games::Artemis, "/Gam
 	setRobot(robot);
 }
 
-uint32_t ArtemisGame::PewPew::getXP(){
+uint32_t ArtemisGame::PewPew::getXP() const{
 	return ((float) score / 6.0f) * 150.0f;
 }
 

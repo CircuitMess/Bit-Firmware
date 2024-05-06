@@ -83,7 +83,7 @@ void HertzGame::onStop(){
 	duckAnim->stop();
 }
 
-uint32_t HertzGame::getXP(){
+uint32_t HertzGame::getXP() const{
 	if(!done) return 0;
 
 	float success = (float)(MinimumAttempts) /(float)(tries);

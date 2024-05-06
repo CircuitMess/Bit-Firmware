@@ -23,7 +23,8 @@ protected:
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
 	void onStop() override;
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
+	inline uint32_t getScore() const override { return score; }
 
 private:
 	std::unique_ptr<TileManager> tileManager;
@@ -76,7 +77,6 @@ private:
 	void powerupSpawned(Powerup powerup);
 	void spawnFireball();
 	void cleanupPads();
-	virtual void exit() override;
 
 	std::shared_ptr<RoboCtrl::Capacitron> robot;
 };

@@ -135,7 +135,7 @@ void Invaders::Invaders::onStop(){
 	player->btnReleased(Input::Right);
 }
 
-uint32_t Invaders::Invaders::getXP(){
+uint32_t Invaders::Invaders::getXP() const{
 	return std::min(score, (uint32_t)XPCap); //20 for first wave, 29 for second, ...
 }
 
@@ -397,19 +397,4 @@ void Invaders::Invaders::moveInvaders(float delta){
 			invadersDirection = nextDirection;
 		}
 	}
-}
-
-void Invaders::Invaders::exit(){
-	Game::exited = true;
-
-	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->isHighScore(Games::Resistron, score)){
-			const uint32_t sc = score;
-			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::Resistron, sc); });
-			return;
-		}
-	}
-
-	Game::exit();
 }

@@ -67,7 +67,7 @@ void Pong::onStop(){
 	handleInput({ Input::Button::Down, Input::Data::Release });
 }
 
-uint32_t Pong::getXP(){
+uint32_t Pong::getXP() const{
 	if(state != State::End) return 0;
 
 	return (ScoreLimit - enemyScore) * 50;

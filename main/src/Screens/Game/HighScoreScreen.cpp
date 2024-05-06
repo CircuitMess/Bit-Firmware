@@ -60,19 +60,23 @@ void HighScoreScreen::buildUI(){
 	mkLabel("HIGH SCORE:");
 
 	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		const std::array<HighScore, 5>& highScores = hsm->getAll(currentGame);
+		if(hsm->hasHighScore(currentGame)){
+			const std::array<HighScore, 5>& highScores = hsm->getAll(currentGame);
 
-		for(const HighScore& highScore : highScores){
-			if(highScore.valid){
-				std::stringstream label;
-				label << highScore.id[0];
-				label << highScore.id[1];
-				label << highScore.id[2];
-				label << ": ";
-				label << highScore.score;
+			for(const HighScore& highScore : highScores){
+				if(highScore.score > 0){
+					std::stringstream label;
+					label << highScore.id[0];
+					label << highScore.id[1];
+					label << highScore.id[2];
+					label << ": ";
+					label << highScore.score;
 
-				mkLabel(label.str().c_str());
+					mkLabel(label.str().c_str());
+				}
 			}
+		}else{
+			mkLabel("NO HIGH SCORE");
 		}
 	}
 

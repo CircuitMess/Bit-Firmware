@@ -17,7 +17,8 @@ protected:
 	void onLoop(float deltaTime) override;
 	void onStart() override;
 	void onStop() override;
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
+	inline uint32_t getScore() const override { return score; }
 
 private:
 	static constexpr float gravity = 150.0f;
@@ -62,8 +63,6 @@ private:
 	void resetDuck();
 
 	void handleInput(const Input::Data& data) override;
-
-	virtual void exit() override;
 
 	struct ObstacleDesc {
 		const char* path;

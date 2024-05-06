@@ -12,10 +12,11 @@
 
 class AwardsScreen : public LVScreen {
 public:
-	AwardsScreen(Games current, uint32_t highScore);
+	AwardsScreen(Games current, uint32_t highScore, uint32_t xp);
 
 private:
 	uint32_t highScore;
+	uint32_t xp;
 	EventQueue evts;
 	Games currentGame;
 

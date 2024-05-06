@@ -35,7 +35,7 @@ public:
 
 	inline Games getType() const { return gameType; }
 
-	virtual void exit();
+	void exit();
 
 protected:
 	Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources);
@@ -62,7 +62,9 @@ protected:
 
 	void setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot);
 
-	virtual uint32_t getXP() = 0;
+	virtual uint32_t getXP() const = 0;
+
+	inline virtual uint32_t getScore() const { return 0; }
 
 	inline static bool exited = false; // yolo
 	// Exit is going to get called in the game's onLoop, and when exit is called, the Game object

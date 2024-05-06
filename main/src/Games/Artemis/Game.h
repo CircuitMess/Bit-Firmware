@@ -17,7 +17,7 @@ public:
 	PewPew(Sprite& canvas);
 
 protected:
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
 
 private:
 	void onLoad() override;

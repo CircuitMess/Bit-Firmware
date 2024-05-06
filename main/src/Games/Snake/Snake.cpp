@@ -150,7 +150,7 @@ void Snake::handleInput(const Input::Data& data){
 
 }
 
-uint32_t Snake::getXP(){
+uint32_t Snake::getXP() const{
 	if(score <= XPCutoff){
 		return score * 2;
 	}else{
@@ -318,19 +318,4 @@ void Snake::foodEaten(bool initial){
 	pos -= ((Foods[foodIndex].dim - TileDim) / (short) 2);
 	food->setPos(pos);
 
-}
-
-void Snake::exit(){
-	Game::exited = true;
-
-	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		if(hsm->isHighScore(Games::Snake, score)){
-			const uint32_t sc = score;
-			auto ui = (UIThread*) Services.get(Service::UI);
-			ui->startScreen([sc](){ return std::make_unique<AwardsScreen>(Games::Snake, sc); });
-			return;
-		}
-	}
-
-	Game::exit();
 }

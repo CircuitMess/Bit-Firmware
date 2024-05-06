@@ -92,7 +92,7 @@ void BobGame::BobGame::onStop(){
 	player->btnReleased(Input::Right);
 }
 
-uint32_t BobGame::BobGame::getXP(){
+uint32_t BobGame::BobGame::getXP() const{
 	return ((float)hungerMeter / (float)hungerMeterMax) * 150.0f;
 }
 

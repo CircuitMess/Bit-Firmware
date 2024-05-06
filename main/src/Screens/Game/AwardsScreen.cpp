@@ -8,7 +8,7 @@
 #include <sstream>
 #include "Util/stdafx.h"
 
-AwardsScreen::AwardsScreen(Games current, uint32_t highScore) : highScore(highScore), evts(6), currentGame(current), start(millis()){
+AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : highScore(highScore), xp(xp), evts(6), currentGame(current), start(millis()){
 	buildUI();
 }
 
@@ -101,7 +101,7 @@ void AwardsScreen::onStop(){
 	InputLVGL::getInstance()->setVertNav(false);
 
 	if(HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
-		HighScore score = {.score = highScore, .valid = true};
+		HighScore score = { .score = highScore };
 		score.id[0] = characters[0];
 		score.id[1] = characters[1];
 		score.id[2] = characters[2];
