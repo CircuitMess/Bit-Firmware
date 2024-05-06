@@ -19,6 +19,7 @@
 #include "Services/GameManager.h"
 
 class Game {
+
 	friend GameSystem;
 
 public:
@@ -58,15 +59,16 @@ protected:
 	virtual void handleInput(const Input::Data& data);
 
 	ChirpSystem& audio;
-	
+
 	void setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot);
+
+	virtual uint32_t getXP() = 0;
 
 	inline static bool exited = false; // yolo
 	// Exit is going to get called in the game's onLoop, and when exit is called, the Game object
 	// will get deleted. Once onLoop exits (in Game::loop), the object is already deleted. When that
 	// happens, the loop function should return immeidatelly after onLoop is done. Since the object
 	// is already deleted at that point, we can't store the exited variable inside the Game class.
-
 private:
 	const Games gameType;
 	Sprite& base;

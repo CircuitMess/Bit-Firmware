@@ -19,11 +19,13 @@ protected:
 	void onStart() override;
 	void onStop() override;
 	void handleInput(const Input::Data& data) override;
+	uint32_t getXP() override;
 
 private:
 	std::unique_ptr<Hearts> hearts;
 	std::unique_ptr<Score> scoreDisplay;
 	int score = 0;
+	static constexpr uint32_t MaxScore = 70;
 
 	enum {
 		Intro, Running, DeathAnim, DeathPause, Win

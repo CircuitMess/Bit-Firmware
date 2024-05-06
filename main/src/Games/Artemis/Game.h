@@ -16,6 +16,9 @@ class PewPew : public ::Game {
 public:
 	PewPew(Sprite& canvas);
 
+protected:
+	uint32_t getXP() override;
+
 private:
 	void onLoad() override;
 	void onStart() override;

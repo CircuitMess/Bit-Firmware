@@ -15,6 +15,7 @@ protected:
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
 	void onStop() override;
+	uint32_t getXP() override;
 
 private:
 	enum class State {

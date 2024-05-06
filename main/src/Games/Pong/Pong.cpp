@@ -67,6 +67,12 @@ void Pong::onStop(){
 	handleInput({ Input::Button::Down, Input::Data::Release });
 }
 
+uint32_t Pong::getXP(){
+	if(state != State::End) return 0;
+
+	return (ScoreLimit - enemyScore) * 50;
+}
+
 void Pong::buildElements(){
 	auto staticRC = std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim{ 128, 128 });
 	staticRC->setLayer(-2);

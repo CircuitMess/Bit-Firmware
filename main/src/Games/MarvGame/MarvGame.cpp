@@ -172,6 +172,11 @@ void MarvGame::MarvGame::onStop(){
 	duck->duckReleased();
 }
 
+uint32_t MarvGame::MarvGame::getXP(){
+	float success = (float)(score)/(float)(scoreMax);
+	return success * 250.0f;
+}
+
 void MarvGame::MarvGame::setupObstacles(){
 	obstacleOver.push_back({ getFile("/hydrant.raw"), { 17, 33 }, {} });
 	obstacleOver.push_back({ getFile("/banana.raw"), { 22, 23 }, {} });

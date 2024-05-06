@@ -120,3 +120,7 @@ void TestGame::handleInput(const Input::Data& data){
 		gravity = !gravity;
 	}
 }
+
+uint32_t TestGame::getXP(){
+	return 0;
+}

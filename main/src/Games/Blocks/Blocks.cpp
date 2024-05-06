@@ -383,3 +383,7 @@ void Blocks::exit(){
 
 	Game::exit();
 }
+
+uint32_t Blocks::getXP(){
+	return linesCleared * 2;
+}

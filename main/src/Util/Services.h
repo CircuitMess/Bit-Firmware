@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-enum class Service { Audio, Settings, Battery, Backlight, Input, Games, UI, Display, Robots, NVS, HighScore };
+enum class Service { Audio, Settings, Battery, Backlight, Input, Games, UI, Display, Robots, NVS, XPSystem, HighScore };
 
 class ServiceLocator {
 public:

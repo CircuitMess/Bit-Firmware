@@ -156,6 +156,10 @@ void Dance::handleInput(const Input::Data& data){
 	}
 }
 
+uint32_t Dance::getXP(){
+	return ((float)(score) / (float)(goal))*150.0f;
+}
+
 void Dance::updateNotes(float delta){
 	for(uint8_t i = 0; i < 3; ++i){
 		for(auto& note : notes[i]){

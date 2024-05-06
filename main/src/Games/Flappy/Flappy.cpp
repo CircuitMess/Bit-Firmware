@@ -200,6 +200,10 @@ void Flappy::handleInput(const Input::Data& data){
 				 { 200, 600, 100 } });
 }
 
+uint32_t Flappy::getXP(){
+	return ((float)std::min((int)ScoreCutoff, score) / (float)(ScoreCutoff)) * 250.0f;
+}
+
 void Flappy::resetDuck(){
 	bee->setPos({ 0, -20 });
 	bee->setRot(0);
