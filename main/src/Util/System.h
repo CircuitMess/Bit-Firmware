@@ -45,6 +45,7 @@ struct Version {
 class System {
 public:
 	inline static constexpr const Version CurrentVersion{.major = 1, .minor = 1, .commit = 88};
+	inline static constexpr const size_t VersionStringSize = 16;
 };
 
 #endif //BIT_FIRMWARE_SYSTEM_H

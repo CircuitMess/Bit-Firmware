@@ -16,8 +16,8 @@ public:
 
 	template<typename T, typename T_Old = T>
 	bool get(const std::string& blob, T& data, std::function<T(const T_Old&)> upgrade = nullptr) const{
-		size_t versionSize = 16;
-		char version[versionSize];
+		size_t versionSize = System::VersionStringSize;
+		char version[System::VersionStringSize];
 		memset(version, 0, versionSize);
 
 		esp_err_t err = nvs_get_str(handle, (blob + "_ver").c_str(), version, &versionSize);
@@ -52,7 +52,7 @@ public:
 	bool set(const std::string& blob, const T& data) const{
 		const std::string ver = Version::toString(System::CurrentVersion);
 
-		char version[16];
+		char version[System::VersionStringSize];
 		memcpy(version, ver.c_str(), ver.size() + 1);
 
 		esp_err_t err = nvs_set_str(handle, (blob + "_ver").c_str(), version);
@@ -79,8 +79,8 @@ public:
 
 	template<typename T, size_t S, typename T_Old = T>
 	bool get(const std::string& blob, std::array<T, S>& dataArray, std::function<std::array<T, S>(const std::array<T_Old, S>&)> upgrade = nullptr) const requires(S > 0){
-		size_t versionSize = 16;
-		char version[versionSize];
+		size_t versionSize = System::VersionStringSize;
+		char version[System::VersionStringSize];
 		memset(version, 0, versionSize);
 
 		esp_err_t err = nvs_get_str(handle, (blob + "_ver").c_str(), version, &versionSize);
@@ -115,7 +115,7 @@ public:
 	bool set(const std::string& blob, const std::array<T, S>& dataArray) const requires(S > 0){
 		const std::string ver = Version::toString(System::CurrentVersion);
 
-		char version[16];
+		char version[System::VersionStringSize];
 		memcpy(version, ver.c_str(), ver.size() + 1);
 
 		esp_err_t err = nvs_set_str(handle, (blob + "_ver").c_str(), version);
