@@ -366,5 +366,5 @@ void Blocks::updateScore(){
 }
 
 uint32_t Blocks::getXP(){
-	return linesCleared * 5;
+	return linesCleared * 2;
 }

@@ -10,11 +10,14 @@ uint32_t XPSystem::getXP() const{
 }
 
 uint8_t XPSystem::getLevel() const{
-	return MapXPToLevel(xp).nextLvl - 1;
+	LevelProgress lp = MapXPToLevel(xp);
+	if(lp.nextLvl == MaxLevel && lp.progress == 1.0f) return MaxLevel;
+
+	return lp.nextLvl - 1;
 }
 
 void XPSystem::increment(uint32_t xpGain){
-	xp += xpGain;
+	xp = std::min(xp + xpGain, LevelupThresholds[MaxLevel-2]);
 	store();
 }
 
