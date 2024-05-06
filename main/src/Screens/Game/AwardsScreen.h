@@ -15,10 +15,20 @@ public:
 	AwardsScreen(Games current, uint32_t highScore, uint32_t xp);
 
 private:
+	enum class Award : uint8_t {
+		None,
+		XP,
+		LevelUp,
+		Achievement,
+		HighScore
+	};
+
 	uint32_t highScore;
 	uint32_t xp;
 	EventQueue evts;
 	Games currentGame;
+
+	Award awardMode = Award::None;
 
 	char characters[3] {' ', ' ', ' '};
 
@@ -26,8 +36,6 @@ private:
 	lv_obj_t* item;
 	lv_obj_t* rest;
 	lv_obj_t* value;
-
-	BatteryElement* batt;
 
 	LVStyle itemStyle;
 
@@ -74,7 +82,7 @@ private:
 		return c;
 	}
 
-	void buildUI();
+	void buildUI(Award award);
 
 	void onStart() override;
 	void onStop() override;

@@ -23,6 +23,8 @@ private:
 	LVStyle itemStyle;
 	LVStyle focusStyle;
 
+	lv_obj_t* rest;
+
 	void buildUI();
 
 	void onStart() override;

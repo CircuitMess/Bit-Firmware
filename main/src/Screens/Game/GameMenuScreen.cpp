@@ -33,7 +33,7 @@ void GameMenuScreen::buildUI(){
 
 	batt = new BatteryElement(top);
 
-	auto rest = lv_obj_create(*this);
+	rest = lv_obj_create(*this);
 	lv_obj_set_size(rest, 128, 96);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
 	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -49,7 +49,7 @@ void GameMenuScreen::buildUI(){
 	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
 	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
 
-	auto mkBtn = [this, &rest](const char* text){
+	auto mkBtn = [this](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -75,7 +75,7 @@ void GameMenuScreen::buildUI(){
 				ui->startGame(screen->currentGame);
 			}
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
 		if(hsm->hasScore(currentGame)){
@@ -89,7 +89,7 @@ void GameMenuScreen::buildUI(){
 						ui->startScreen([screen](){ return std::make_unique<HighScoreScreen>(screen->currentGame); });
 					}
 				}, e->user_data);
-			}, LV_EVENT_CLICKED, this);
+			}, LV_EVENT_PRESSED, this);
 		}
 	}
 
@@ -103,7 +103,7 @@ void GameMenuScreen::buildUI(){
 				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame); });
 			}
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	auto exit = mkBtn("Exit game");
 
@@ -112,7 +112,7 @@ void GameMenuScreen::buildUI(){
 			auto screen = (GameMenuScreen*) arg;
 			screen->exit();
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0));
 }

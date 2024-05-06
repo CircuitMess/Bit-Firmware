@@ -26,7 +26,7 @@ bool HighScoreManager::isHighScore(Games game, uint32_t score) const{
 		}
 	}
 
-	return highScores[(size_t) game].back().score != 0 || highScores[(size_t) game].back().score < score;
+	return highScores[(size_t) game].back().score == 0 || highScores[(size_t) game].back().score < score;
 }
 
 void HighScoreManager::saveScore(Games game, HighScore score){
