@@ -185,14 +185,14 @@ void PauseScreen::buildUI(){
 	lv_obj_add_event_cb(ctrl, [](lv_event_t* e){
 		auto pause = (PauseScreen*) e->user_data;
 		pause->showControls();
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_obj_add_event_cb(exit, [](lv_event_t* e){
 		lv_async_call([](void* arg){
 			auto pause = (PauseScreen*) arg;
 			pause->exit();
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
 }
