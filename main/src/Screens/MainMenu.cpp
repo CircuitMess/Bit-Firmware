@@ -14,6 +14,7 @@
 #include <Screens/Settings/SettingsScreen.h>
 #include <unordered_set>
 #include "Util/Notes.h"
+#include "Filepaths.hpp"
 
 struct Entry {
 	const char* icon;
