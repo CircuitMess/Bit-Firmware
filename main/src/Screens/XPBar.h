@@ -1,0 +1,37 @@
+#ifndef BIT_FIRMWARE_XPBAR_H
+#define BIT_FIRMWARE_XPBAR_H
+
+#include "LV_Interface/LVObject.h"
+
+enum class XPBarLength : uint8_t {
+	Short,
+	Long
+};
+
+class XPBar : public LVObject {
+public:
+	/**
+	 * @param length - Short (84px) or Long (92px)
+	 * @param parent - Parent object
+	 * @param fillPercent - Initial fill percentage
+	 */
+	XPBar(XPBarLength length, lv_obj_t* parent, float fillPercent = 0);
+
+	void setFill(float percent, bool anim = false);
+
+private:
+	void buildUI();
+
+	lv_obj_t* bar;
+
+	const XPBarLength length;
+
+	static constexpr const char* BarImages[] = { "S:/XP/barShort.bin", "S:/XP/barLong.bin" };
+	static constexpr uint16_t Widths[] = { 84, 92 };
+	static constexpr uint16_t Height = 5;
+
+	static constexpr uint32_t AnimSpeed = 500; //[ms]
+};
+
+
+#endif //BIT_FIRMWARE_XPBAR_H
