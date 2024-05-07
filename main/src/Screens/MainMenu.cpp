@@ -74,7 +74,11 @@ void MainMenu::onStarting(){
 void MainMenu::onStart(){
 	Events::listen(Facility::Games, &events);
 	Events::listen(Facility::Input, &events);
-	bg->start();
+
+	if(bg != nullptr){
+		bg->start();
+	}
+
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
@@ -98,7 +102,10 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 }
 
 void MainMenu::onStop(){
-	bg->stop();
+	if(bg != nullptr){
+		bg->stop();
+	}
+
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
 
@@ -179,14 +186,25 @@ void MainMenu::gameEvent(GameManager::Event evt){
 }
 
 void MainMenu::buildUI(){
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	lv_obj_set_size(*this, 128, 128);
 	lv_obj_add_flag(*this, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_scroll_dir(*this, LV_DIR_VER);
 	lv_obj_set_scrollbar_mode(*this, LV_SCROLLBAR_MODE_OFF);
 
-	bg = new LVGIF(*this, "S:/bg");
-	lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
-	lv_obj_set_pos(*bg, 0, 0);
+	if(settings->get().theme == Theme::Theme1){
+		bg = new LVGIF(*this, "S:/bg");
+		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+		lv_obj_set_pos(*bg, 0, 0);
+	}else{
+		auto img = lv_img_create(*this);
+		lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
+		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
+	}
 
 	padTop = lv_obj_create(*this);
 	lv_obj_set_size(padTop, 128, 128);

@@ -4,18 +4,34 @@
 #include <nvs.h>
 #include "Services/Robots.h"
 
-struct SettingsStruct {
+enum class Theme : uint8_t {
+	Theme1,
+	Theme2,
+	Theme3,
+	Theme4
+};
+
+// TODO need to make a migration when loading this from spiffs
+struct __SettingsStruct_Old { // NOLINT(*-reserved-identifier)
 	bool sound = true;
 	uint8_t screenBrightness = 100;
 	uint8_t sleepTime = 3;
 	uint8_t robotsSeen[Robot::COUNT] = {0};
 };
 
+struct SettingsStruct {
+	bool sound = true;
+	uint8_t screenBrightness = 100;
+	uint8_t sleepTime = 3;
+	uint8_t robotsSeen[Robot::COUNT] = {0};
+	Theme theme = Theme::Theme1;
+};
+
 class Settings {
 public:
 	Settings();
 
-	SettingsStruct get();
+	SettingsStruct get() const;
 	void set(SettingsStruct& settings);
 	void store();
 

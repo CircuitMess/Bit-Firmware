@@ -4,6 +4,7 @@
 #include "Services/GameManager.h"
 #include "Services/ChirpSystem.h"
 #include "Util/Notes.h"
+#include "Filepaths.hpp"
 
 NewRobot::NewRobot(LVScreen* parent, Robot rob, bool isNew) : LVModal(parent), rob(rob), isNew(isNew){
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
@@ -76,7 +77,7 @@ void NewRobot::buildMain(){
 void NewRobot::buildNew(){
 	auto icon = lv_img_create(*this);
 	lv_obj_set_size(icon, 22, 35);
-	lv_img_set_src(icon, "S:/Lock_unlocked.bin");
+	lv_img_set_src(icon, Filepath::Unlocked);
 
 	auto label = lv_label_create(*this);
 	lv_obj_set_size(label, lv_pct(100), LV_SIZE_CONTENT);

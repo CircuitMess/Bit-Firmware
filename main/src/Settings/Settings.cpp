@@ -8,7 +8,7 @@ Settings::Settings(){
 	load();
 }
 
-SettingsStruct Settings::get(){
+SettingsStruct Settings::get() const{
 	return settingsStruct;
 }
 

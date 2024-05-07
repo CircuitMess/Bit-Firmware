@@ -16,7 +16,7 @@ private:
 	void off();
 	void onStop() override;
 
-	LVGIF* bg;
+	LVGIF* bg = nullptr;
 	lv_obj_t* label;
 	lv_obj_t* img;
 

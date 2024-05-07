@@ -1,6 +1,7 @@
 #include "LockedGame.h"
 #include "Services/GameManager.h"
 #include <string>
+#include "Filepaths.hpp"
 
 LockedGame::LockedGame(LVScreen* parent, Robot rob) : LVModal(parent), rob(rob){
 	buildUI();
@@ -26,7 +27,7 @@ void LockedGame::buildUI(){
 
 	auto icon = lv_img_create(*this);
 	lv_obj_set_size(icon, 22, 29);
-	lv_img_set_src(icon, "S:/Lock.bin");
+	lv_img_set_src(icon, Filepath::Locked);
 
 	std::string text("Insert ");
 	text += RobotNames[rob];

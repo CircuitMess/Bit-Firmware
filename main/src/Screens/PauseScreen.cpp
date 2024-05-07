@@ -9,6 +9,7 @@
 #include "Services/BacklightBrightness.h"
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
+#include "Filepaths.hpp"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
@@ -104,10 +105,15 @@ void PauseScreen::exit(){
 }
 
 void PauseScreen::buildUI(){
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, "S:/bg.bin");
+	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);
@@ -119,7 +125,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, "S:/Paused.bin");
+	lv_img_set_src(img, Filepath::Paused);
 
 	batt = new BatteryElement(top);
 
@@ -139,7 +145,6 @@ void PauseScreen::buildUI(){
 	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
 	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
 
-	auto settings = (Settings*) Services.get(Service::Settings);
 	auto initSet = settings->get();
 
 	audioSwitch = new BoolElement(rest, "Sound", [this](bool value){

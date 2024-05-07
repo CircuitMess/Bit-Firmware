@@ -1,4 +1,5 @@
 #include "MenuItem.h"
+#include "Filepaths.hpp"
 
 MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
 	lv_obj_set_size(*this, 37, 38);
@@ -16,7 +17,7 @@ MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
 
 	border = lv_img_create(*this);
 	lv_obj_set_size(border, 37, 38);
-	lv_img_set_src(border, "S:/IconBorder.bin");
+	lv_img_set_src(border, Filepath::IconBorder);
 	lv_obj_add_flag(border, LV_OBJ_FLAG_FLOATING);
 
 	setBorder(false);
