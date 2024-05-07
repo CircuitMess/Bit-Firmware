@@ -197,8 +197,8 @@ void MainMenu::buildUI(){
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
 	lv_obj_set_flex_flow(itemCont, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-	lv_obj_set_style_pad_gap(itemCont, 6, 0);
-	lv_obj_set_style_pad_hor(itemCont, 19, 0);
+	lv_obj_set_style_pad_gap(itemCont, 2, 0);
+	lv_obj_set_style_pad_hor(itemCont, 5, 0);
 
 	auto onClick = [](lv_event_t* e){
 		auto menu = (MainMenu*) e->user_data;
@@ -214,18 +214,33 @@ void MainMenu::buildUI(){
 		const auto index = lv_obj_get_index(e->target); // only applies to odd number of menu items
 		const auto itemCount = sizeof(MenuEntries) / sizeof(MenuEntries[0]);
 
+		//Maybe simplify logic in these calculations, seems overkill but math should work for any grid width
 		if(key == LV_KEY_UP){
-			if(itemCount%2 == 1 && index == 0){
-				lv_group_focus_prev(group);
+			uint8_t moves;
+			if(itemCount % RowWidth != 0 && index < RowWidth){
+				moves = index + 1 + std::max(((int) itemCount % (int) RowWidth - (int) index - 1), (int) 0);
 			}else{
-				lv_group_focus_prev(group);
+				moves = RowWidth;
+			}
+
+			for(uint8_t i = 0; i < moves; ++i){
 				lv_group_focus_prev(group);
 			}
 		}else if(key == LV_KEY_DOWN){
-			if(itemCount%2 == 1 && (index == itemCount-2 || index == itemCount-1)){
-				lv_group_focus_next(group);
+			uint8_t moves;
+			if(itemCount % RowWidth != 0){
+				if(index >= (itemCount - RowWidth) && index < (itemCount - itemCount % RowWidth)){ //predzadnji redak, elementi koji "vise" iznad ničega
+					moves = RowWidth - (index % RowWidth) - 1 + (itemCount % RowWidth);
+				}else if(index >= (itemCount - itemCount % RowWidth)){ //zadnji redak
+					moves = itemCount % RowWidth;
+				}else{
+					moves = RowWidth;
+				}
 			}else{
-				lv_group_focus_next(group);
+				moves = RowWidth;
+			}
+
+			for(uint8_t i = 0; i < moves; ++i){
 				lv_group_focus_next(group);
 			}
 		}
@@ -261,6 +276,7 @@ void MainMenu::buildUI(){
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
+	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
 	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
 
 	menuHeader = new MenuHeader(*this);

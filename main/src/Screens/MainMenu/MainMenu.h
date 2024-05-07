@@ -22,6 +22,7 @@ public:
 
 private:
 	void buildUI();
+	static constexpr uint8_t RowWidth = 3;
 
 	BatteryElement* batt;
 	class MenuHeader* menuHeader;
