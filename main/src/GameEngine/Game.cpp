@@ -3,7 +3,7 @@
 #include <esp_log.h>
 #include "Util/Services.h"
 #include "UIThread.h"
-#include "Screens/MainMenu.h"
+#include "Screens/MainMenu/MainMenu.h"
 #include "Util/Notes.h"
 
 static bool exited = false; // yolo

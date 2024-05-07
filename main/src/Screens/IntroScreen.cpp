@@ -1,5 +1,5 @@
 #include "IntroScreen.h"
-#include "MainMenu.h"
+#include "MainMenu/MainMenu.h"
 
 IntroScreen::IntroScreen(){
 	lv_obj_set_size(*this, 128, 128);
