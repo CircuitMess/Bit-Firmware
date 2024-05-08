@@ -7,23 +7,23 @@
 struct Version {
 	uint32_t major = 0;
 	uint32_t minor = 0;
-	uint32_t commit = 0;
+	uint32_t changeset = 0;
 
 	inline constexpr bool operator == (const Version& other) const{
-		return commit == other.commit;
+		return changeset == other.changeset;
 	}
 
 	inline constexpr bool operator < (const Version& other) const{
-		return commit < other.commit;
+		return changeset < other.changeset;
 	}
 
 	inline constexpr bool operator > (const Version& other) const{
-		return commit > other.commit;
+		return changeset > other.changeset;
 	}
 
 	inline static std::string toString(const Version& version){
 		std::stringstream ss;
-		ss << version.major << "." << version.minor << "." << version.commit;
+		ss << version.major << "." << version.minor << "." << version.changeset;
 		return ss.str();
 	}
 
@@ -36,7 +36,7 @@ struct Version {
 		ss.get(temp);
 		ss >> ver.minor;
 		ss.get(temp);
-		ss >> ver.commit;
+		ss >> ver.changeset;
 
 		return ver;
 	}
@@ -44,7 +44,7 @@ struct Version {
 
 class System {
 public:
-	inline static constexpr const Version CurrentVersion{.major = 1, .minor = 1, .commit = 88};
+	inline static constexpr const Version CurrentVersion{.major = 1, .minor = 1, .changeset = 88};
 	inline static constexpr const size_t VersionStringSize = 16;
 };
 

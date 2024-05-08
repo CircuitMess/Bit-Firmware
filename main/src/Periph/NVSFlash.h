@@ -77,8 +77,8 @@ public:
 		return true;
 	}
 
-	template<typename T, size_t S, typename T_Old = T>
-	bool get(const std::string& blob, std::array<T, S>& dataArray, std::function<std::array<T, S>(const std::array<T_Old, S>&)> upgrade = nullptr) const requires(S > 0){
+	template<typename T, size_t S, typename T_Old = T, size_t S_Old = S>
+	bool get(const std::string& blob, std::array<T, S>& dataArray, std::function<std::array<T, S>(const std::array<T_Old, S_Old>&)> upgrade = nullptr) const requires(S > 0 && S_Old > 0){
 		size_t versionSize = System::VersionStringSize;
 		char version[System::VersionStringSize];
 		memset(version, 0, versionSize);
@@ -86,8 +86,8 @@ public:
 		esp_err_t err = nvs_get_str(handle, (blob + "_ver").c_str(), version, &versionSize);
 
 		if(upgrade != nullptr && (err != ESP_OK || System::CurrentVersion > Version::fromString(std::string(version)))){
-			size_t out_size = sizeof(T_Old) * S;
-			std::array<T_Old, S> oldArray;
+			size_t out_size = sizeof(T_Old) * S_Old;
+			std::array<T_Old, S_Old> oldArray;
 			err = nvs_get_blob(handle, blob.c_str(), oldArray.data(), &out_size);
 
 			if(err != ESP_OK){
@@ -97,7 +97,7 @@ public:
 
 			dataArray = upgrade(oldArray);
 
-			set<T, S, T_Old>(blob, dataArray);
+			set<T, S>(blob, dataArray);
 		}else{
 			size_t out_size = sizeof(T) * S;
 			err = nvs_get_blob(handle, blob.c_str(), dataArray.data(), &out_size);
