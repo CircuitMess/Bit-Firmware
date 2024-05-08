@@ -2,8 +2,12 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
+#include "Services/HighScoreManager.h"
+#include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/Game/AwardsScreen.h"
 
-Snake::Snake(Sprite& canvas) : Game(canvas, "/Games/Snake", {
+Snake::Snake(Sprite& canvas) : Game(canvas, Games::Snake, "/Games/Snake", {
 		{ "/bg.raw", {}, true },
 		{ Foods[0].path, {}, true },
 		{ Foods[1].path, {}, true },
@@ -146,7 +150,7 @@ void Snake::handleInput(const Input::Data& data){
 
 }
 
-uint32_t Snake::getXP(){
+uint32_t Snake::getXP() const{
 	if(score <= XPCutoff){
 		return score * 2;
 	}else{

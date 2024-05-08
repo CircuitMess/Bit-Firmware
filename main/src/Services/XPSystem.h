@@ -15,8 +15,8 @@ public:
 	uint8_t getLevel() const;
 	void increment(uint32_t xpGain);
 
-	static constexpr LevelProgress MapXPToLevel(uint32_t xp){
-		uint8_t levelupsNum = sizeof(LevelupThresholds) / sizeof(uint32_t);
+	inline static constexpr LevelProgress MapXPToLevel(uint32_t xp) {
+		const uint8_t levelupsNum = sizeof(LevelupThresholds) / sizeof(uint32_t);
 		uint32_t requiredXP = 0;
 
 		for(uint8_t i = 0; i < levelupsNum; i++){

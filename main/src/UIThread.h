@@ -17,6 +17,7 @@ public:
 
 	void pauseGame();
 	void resumeGame();
+	void exitGame();
 
 private:
 	LVGL& lvgl;

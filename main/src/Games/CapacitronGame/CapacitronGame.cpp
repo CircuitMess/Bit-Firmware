@@ -3,8 +3,12 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/MultiRC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Services/HighScoreManager.h"
+#include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/Game/AwardsScreen.h"
 
-CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, "/Games/Capacitron", {
+CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, Games::Capacitron, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
 		{ "/bg2.raw", {}, true },
 		{ "/bg3.raw", {}, true },
@@ -221,7 +225,7 @@ void CapacitronGame::CapacitronGame::onStop(){
 	player->btnReleased(Input::Right);
 }
 
-uint32_t CapacitronGame::CapacitronGame::getXP(){
+uint32_t CapacitronGame::CapacitronGame::getXP() const{
 	return score * 8;
 }
 

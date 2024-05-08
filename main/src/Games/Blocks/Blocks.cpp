@@ -2,8 +2,12 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
+#include "Services/HighScoreManager.h"
+#include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/Game/AwardsScreen.h"
 
-Blocks::Blocks(Sprite& canvas) : Game(canvas, "/Games/Blocks", {
+Blocks::Blocks(Sprite& canvas) : Game(canvas, Games::Blocks, "/Games/Blocks", {
 		{ Sprites[0], {}, true },
 		{ Sprites[1], {}, true },
 		{ Sprites[2], {}, true },
@@ -365,6 +369,6 @@ void Blocks::updateScore(){
 	levelTextRC->setText(s);
 }
 
-uint32_t Blocks::getXP(){
+uint32_t Blocks::getXP() const{
 	return linesCleared * 2;
 }

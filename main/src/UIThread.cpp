@@ -52,6 +52,10 @@ void UIThread::resumeGame(){
 	active = Src::Game;
 }
 
+void UIThread::exitGame() {
+	gamer.exitGame();
+}
+
 void UIThread::checkShutdown(){
 	Event evt;
 	if(!evts.get(evt, 0)) return;

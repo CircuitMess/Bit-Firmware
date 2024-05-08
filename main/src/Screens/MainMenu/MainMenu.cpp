@@ -15,6 +15,7 @@
 #include <unordered_set>
 #include "Util/Notes.h"
 #include "MenuHeader.h"
+#include "Screens/Game/GameMenuScreen.h"
 
 struct Entry {
 	const char* icon;
@@ -61,7 +62,7 @@ void MainMenu::launch(Games game){
 	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startGame(game);
+	ui->startScreen([game](){ return std::make_unique<GameMenuScreen>(game); });
 }
 
 void MainMenu::onStarting(){
