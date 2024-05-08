@@ -25,6 +25,7 @@
 #include "JigHWTest/JigHWTest.h"
 #include "Periph/NVSFlash.h"
 #include "Services/XPSystem.h"
+#include "Services/AchievementSystem.h"
 
 BacklightBrightness* bl;
 
@@ -89,6 +90,9 @@ void init(){
 
 	auto xpsystem = new XPSystem();
 	Services.set(Service::XPSystem, xpsystem);
+
+	auto achievements = new AchievementSystem();
+	Services.set(Service::Achievements, achievements);
 
 	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
 	blPwm->detach();

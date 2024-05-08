@@ -5,6 +5,7 @@
 #include "UIThread.h"
 #include "Screens/MainMenu/MainMenu.h"
 #include "Util/Notes.h"
+#include "Services/AchievementSystem.h"
 
 static bool exited = false; // yolo
 // Exit is going to get called in the game's onLoop, and when exit is called, the Game object
@@ -92,7 +93,19 @@ void Game::handleInput(const Input::Data& data){
 }
 
 void Game::exit(){
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
+
+	std::vector<AchievementData> achievements;
+	achievementSystem->endSession(achievements);
+
 	auto ui = (UIThread*) Services.get(Service::UI);
+	if(ui == nullptr){
+		return;
+	}
+
 	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
 	exited = true;
 }
@@ -137,9 +150,24 @@ void Game::loop(uint micros){
 	}
 }
 
-void Game::onStart(){}
+void Game::onStart(){
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
 
-void Game::onStop(){}
+	achievementSystem->startSession();
+}
+
+void Game::onStop(){
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
+
+	std::vector<AchievementData> achievements;
+	achievementSystem->endSession(achievements);
+}
 
 void Game::onLoad(){}
 
