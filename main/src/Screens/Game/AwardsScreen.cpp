@@ -10,6 +10,7 @@
 #include "Services/XPSystem.h"
 #include "GameMenuScreen.h"
 #include "Screens/XPBar.h"
+#include "Util/Notes.h"
 
 AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : highScore(highScore), xp(xp), evts(6), currentGame(current), start(millis()){
 	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
@@ -34,6 +35,21 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 }
 
 void AwardsScreen::buildUI(Award award){
+	ChirpSystem* chirp = (ChirpSystem*) Services.get(Service::Audio);
+	if(chirp == nullptr){
+		return;
+	}
+
+	if(award == Award::LevelUp){
+		chirp->play({{ NOTE_C6, NOTE_C6, 90 },
+					 { 0, 0, 20 },
+					 { NOTE_C6, NOTE_C6, 90 },
+					 { NOTE_G6, NOTE_G6, 200 }});
+	}else if(award == Award::HighScore){
+		chirp->play({{ NOTE_G6, NOTE_G6, 100 },
+					 { NOTE_C6, NOTE_C6, 300 }});
+	}
+
 	lv_obj_clean(*this);
 	lv_obj_invalidate(*this);
 	itemStyle = {};
@@ -253,7 +269,7 @@ void AwardsScreen::loop(){
 		return;
 	}
 
-	for(Event e{}; evts.get(e, 0); ){
+	for(Event e{}; evts.get(e, 0);){
 		if(e.facility != Facility::Input){
 			free(e.data);
 			continue;
