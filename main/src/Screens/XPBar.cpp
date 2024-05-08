@@ -3,8 +3,6 @@
 XPBar::XPBar(XPBarLength length, lv_obj_t* parent, float fillPercent) : LVObject(parent), length(length){
 	buildUI();
 	setFill(fillPercent, false);
-
-
 }
 
 void XPBar::buildUI(){

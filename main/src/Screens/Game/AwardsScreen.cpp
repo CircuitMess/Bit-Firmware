@@ -9,9 +9,10 @@
 #include "Util/stdafx.h"
 #include "Services/XPSystem.h"
 #include "GameMenuScreen.h"
+#include "Screens/XPBar.h"
 
 AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : highScore(highScore), xp(xp), evts(6), currentGame(current), start(millis()){
-	HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
+	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
 	if(hsm == nullptr){
 		return;
 	}
@@ -157,7 +158,9 @@ void AwardsScreen::buildUI(Award award){
 		lv_obj_set_style_bg_img_src(bar, "S:/Award/XP-line.bin", 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		// TODO add the fill line for the bar once exported
+		xpBar = new XPBar(XPBarLength::Short, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
+		xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
+		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::LevelUp){
 		const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
 		if(xpSystem == nullptr){
@@ -192,7 +195,7 @@ void AwardsScreen::buildUI(Award award){
 		lv_img_set_src(text, "S:/Award/leveledup.bin");
 		lv_obj_set_align(text, LV_ALIGN_CENTER);
 
-		auto lvl = mkLabel(("Level " + std::to_string(xpSystem->getLevel())).c_str());
+		auto lvl = mkLabel(("Level " + std::to_string(xpSystem->getLevel() + 1)).c_str());
 
 		auto bar = lv_img_create(rest);
 		lv_img_set_src(bar, "S:/Award/XP-frame.bin");
@@ -200,7 +203,9 @@ void AwardsScreen::buildUI(Award award){
 		lv_obj_set_style_bg_img_src(bar, "S:/Award/XP-line.bin", 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		// TODO add the fill line for the bar once exported
+		xpBar = new XPBar(XPBarLength::Short, bar, 0.0f);
+		xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
+		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
 		// TODO: init achievement unlocked up UI
 	}else{

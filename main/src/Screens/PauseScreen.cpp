@@ -97,11 +97,19 @@ void PauseScreen::showControls(){
 
 void PauseScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);
+	if(disp == nullptr){
+		return;
+	}
+
 	auto lgfx = disp->getLGFX();
 	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	if(ui == nullptr){
+		return;
+	}
+
+	ui->exitGame();
 }
 
 void PauseScreen::buildUI(){

@@ -25,6 +25,8 @@ void XPSystem::load(){
 	if(!nvs.get(BlobName, xp)){
 		store();
 	}
+
+	xp = 0;
 }
 
 void XPSystem::store(){

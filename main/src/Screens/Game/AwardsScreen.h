@@ -37,6 +37,8 @@ private:
 	lv_obj_t* rest;
 	lv_obj_t* value;
 
+	class XPBar* xpBar = nullptr;
+
 	LVStyle itemStyle;
 
 	uint8_t activeIndex = 0;

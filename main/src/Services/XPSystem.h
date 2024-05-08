@@ -17,13 +17,13 @@ public:
 
 	inline static constexpr LevelProgress MapXPToLevel(uint32_t xp) {
 		const uint8_t levelupsNum = sizeof(LevelupThresholds) / sizeof(uint32_t);
-		uint32_t requiredXP = 0;
 
 		for(uint8_t i = 0; i < levelupsNum; i++){
-			requiredXP += LevelupThresholds[i];
-			if(xp < requiredXP){
+			if(xp < LevelupThresholds[i]){
 				return { (uint8_t) (i + 2), (float) xp / LevelupThresholds[i] };
 			}
+
+			xp -= LevelupThresholds[i];
 		}
 		return { MaxLevel, 1.0f };
 	}

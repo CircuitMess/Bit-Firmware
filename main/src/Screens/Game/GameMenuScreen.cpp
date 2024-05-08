@@ -1,5 +1,5 @@
 #include "GameMenuScreen.h"
-#include "Screens/MainMenu.h"
+#include "Screens/MainMenu/MainMenu.h"
 #include "Devices/Input.h"
 #include "LV_Interface/InputLVGL.h"
 #include "UIThread.h"
