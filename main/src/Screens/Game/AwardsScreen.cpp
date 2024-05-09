@@ -23,9 +23,7 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 		return;
 	}
 
-	if(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).nextLvl > xpSystem->getLevel() + 1){
-		buildUI(Award::LevelUp);
-	}else if(xp > 0){
+	if(xp > 0){
 		buildUI(Award::XP);
 	}else if(hsm->isHighScore(currentGame, highScore)){
 		buildUI(Award::HighScore);
@@ -35,6 +33,20 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 }
 
 void AwardsScreen::buildUI(Award award){
+	lastChange = millis();
+	chirped = false;
+
+	const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
+	if(xpSystem == nullptr){
+		return;
+	}
+
+	if(levelSet == 0){
+		levelSet = xpSystem->getLevel();
+	}else if(award == Award::LevelUp){
+		++levelSet;
+	}
+
 	ChirpSystem* chirp = (ChirpSystem*) Services.get(Service::Audio);
 	if(chirp == nullptr){
 		return;
@@ -48,6 +60,8 @@ void AwardsScreen::buildUI(Award award){
 	}else if(award == Award::HighScore){
 		chirp->play({{ NOTE_G6, NOTE_G6, 100 },
 					 { NOTE_C6, NOTE_C6, 300 }});
+	}else if(award == Award::XP){
+		chirp->play({{ NOTE_C3, NOTE_C6, AnimLength }});
 	}
 
 	lv_obj_clean(*this);
@@ -130,11 +144,6 @@ void AwardsScreen::buildUI(Award award){
 		lv_obj_set_size(value, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_set_style_text_color(value, lv_color_make(85, 126, 150), 0);
 	}else if(award == Award::XP){
-		const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
-		if(xpSystem == nullptr){
-			return;
-		}
-
 		lv_obj_set_style_pad_all(rest, 6, 0);
 
 		lv_style_set_width(itemStyle, lv_pct(86));
@@ -175,14 +184,12 @@ void AwardsScreen::buildUI(Award award){
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
 		xpBar = new XPBar(XPBarLength::Short, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
-		xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
+
+		const LevelProgress progress = xpSystem->MapXPToLevel(xpSystem->getXP() + xp);
+		xpBar->setFill(progress.nextLvl > xpSystem->getLevel() + 1 ? 1.0f : progress.progress, true);
+
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::LevelUp){
-		const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
-		if(xpSystem == nullptr){
-			return;
-		}
-
 		lv_obj_set_style_pad_all(rest, 6, 0);
 
 		lv_style_set_width(itemStyle, lv_pct(86));
@@ -211,7 +218,7 @@ void AwardsScreen::buildUI(Award award){
 		lv_img_set_src(text, "S:/Award/leveledup.bin");
 		lv_obj_set_align(text, LV_ALIGN_CENTER);
 
-		auto lvl = mkLabel(("Level " + std::to_string(xpSystem->getLevel() + 1)).c_str());
+		auto lvl = mkLabel(("Level " + std::to_string(levelSet)).c_str());
 
 		auto bar = lv_img_create(rest);
 		lv_img_set_src(bar, "S:/Award/XP-frame.bin");
@@ -220,7 +227,6 @@ void AwardsScreen::buildUI(Award award){
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
 		xpBar = new XPBar(XPBarLength::Short, bar, 0.0f);
-		xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
 		// TODO: init achievement unlocked up UI
@@ -264,7 +270,28 @@ void AwardsScreen::onStop(){
 }
 
 void AwardsScreen::loop(){
-	HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
+	const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
+	if(xpSystem == nullptr){
+		return;
+	}
+
+	if(awardMode == Award::LevelUp && millis() - lastChange >= 400 && !chirped){
+		chirped = true;
+
+		if(xpBar != nullptr){
+			xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
+		}
+
+		if(ChirpSystem* chirp = (ChirpSystem*) Services.get(Service::Audio)){
+			chirp->play({{ NOTE_C3, NOTE_C6, AnimLength }});
+		}
+	}
+
+	if(awardMode <= Award::LevelUp && millis() - lastChange >= AnimLength * 3 && XPSystem::MapXPToLevel(xpSystem->getXP() + xp).nextLvl > levelSet + 1){
+		buildUI(Award::LevelUp);
+	}
+
+		HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
 	if(hsm == nullptr){
 		return;
 	}

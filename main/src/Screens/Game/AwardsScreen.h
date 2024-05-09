@@ -46,7 +46,12 @@ private:
 	uint64_t lastChanged = 0;
 
 	uint64_t start;
+	uint64_t lastChange = 0;
 	uint64_t blinkTime = 500;
+	bool chirped = false;
+	uint32_t levelSet = 0;
+
+	inline static constexpr const uint32_t AnimLength = 500;
 
 	static constexpr char getChar(char c, int8_t direction) {
 		if(c < ' '){
