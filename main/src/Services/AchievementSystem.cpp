@@ -25,9 +25,7 @@ void AchievementSystem::increment(Achievement ID, int32_t increment){
 		return;
 	}
 
-	achievementProgress[(size_t) ID].progress = achievementProgress[(size_t) ID].goal >= 0 ?
-			std::min(achievementProgress[(size_t) ID].goal, achievementProgress[(size_t) ID].progress + increment) :
-			std::max(achievementProgress[(size_t) ID].goal, achievementProgress[(size_t) ID].progress + increment);
+	achievementProgress[(size_t) ID].progress = std::min(achievementProgress[(size_t) ID].goal, achievementProgress[(size_t) ID].progress + increment);
 }
 
 void AchievementSystem::startSession(){

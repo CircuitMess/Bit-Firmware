@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <vector>
-#include <cstddef>
+#include <cstdint>
 #include <array>
 
 // TODO needs to be filled out
@@ -13,7 +13,7 @@ enum class Achievement : uint32_t {
 
 struct AchievementData {
 public:
-	inline AchievementData(Achievement achievement = (Achievement) 0, int32_t goal = 0, int32_t progress = 0) : achievementID(achievement), goal(goal), progress(progress) {}
+	inline AchievementData(Achievement achievement = (Achievement) 0, uint32_t goal = 0, uint32_t progress = 0) : achievementID(achievement), goal(goal), progress(progress) {}
 
 	inline constexpr bool unlocked() const{
 		return goal != 0 && progress == goal;
@@ -25,8 +25,8 @@ public:
 
 public:
 	Achievement achievementID;
-	int32_t goal;
-	int32_t progress;
+	uint32_t goal;
+	uint32_t progress;
 };
 
 class AchievementSystem {
