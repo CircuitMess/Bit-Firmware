@@ -198,10 +198,6 @@ uint32_t Asteroids::Asteroids::getXP(){
 	return ((float)score / (float)MaxScore) * 150.0f;
 }
 
-void Asteroids::Asteroids::onStart(){
-
-}
-
 void Asteroids::Asteroids::onStop(){
 	handleInput({ Input::Button::Left, Input::Data::Release });
 	handleInput({ Input::Button::Right, Input::Data::Release });

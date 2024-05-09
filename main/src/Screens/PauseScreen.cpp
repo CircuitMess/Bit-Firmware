@@ -1,5 +1,5 @@
 #include "PauseScreen.h"
-#include "Screens/MainMenu.h"
+#include "Screens/MainMenu/MainMenu.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Devices/Input.h"

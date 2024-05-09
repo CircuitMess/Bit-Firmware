@@ -100,6 +100,8 @@ void ArtemisGame::PewPew::onLoad(){
 }
 
 void ArtemisGame::PewPew::onStart(){
+	Game::onStart();
+
 	xhair->btnReset();
 }
 

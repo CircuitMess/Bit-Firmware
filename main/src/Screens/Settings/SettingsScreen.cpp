@@ -2,7 +2,7 @@
 #include "Devices/Input.h"
 #include "LV_Interface/InputLVGL.h"
 #include "Util/Services.h"
-#include "Screens/MainMenu.h"
+#include "Screens/MainMenu/MainMenu.h"
 #include "BoolElement.h"
 #include "SliderElement.h"
 #include "DiscreteSliderElement.h"

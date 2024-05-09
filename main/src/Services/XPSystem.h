@@ -15,7 +15,18 @@ public:
 	uint8_t getLevel() const;
 	void increment(uint32_t xpGain);
 
-	static constexpr LevelProgress MapXPToLevel(uint32_t xp);
+	inline static constexpr LevelProgress MapXPToLevel(uint32_t xp) {
+		const uint8_t levelupsNum = sizeof(LevelupThresholds) / sizeof(uint32_t);
+
+		for(uint8_t i = 0; i < levelupsNum; i++){
+			if(xp < LevelupThresholds[i]){
+				return { (uint8_t) (i + 2), (float) xp / LevelupThresholds[i] };
+			}
+
+			xp -= LevelupThresholds[i];
+		}
+		return { MaxLevel, 1.0f };
+	}
 
 private:
 	NVSFlash& nvs;
