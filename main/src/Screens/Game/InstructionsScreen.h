@@ -15,6 +15,7 @@ public:
 	explicit InstructionsScreen(Games current);
 
 private:
+	bool ignoreFirstInput = false;
 	EventQueue evts;
 	Games currentGame;
 

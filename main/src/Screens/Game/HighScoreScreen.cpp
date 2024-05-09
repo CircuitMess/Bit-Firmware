@@ -9,6 +9,15 @@
 #include "Services/HighScoreManager.h"
 
 HighScoreScreen::HighScoreScreen(Games current) : evts(6), currentGame(current){
+	Input* input = (Input*) Services.get(Service::Input);
+	if(input == nullptr){
+		return;
+	}
+
+	if(input->isPressed(Input::Button::A) || input->isPressed(Input::Button::B) || input->isPressed(Input::Button::Menu)){
+		ignoreFirstInput = true;
+	}
+
 	buildUI();
 }
 
@@ -102,8 +111,14 @@ void HighScoreScreen::loop(){
 			continue;
 		}
 
+		if(ignoreFirstInput){
+			ignoreFirstInput = false;
+			free(e.data);
+			continue;
+		}
+
 		auto data = (Input::Data*) e.data;
-		if((data->btn == Input::Menu || data->btn == Input::B) && data->action == Input::Data::Release){
+		if((data->btn == Input::Menu || data->btn == Input::B || data->btn == Input::A) && data->action == Input::Data::Release){
 			exit();
 
 			free(e.data);

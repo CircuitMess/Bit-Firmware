@@ -15,6 +15,7 @@ public:
 	explicit HighScoreScreen(Games current);
 
 private:
+	bool ignoreFirstInput = false;
 	EventQueue evts;
 	Games currentGame;
 

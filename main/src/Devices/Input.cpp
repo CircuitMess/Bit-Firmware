@@ -57,6 +57,10 @@ void Input::sleepyLoop(){
 	scan();
 }
 
+bool Input::isPressed(Input::Button button) const{
+	return btnState.at(button);
+}
+
 void Input::scan(){
 	for(const auto& pair : PinMap){
 		const auto port = pair.first;
