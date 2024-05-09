@@ -25,6 +25,7 @@
 #include "JigHWTest/JigHWTest.h"
 #include "Periph/NVSFlash.h"
 #include "Services/XPSystem.h"
+#include "Screens/Profile/ProfileScreen.h"
 
 BacklightBrightness* bl;
 
@@ -156,7 +157,7 @@ void init(){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<IntroScreen>(); });
+	ui->startScreen([](){ return std::make_unique<ProfileScreen>(); });
 
 	bl->fadeOut();
 	ui->start();

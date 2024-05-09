@@ -1,7 +1,6 @@
-#ifndef BIT_FIRMWARE_MAINMENU_H
-#define BIT_FIRMWARE_MAINMENU_H
+#ifndef BIT_FIRMWARE_PROFILESCREEN_H
+#define BIT_FIRMWARE_PROFILESCREEN_H
 
-#include "MenuItem.h"
 #include "LV_Interface/LVScreen.h"
 #include "LV_Interface/LVGIF.h"
 #include "LV_Interface/LVModal.h"
@@ -9,28 +8,23 @@
 #include "Services/Robots.h"
 #include "Services/GameManager.h"
 #include "Devices/Input.h"
-#include "Screens/BatteryElement.h"
 #include <optional>
 #include "Services/ChirpSystem.h"
+#include "Screens/MainMenu/MenuItem.h"
 
-class MainMenu : public LVScreen {
+class ProfileScreen : public LVScreen {
 public:
-	MainMenu();
-	virtual ~MainMenu();
-
-	static void gameEvent(GameManager::Event evt);
+	ProfileScreen();
+	virtual ~ProfileScreen();
 
 private:
 	void buildUI();
 	static constexpr uint8_t RowWidth = 3;
 
-	BatteryElement* batt;
-	class MenuHeader* menuHeader;
 	std::vector<MenuItem*> items;
-	std::unordered_map<Robot, MenuItem*> robGames;
 	lv_obj_t* itemCont;
-	LVGIF* bg;
 	lv_obj_t* padTop = nullptr;
+	class XPBar* xpBar = nullptr;
 
 	void onStarting() override;
 	void onStart() override;
@@ -44,16 +38,14 @@ private:
 	EventQueue events;
 	void loop() override;
 
-	void handleInsert(const GameManager::Event& evt);
 	void handleInput(const Input::Data& evt);
 
 	void launch(Games game);
 
-	static std::optional<GameManager::Event> gmEvt;
 	static std::atomic<bool> running;
 
 	ChirpSystem* audio;
 };
 
 
-#endif //BIT_FIRMWARE_MAINMENU_H
+#endif //BIT_FIRMWARE_PROFILESCREEN_H
