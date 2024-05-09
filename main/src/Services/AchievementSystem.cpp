@@ -2,7 +2,7 @@
 #include "Util/Services.h"
 #include "Periph/NVSFlash.h"
 
-static constexpr const std::array<AchievementData, (size_t) Achievement::COUNT> AchievementInfo = {};
+static constexpr const std::array<AchievementData, (size_t) Achievement::COUNT> AchievementInfo = {/*TODO - fill out with AchievementData*/};
 
 AchievementSystem::AchievementSystem(): achievementProgress((size_t) Achievement::COUNT), previousState((size_t) Achievement::COUNT){
 	load();

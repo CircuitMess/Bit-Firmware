@@ -41,8 +41,8 @@ public:
 	void endSession(std::vector<AchievementData>& unlockedList);
 
 private:
-	std::vector<AchievementData> achievementProgress;
-	std::vector<AchievementData> previousState;
+	std::vector<AchievementData> achievementProgress; //global achievement progress
+	std::vector<AchievementData> previousState; //achivement state before a new session is started
 	bool inSession = false;
 	inline static constexpr const char* Blob = "Achievements";
 
