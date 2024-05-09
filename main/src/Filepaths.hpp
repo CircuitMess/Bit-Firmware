@@ -22,32 +22,32 @@ namespace Filepath {
 		inline static constexpr const char* Background = "S:/Theme1/bg.bin"; // TODO when theme 1 isn't active, make sure to not have the background animation of theme 1, but just background of the active theme
 		inline static constexpr const char* Popup = "S:/Theme1/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme1/header.bin";
-		inline static constexpr const char* BarLong = "";
-		inline static constexpr const char* BarShort = "";
+		inline static constexpr const char* BarLong = "S:/Theme1/barLong.bin";
+		inline static constexpr const char* BarShort = "S:/Theme1/barShort.bin";
 	}
 
 	namespace Theme2 {
 		inline static constexpr const char* Background = "S:/Theme2/bg.bin";
 		inline static constexpr const char* Popup = "S:/Theme2/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme2/header.bin";
-		inline static constexpr const char* BarLong = "";
-		inline static constexpr const char* BarShort = "";
+		inline static constexpr const char* BarLong = "S:/Theme2/barLong.bin";
+		inline static constexpr const char* BarShort = "S:/Theme2/barShort.bin";
 	}
 
 	namespace Theme3 {
 		inline static constexpr const char* Background = "S:/Theme3/bg.bin";
 		inline static constexpr const char* Popup = "S:/Theme3/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme3/header.bin";
-		inline static constexpr const char* BarLong = "";
-		inline static constexpr const char* BarShort = "";
+		inline static constexpr const char* BarLong = "S:/Theme3/barLong.bin";
+		inline static constexpr const char* BarShort = "S:/Theme3/barShort.bin";
 	}
 
 	namespace Theme4 {
 		inline static constexpr const char* Background = "S:/Theme4/bg.bin";
 		inline static constexpr const char* Popup = "S:/Theme4/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme4/header.bin";
-		inline static constexpr const char* BarLong = "";
-		inline static constexpr const char* BarShort = "";
+		inline static constexpr const char* BarLong = "S:/Theme4/barLong.bin";
+		inline static constexpr const char* BarShort = "S:/Theme4/barShort.bin";
 	}
 
 	namespace Battery {
