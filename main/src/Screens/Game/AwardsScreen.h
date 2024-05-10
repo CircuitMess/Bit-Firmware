@@ -89,7 +89,7 @@ private:
 		return c;
 	}
 
-	void buildUI(Award award);
+	void setAwardMode(Award award);
 
 	void onStart() override;
 	void onStop() override;

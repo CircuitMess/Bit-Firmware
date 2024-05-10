@@ -24,15 +24,15 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 	}
 
 	if(xp > 0){
-		buildUI(Award::XP);
+		setAwardMode(Award::XP);
 	}else if(hsm->isHighScore(currentGame, highScore)){
-		buildUI(Award::HighScore);
+		setAwardMode(Award::HighScore);
 	}else{
 		exit();
 	}
 }
 
-void AwardsScreen::buildUI(Award award){
+void AwardsScreen::setAwardMode(Award award){
 	lastChange = millis();
 	chirped = false;
 
@@ -288,7 +288,7 @@ void AwardsScreen::loop(){
 	}
 
 	if(awardMode <= Award::LevelUp && millis() - lastChange >= AnimLength * 3 && XPSystem::MapXPToLevel(xpSystem->getXP() + xp).nextLvl > levelSet + 1){
-		buildUI(Award::LevelUp);
+		setAwardMode(Award::LevelUp);
 	}
 
 		HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
@@ -312,7 +312,7 @@ void AwardsScreen::loop(){
 				/*if(awardMode < Award::Achievement *//*TODO && new achievement unlocked, remove false*//*){
 					buildUI(Award::Achievement);
 				}else */if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
-					buildUI(Award::HighScore);
+					setAwardMode(Award::HighScore);
 				}else{
 					free(e.data);
 					exit();
