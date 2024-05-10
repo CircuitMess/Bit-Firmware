@@ -5,11 +5,15 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
 #include "gtx/vector_angle.hpp"
+#include "Services/HighScoreManager.h"
+#include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/Game/AwardsScreen.h"
 
 constexpr Flappy::ObstacleDesc Flappy::TopObstacles[];
 constexpr Flappy::ObstacleDesc Flappy::BotObstacles[];
 
-Flappy::Flappy(Sprite& canvas) : Game(canvas, "/Games/Flappy", {
+Flappy::Flappy(Sprite& canvas) : Game(canvas, Games::MrBee, "/Games/Flappy", {
 		{ "/bee.gif", {}, true },
 		{ "/bg.raw", {}, true },
 		RES_HEART,
@@ -60,6 +64,8 @@ void Flappy::onLoad(){
 }
 
 void Flappy::onStart(){
+	Game::onStart();
+
 	anim->start();
 }
 
@@ -194,6 +200,10 @@ void Flappy::handleInput(const Input::Data& data){
 	audio.play({ { 90,  90,  50 },
 				 { 0,   0,   50 },
 				 { 200, 600, 100 } });
+}
+
+uint32_t Flappy::getXP() const{
+	return ((float)std::min((int)ScoreCutoff, score) / (float)(ScoreCutoff)) * 250.0f;
 }
 
 void Flappy::resetDuck(){

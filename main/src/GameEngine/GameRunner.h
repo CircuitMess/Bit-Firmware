@@ -14,6 +14,7 @@ public:
 
 	void startGame(Games game);
 	void endGame();
+	void exitGame();
 
 	void loop();
 	void resume();

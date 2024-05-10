@@ -14,6 +14,9 @@
 #include <Screens/Settings/SettingsScreen.h>
 #include <unordered_set>
 #include "Util/Notes.h"
+#include "MenuHeader.h"
+#include "Screens/Game/GameMenuScreen.h"
+#include "Filepaths.hpp"
 
 struct Entry {
 	const char* icon;
@@ -60,7 +63,7 @@ void MainMenu::launch(Games game){
 	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startGame(game);
+	ui->startScreen([game](){ return std::make_unique<GameMenuScreen>(game); });
 }
 
 void MainMenu::onStarting(){
@@ -73,7 +76,11 @@ void MainMenu::onStarting(){
 void MainMenu::onStart(){
 	Events::listen(Facility::Games, &events);
 	Events::listen(Facility::Input, &events);
-	bg->start();
+
+	if(bg != nullptr){
+		bg->start();
+	}
+
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
@@ -97,7 +104,10 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 }
 
 void MainMenu::onStop(){
-	bg->stop();
+	if(bg != nullptr){
+		bg->stop();
+	}
+
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
 
@@ -178,31 +188,37 @@ void MainMenu::gameEvent(GameManager::Event evt){
 }
 
 void MainMenu::buildUI(){
-	lv_obj_set_size(*this, 128, 128);
-	lv_obj_add_flag(*this, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_set_scroll_dir(*this, LV_DIR_VER);
-	lv_obj_set_scrollbar_mode(*this, LV_SCROLLBAR_MODE_OFF);
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
 
-	bg = new LVGIF(*this, "S:/bg");
-	lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
-	lv_obj_set_pos(*bg, 0, 0);
+	lv_obj_set_size(*this, 128, 128);
+
+	if(settings->get().theme == Theme::Theme1){
+		bg = new LVGIF(*this, "S:/bg");
+		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+		lv_obj_set_pos(*bg, 0, 0);
+	}else{
+		auto img = lv_img_create(*this);
+		lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
+		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
+	}
 
 	padTop = lv_obj_create(*this);
 	lv_obj_set_size(padTop, 128, 128);
 
 	auto contentContainer = lv_obj_create(*this);
-	lv_obj_set_size(contentContainer, 128, 128);
-	lv_obj_set_pos(contentContainer, 0, 0);
-	lv_obj_add_flag(contentContainer, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
-	lv_obj_set_style_pad_ver(contentContainer, 13, 0);
+	lv_obj_set_size(contentContainer, 128, 115);
+	lv_obj_set_style_pad_top(contentContainer, 5, 0);
+	lv_obj_set_style_pad_bottom(contentContainer, 5, 0);
 
 	itemCont = lv_obj_create(contentContainer);
-	lv_obj_add_flag(itemCont, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
 	lv_obj_set_flex_flow(itemCont, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-	lv_obj_set_style_pad_gap(itemCont, 6, 0);
-	lv_obj_set_style_pad_hor(itemCont, 19, 0);
+	lv_obj_set_style_pad_gap(itemCont, 2, 0);
+	lv_obj_set_style_pad_hor(itemCont, 5, 0);
 
 	auto onClick = [](lv_event_t* e){
 		auto menu = (MainMenu*) e->user_data;
@@ -218,18 +234,33 @@ void MainMenu::buildUI(){
 		const auto index = lv_obj_get_index(e->target); // only applies to odd number of menu items
 		const auto itemCount = sizeof(MenuEntries) / sizeof(MenuEntries[0]);
 
+		//Maybe simplify logic in these calculations, seems overkill but math should work for any grid width
 		if(key == LV_KEY_UP){
-			if(itemCount%2 == 1 && index == 0){
-				lv_group_focus_prev(group);
+			uint8_t moves;
+			if(itemCount % RowWidth != 0 && index < RowWidth){
+				moves = index + 1 + std::max(((int) itemCount % (int) RowWidth - (int) index - 1), (int) 0);
 			}else{
-				lv_group_focus_prev(group);
+				moves = RowWidth;
+			}
+
+			for(uint8_t i = 0; i < moves; ++i){
 				lv_group_focus_prev(group);
 			}
 		}else if(key == LV_KEY_DOWN){
-			if(itemCount%2 == 1 && (index == itemCount-2 || index == itemCount-1)){
-				lv_group_focus_next(group);
+			uint8_t moves;
+			if(itemCount % RowWidth != 0){
+				if(index >= (itemCount - RowWidth) && index < (itemCount - itemCount % RowWidth)){ //predzadnji redak, elementi koji "vise" iznad ničega
+					moves = RowWidth - (index % RowWidth) - 1 + (itemCount % RowWidth);
+				}else if(index >= (itemCount - itemCount % RowWidth)){ //zadnji redak
+					moves = itemCount % RowWidth;
+				}else{
+					moves = RowWidth;
+				}
 			}else{
-				lv_group_focus_next(group);
+				moves = RowWidth;
+			}
+
+			for(uint8_t i = 0; i < moves; ++i){
 				lv_group_focus_next(group);
 			}
 		}
@@ -265,11 +296,17 @@ void MainMenu::buildUI(){
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
+	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
 	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
+
+	menuHeader = new MenuHeader(*this);
+	lv_obj_add_flag(*menuHeader, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_pos(*menuHeader, 0, 0);
 
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
+	lv_obj_set_style_pad_gap(*this, 13, 0);
 
 	auto padBot = lv_obj_create(*this);
 	lv_obj_set_size(padBot, 128, lv_obj_get_height(itemCont));

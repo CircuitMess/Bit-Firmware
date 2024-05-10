@@ -16,14 +16,15 @@ public:
 protected:
 	void onLoad() override;
 	void onLoop(float deltaTime) override;
-	void onStart() override;
 	void onStop() override;
 	void handleInput(const Input::Data& data) override;
+	uint32_t getXP() const override;
 
 private:
 	std::unique_ptr<Hearts> hearts;
 	std::unique_ptr<Score> scoreDisplay;
 	int score = 0;
+	static constexpr uint32_t MaxScore = 70;
 
 	enum {
 		Intro, Running, DeathAnim, DeathPause, Win
@@ -136,7 +137,6 @@ private:
 	static constexpr float MinAsteroidDistance = PlayerRadius;
 	static constexpr uint32_t WinLosePeriod = 200;
 	void updateRobotPeriod();
-
 };
 
 }

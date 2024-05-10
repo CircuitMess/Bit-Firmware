@@ -24,7 +24,7 @@ private:
 	LVStyle itemStyle;
 	LVStyle focusStyle;
 
-	LVGIF* bg;
+	LVGIF* bg = nullptr;
 	BoolElement* audioSwitch;
 	SliderElement* blSlider;
 	DiscreteSliderElement* sleepSlider;

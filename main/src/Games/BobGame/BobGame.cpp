@@ -3,7 +3,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include <time.h>
 
-BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, "/Games/Bob", {
+BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, Games::Bob, "/Games/Bob", {
 		{ "/bg.raw", {}, true },
 		{ "/Bomb.raw", {}, true },
 		{ "/Dynamite.raw", {}, true },
@@ -90,6 +90,10 @@ void BobGame::BobGame::onLoop(float deltaTime){
 void BobGame::BobGame::onStop(){
 	player->btnReleased(Input::Left);
 	player->btnReleased(Input::Right);
+}
+
+uint32_t BobGame::BobGame::getXP() const{
+	return ((float)hungerMeter / (float)hungerMeterMax) * 150.0f;
 }
 
 void BobGame::BobGame::addTemplate(std::string file, PixelDim dim, int value){
@@ -262,7 +266,6 @@ rgb hsv2rgb(hsv in){
 	}
 	return out;
 }
-
 
 void BobGame::BobGame::drawBar(){
 	float fillPercent = ((float) hungerMeter / (float) hungerMeterMax) * 116.0f;

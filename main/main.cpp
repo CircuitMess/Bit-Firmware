@@ -24,6 +24,10 @@
 #include <Util/stdafx.h>
 #include "JigHWTest/JigHWTest.h"
 #include "Periph/NVSFlash.h"
+#include "Services/XPSystem.h"
+#include "Services/AchievementSystem.h"
+#include "Services/HighScoreManager.h"
+#include "Filepaths.hpp"
 
 BacklightBrightness* bl;
 
@@ -86,6 +90,12 @@ void init(){
 		vTaskDelete(nullptr);
 	}
 
+	auto xpsystem = new XPSystem();
+	Services.set(Service::XPSystem, xpsystem);
+
+	auto achievements = new AchievementSystem();
+	Services.set(Service::Achievements, achievements);
+
 	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
 	blPwm->detach();
 	bl = new BacklightBrightness(blPwm);
@@ -103,7 +113,7 @@ void init(){
 	auto disp = new Display();
 	Services.set(Service::Display, disp);
 
-	disp->getLGFX().drawBmpFile("/spiffs/Splash.bmp", 36, 11);
+	disp->getLGFX().drawBmpFile(Filepath::Splash, 36, 11);
 	bl->fadeIn();
 	auto splashStart = millis();
 
@@ -119,6 +129,8 @@ void init(){
 	// GameManager before robot detector, in case robot is plugged in during boot
 	auto games = new GameManager();
 	Services.set(Service::Games, games);
+	auto highScore = new HighScoreManager();
+	Services.set(Service::HighScore, highScore);
 	auto rob = new Robots();
 	Services.set(Service::Robots, rob);
 

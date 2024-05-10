@@ -4,7 +4,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 
-Pong::Pong(Sprite& base) : Game(base, "/Games/Pong", {
+Pong::Pong(Sprite& base) : Game(base, Games::Pong, "/Games/Pong", {
 		{ "/bg.raw", {}, true }
 }){
 
@@ -65,6 +65,12 @@ void Pong::handleInput(const Input::Data& data){
 void Pong::onStop(){
 	handleInput({ Input::Button::Up, Input::Data::Release });
 	handleInput({ Input::Button::Down, Input::Data::Release });
+}
+
+uint32_t Pong::getXP() const{
+	if(state != State::End) return 0;
+
+	return (ScoreLimit - enemyScore) * 50;
 }
 
 void Pong::buildElements(){

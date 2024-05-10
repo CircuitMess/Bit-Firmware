@@ -6,7 +6,7 @@
 #include "GameEngine/Rendering/TextRC.h"
 #include "Util/stdafx.h"
 
-TestGame::TestGame(Sprite& canvas) : Game(canvas, "", {
+TestGame::TestGame(Sprite& canvas) : Game(canvas, Games::COUNT, "", {
 		{ "/Pat1.gif",            {}, true },
 		{ "/Level1.raw",       {}, true },
 		{ "/MenuIcons/Icon1.raw", {}, true },
@@ -108,6 +108,8 @@ void TestGame::onRender(Sprite& canvas){
 }
 
 void TestGame::onStart(){
+	Game::onStart();
+
 	startTime = millis();
 	reinterpret_cast<AnimRC*>(pat->getRenderComponent().get())->start();
 }
@@ -119,4 +121,8 @@ void TestGame::handleInput(const Input::Data& data){
 	if(data.action == Input::Data::Press){
 		gravity = !gravity;
 	}
+}
+
+uint32_t TestGame::getXP() const{
+	return 0;
 }

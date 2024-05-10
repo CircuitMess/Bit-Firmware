@@ -8,7 +8,7 @@ std::map<Input::Button, uint8_t> btnBarMap = { { Input::Button::Left,  0 },
 											   { Input::Button::Up,    1 },
 											   { Input::Button::Right, 2 } };
 
-Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
+Dance::Dance(Sprite& base) : Game(base, Games::Buttons, "/Games/Buttons", {
 		{ barsIcons[0], {}, true },
 		{ barsIcons[1], {}, true },
 		{ barsIcons[2], {}, true },
@@ -46,6 +46,8 @@ Dance::Dance(Sprite& base) : Game(base, "/Games/Buttons", {
 }
 
 void Dance::onStart(){
+	Game::onStart();
+
 	playerRC->start();
 }
 
@@ -154,6 +156,10 @@ void Dance::handleInput(const Input::Data& data){
 		circlesPressed[circleIndex] = false;
 		std::static_pointer_cast<StaticRC>(circles[circleIndex]->getRenderComponent())->setFile(getFile(circlesIcons[circleIndex]));
 	}
+}
+
+uint32_t Dance::getXP() const{
+	return ((float)(score) / (float)(goal))*150.0f;
 }
 
 void Dance::updateNotes(float delta){

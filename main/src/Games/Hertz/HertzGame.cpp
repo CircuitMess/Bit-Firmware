@@ -2,7 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 
-HertzGame::HertzGame(Sprite& canvas) : Game(canvas, "/Games/Hertz", {
+HertzGame::HertzGame(Sprite& canvas) : Game(canvas, Games::Hertz, "/Games/Hertz", {
 		{ "/Arrow.raw", {}, true },
 		{ "/bg.raw",    {}, true },
 		{ "/win.gif",   {}, false },
@@ -75,12 +75,40 @@ void HertzGame::onLoop(float deltaTime){
 }
 
 void HertzGame::onStart(){
-	duckAnim->start();
+	Game::onStart();
 
+	duckAnim->start();
 }
 
 void HertzGame::onStop(){
 	duckAnim->stop();
+}
+
+uint32_t HertzGame::getXP() const{
+	if(!done) return 0;
+
+	float success = (float)(MinimumAttempts) /(float)(tries);
+	return success * 100.0f;
+}
+
+void HertzGame::handleInput(const Input::Data& data){
+	if(data.action != Input::Data::Press) return;
+
+	if(done){
+		exit();
+		return;
+	}
+
+
+//	if(data.btn == Input::B){
+//		audio.play(Sound{ Chirp{ 400, 350, 50 } });
+//		exit();
+//		return;
+//	}
+	if(data.btn == Input::A){
+		tries++;
+		addPoints(indicator->getDifference());
+	}
 }
 
 void HertzGame::resetAnim(){
@@ -132,24 +160,4 @@ void HertzGame::addPoints(int difference){
 	}
 
 	indicator->setGoal(bar->getY());
-}
-
-void HertzGame::handleInput(const Input::Data& data){
-	if(data.action != Input::Data::Press) return;
-
-	if(done){
-		exit();
-		return;
-	}
-
-
-//	if(data.btn == Input::B){
-//		audio.play(Sound{ Chirp{ 400, 350, 50 } });
-//		exit();
-//		return;
-//	}
-	if(data.btn == Input::A){
-		tries++;
-		addPoints(indicator->getDifference());
-	}
 }

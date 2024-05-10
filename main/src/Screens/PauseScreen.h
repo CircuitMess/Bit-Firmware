@@ -34,8 +34,6 @@ private:
 
 	void showControls();
 	void exit();
-
 };
-
 
 #endif //BIT_FIRMWARE_PAUSESCREEN_H

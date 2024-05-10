@@ -19,6 +19,8 @@ protected:
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
 	void onStop() override;
+	uint32_t getXP() const override;
+	inline uint32_t getScore() const override { return score; }
 
 private:
 	GameObjPtr bg;
@@ -37,7 +39,7 @@ private:
 	uint32_t score = 0;
 	uint32_t waveCounter = 0;
 	uint8_t waveEnemies = 0; //num of enemies spawned in current wave
-
+	static constexpr uint32_t XPCap = 300;
 
 	static constexpr PixelDim PlayerSize = { 28, 17 };
 	static constexpr PixelDim PlayerObjOffset = { 6, 12 };

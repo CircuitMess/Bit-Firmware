@@ -17,13 +17,11 @@ protected:
 	void onLoop(float deltaTime) override;
 	void onStart() override;
 	void onStop() override;
-
-	void resetAnim();
-
-protected:
 	void handleInput(const Input::Data& data) override;
+	uint32_t getXP() const override;
 
 private:
+	void resetAnim();
 	void addPoints(int difference);
 
 	std::shared_ptr<RoboCtrl::Hertz> robo;
@@ -36,6 +34,7 @@ private:
 	int tries = 0;
 	const float length = 120.0f;
 	const float maxPoints = 0.35f;
+	const uint8_t MinimumAttempts = std::round(1.0f / maxPoints);
 
 	float multiplier;
 	bool done = false;
