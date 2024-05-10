@@ -14,6 +14,7 @@
 #include <Screens/Settings/SettingsScreen.h>
 #include <unordered_set>
 #include "Util/Notes.h"
+#include "MenuHeader.h"
 #include "Filepaths.hpp"
 
 struct Entry {
@@ -192,9 +193,6 @@ void MainMenu::buildUI(){
 	}
 
 	lv_obj_set_size(*this, 128, 128);
-	lv_obj_add_flag(*this, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_set_scroll_dir(*this, LV_DIR_VER);
-	lv_obj_set_scrollbar_mode(*this, LV_SCROLLBAR_MODE_OFF);
 
 	if(settings->get().theme == Theme::Theme1){
 		bg = new LVGIF(*this, "S:/bg");
@@ -210,13 +208,11 @@ void MainMenu::buildUI(){
 	lv_obj_set_size(padTop, 128, 128);
 
 	auto contentContainer = lv_obj_create(*this);
-	lv_obj_set_size(contentContainer, 128, 128);
-	lv_obj_set_pos(contentContainer, 0, 0);
-	lv_obj_add_flag(contentContainer, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
-	lv_obj_set_style_pad_ver(contentContainer, 13, 0);
+	lv_obj_set_size(contentContainer, 128, 115);
+	lv_obj_set_style_pad_top(contentContainer, 5, 0);
+	lv_obj_set_style_pad_bottom(contentContainer, 5, 0);
 
 	itemCont = lv_obj_create(contentContainer);
-	lv_obj_add_flag(itemCont, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
 	lv_obj_set_flex_flow(itemCont, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
@@ -302,9 +298,14 @@ void MainMenu::buildUI(){
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
 	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
 
+	menuHeader = new MenuHeader(*this);
+	lv_obj_add_flag(*menuHeader, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_pos(*menuHeader, 0, 0);
+
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
+	lv_obj_set_style_pad_gap(*this, 13, 0);
 
 	auto padBot = lv_obj_create(*this);
 	lv_obj_set_size(padBot, 128, lv_obj_get_height(itemCont));
