@@ -119,6 +119,8 @@ void PauseScreen::buildUI(){
 		return;
 	}
 
+	auto theme = settings->get().theme;
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
@@ -147,11 +149,11 @@ void PauseScreen::buildUI(){
 	lv_style_set_width(itemStyle, lv_pct(100));
 	lv_style_set_height(itemStyle, 17);
 	lv_style_set_border_width(itemStyle, 1);
-	lv_style_set_border_color(itemStyle, lv_color_make(217, 153, 186));
+	lv_style_set_border_color(itemStyle, THEMED_COLOR(HighlightPrimary, theme));
 	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
 	lv_style_set_radius(itemStyle, 2);
 
-	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
+	lv_style_set_bg_color(focusStyle, THEMED_COLOR(HighlightPrimary, theme));
 	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
 
 	auto initSet = settings->get();

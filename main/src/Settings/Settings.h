@@ -13,28 +13,40 @@ enum class Theme : uint8_t {
 
 #define THEMED_COLOR(Color, theme)     \
     lv_color_hex(\
-    theme == Theme::Theme1 ? ThemeColor::Theme1::Color :                \
-    theme == Theme::Theme2 ? ThemeColor::Theme2::Color :                \
-    theme == Theme::Theme3 ? ThemeColor::Theme3::Color :                \
-    theme == Theme::Theme4 ? ThemeColor::Theme4::Color : 0xffffff       \
-    )\
+    theme == Theme::Theme1 ? ThemeColor::Theme1::Color :         \
+    theme == Theme::Theme2 ? ThemeColor::Theme2::Color :         \
+    theme == Theme::Theme3 ? ThemeColor::Theme3::Color :         \
+    theme == Theme::Theme4 ? ThemeColor::Theme4::Color : 0       \
+    )
 
 namespace ThemeColor {
 
 	namespace Theme1 {
-		inline static constexpr uint32_t Foreground = 0x4b5f6b;
+		inline static constexpr uint32_t MenuHeaderText = 0x4b5f6b;
+		inline static constexpr uint32_t PausedForeground = 0xcfc6b8;
+		inline static constexpr uint32_t HighlightPrimary = 0xd999ba;
+		inline static constexpr uint32_t HighlightSecondary = 0xa34578;
 	}
 
 	namespace Theme2 {
-		inline static constexpr uint32_t Foreground = 0x3f1d37;
+		inline static constexpr uint32_t MenuHeaderText = 0x3f1d37;
+		inline static constexpr uint32_t PausedForeground = 0xcfc6b8;
+		inline static constexpr uint32_t HighlightPrimary = 0x97e9d1;
+		inline static constexpr uint32_t HighlightSecondary = 0x197f96;
 	}
 
 	namespace Theme3 {
-		inline static constexpr uint32_t Foreground = 0xffb132;
+		inline static constexpr uint32_t MenuHeaderText = 0xffb132;
+		inline static constexpr uint32_t PausedForeground = 0xffffff;
+		inline static constexpr uint32_t HighlightPrimary = 0xffb132;
+		inline static constexpr uint32_t HighlightSecondary = 0xfb4831;
 	}
 
 	namespace Theme4 {
-		inline static constexpr uint32_t Foreground = 0x264f6e;
+		inline static constexpr uint32_t MenuHeaderText = 0x264f6e;
+		inline static constexpr uint32_t PausedForeground = 0xffffff;
+		inline static constexpr uint32_t HighlightPrimary = 0x449642;
+		inline static constexpr uint32_t HighlightSecondary = 0x1a293c;
 	}
 
 }
