@@ -6,6 +6,8 @@
 #include "GameMenuScreen.h"
 #include "Periph/NVSFlash.h"
 #include "Services/GameManager.h"
+#include "Settings/Settings.h"
+#include "Filepaths.hpp"
 
 InstructionsScreen::InstructionsScreen(Games current) : evts(6), currentGame(current){
 	Input* input = (Input*) Services.get(Service::Input);
@@ -21,10 +23,15 @@ InstructionsScreen::InstructionsScreen(Games current) : evts(6), currentGame(cur
 }
 
 void InstructionsScreen::buildUI(){
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, "S:/bg.bin");
+	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	// TODO this needs to be sorted after the proper images for instructions get created

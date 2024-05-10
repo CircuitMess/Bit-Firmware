@@ -19,7 +19,7 @@ namespace Filepath {
 	inline static constexpr const char* Splash = "/spiffs/Splash.bmp";
 
 	namespace Theme1 {
-		inline static constexpr const char* Background = "S:/Theme1/bg.bin"; // TODO when theme 1 isn't active, make sure to not have the background animation of theme 1, but just background of the active theme
+		inline static constexpr const char* Background = "S:/Theme1/bg.bin";
 		inline static constexpr const char* Popup = "S:/Theme1/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme1/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme1/barLong.bin";
@@ -58,7 +58,11 @@ namespace Filepath {
 	}
 
 	namespace Award {
-
+		inline static constexpr const char* BackgroundSmall = "S:/Award/BG-small.bin";
+		inline static constexpr const char* LeveledUp = "S:/Award/leveledup.bin";
+		inline static constexpr const char* XpFrame = "S:/Award/XP-frame.bin";
+		inline static constexpr const char* XpBackground = "S:/Award/XP-line.bin";
+		inline static constexpr const char* XpGained = "S:/Award/xpgained.bin";
 	}
 
 	namespace Profile {

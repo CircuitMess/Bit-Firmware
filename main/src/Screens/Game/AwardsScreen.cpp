@@ -11,6 +11,8 @@
 #include "GameMenuScreen.h"
 #include "Screens/XPBar.h"
 #include "Util/Notes.h"
+#include "Settings/Settings.h"
+#include "Filepaths.hpp"
 
 AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : highScore(highScore), xp(xp), evts(6), currentGame(current), start(millis()){
 	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
@@ -35,6 +37,11 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 void AwardsScreen::setAwardMode(Award award){
 	lastChange = millis();
 	chirped = false;
+
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
 
 	const XPSystem* xpSystem = (XPSystem*) Services.get(Service::XPSystem);
 	if(xpSystem == nullptr){
@@ -69,10 +76,10 @@ void AwardsScreen::setAwardMode(Award award){
 	itemStyle = {};
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, "S:/bg.bin");
+	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
 
 	auto bgSmall = lv_img_create(*this);
-	lv_img_set_src(bgSmall, "S:/Award/BG-small.bin");
+	lv_img_set_src(bgSmall, Filepath::Award::BackgroundSmall);
 	lv_obj_align(bgSmall, LV_ALIGN_CENTER, 0, 0);
 
 	rest = lv_obj_create(*this);
@@ -169,7 +176,7 @@ void AwardsScreen::setAwardMode(Award award){
 		};
 
 		auto text = lv_img_create(rest);
-		lv_img_set_src(text, "S:/Award/xpgained.bin");
+		lv_img_set_src(text, Filepath::Award::XpGained);
 		lv_obj_set_align(text, LV_ALIGN_CENTER);
 
 		mkLabel(("+" + std::to_string(xp) + "XP").c_str());
@@ -178,9 +185,9 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_pad_top(lvl, -3, 0);
 
 		auto bar = lv_img_create(rest);
-		lv_img_set_src(bar, "S:/Award/XP-frame.bin");
+		lv_img_set_src(bar, Filepath::Award::XpFrame);
 		lv_obj_set_align(bar, LV_ALIGN_CENTER);
-		lv_obj_set_style_bg_img_src(bar, "S:/Award/XP-line.bin", 0);
+		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
 		xpBar = new XPBar(XPBarLength::Short, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
@@ -215,15 +222,15 @@ void AwardsScreen::setAwardMode(Award award){
 		};
 
 		auto text = lv_img_create(rest);
-		lv_img_set_src(text, "S:/Award/leveledup.bin");
+		lv_img_set_src(text, Filepath::Award::LeveledUp);
 		lv_obj_set_align(text, LV_ALIGN_CENTER);
 
 		auto lvl = mkLabel(("Level " + std::to_string(levelSet)).c_str());
 
 		auto bar = lv_img_create(rest);
-		lv_img_set_src(bar, "S:/Award/XP-frame.bin");
+		lv_img_set_src(bar, Filepath::Award::XpFrame);
 		lv_obj_set_align(bar, LV_ALIGN_CENTER);
-		lv_obj_set_style_bg_img_src(bar, "S:/Award/XP-line.bin", 0);
+		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
 		xpBar = new XPBar(XPBarLength::Short, bar, 0.0f);
