@@ -4,8 +4,9 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Util/Services.h"
 
-Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, "/Games/Robby", {
+Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, Games::Robby, "/Games/Robby", {
 		{ "/bg.raw", {}, true },
 		{ asteroidIcons[0].path, {}, true },
 		{ asteroidIcons[1].path, {}, true },
@@ -194,7 +195,7 @@ void Asteroids::Asteroids::handleInput(const Input::Data& data){
 	}
 }
 
-uint32_t Asteroids::Asteroids::getXP(){
+uint32_t Asteroids::Asteroids::getXP() const{
 	return ((float)score / (float)MaxScore) * 150.0f;
 }
 

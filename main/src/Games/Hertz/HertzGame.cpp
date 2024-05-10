@@ -2,7 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 
-HertzGame::HertzGame(Sprite& canvas) : Game(canvas, "/Games/Hertz", {
+HertzGame::HertzGame(Sprite& canvas) : Game(canvas, Games::Hertz, "/Games/Hertz", {
 		{ "/Arrow.raw", {}, true },
 		{ "/bg.raw",    {}, true },
 		{ "/win.gif",   {}, false },
@@ -84,7 +84,7 @@ void HertzGame::onStop(){
 	duckAnim->stop();
 }
 
-uint32_t HertzGame::getXP(){
+uint32_t HertzGame::getXP() const{
 	if(!done) return 0;
 
 	float success = (float)(MinimumAttempts) /(float)(tries);

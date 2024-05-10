@@ -1,5 +1,6 @@
 #include "PauseScreen.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "Screens/Game/GameMenuScreen.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Devices/Input.h"
@@ -97,11 +98,19 @@ void PauseScreen::showControls(){
 
 void PauseScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);
+	if(disp == nullptr){
+		return;
+	}
+
 	auto lgfx = disp->getLGFX();
 	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	if(ui == nullptr){
+		return;
+	}
+
+	ui->exitGame();
 }
 
 void PauseScreen::buildUI(){
@@ -190,14 +199,14 @@ void PauseScreen::buildUI(){
 	lv_obj_add_event_cb(ctrl, [](lv_event_t* e){
 		auto pause = (PauseScreen*) e->user_data;
 		pause->showControls();
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_obj_add_event_cb(exit, [](lv_event_t* e){
 		lv_async_call([](void* arg){
 			auto pause = (PauseScreen*) arg;
 			pause->exit();
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
 }

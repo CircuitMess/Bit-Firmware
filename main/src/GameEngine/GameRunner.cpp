@@ -48,7 +48,6 @@ void GameRunner::startGame(Games game){
 
 	auto icon = GameIcons[(int) game];
 	std::string splash("/spiffs/Splash/"); splash += icon; splash += "_splash.bmp";
-	std::string instr("/spiffs/Splash/"); instr += icon; instr += "_instr.bmp";
 
 	auto& canvas = display.getCanvas();
 	auto& lgfx = display.getLGFX();
@@ -78,30 +77,6 @@ void GameRunner::startGame(Games game){
 		delayMillis(100);
 	}
 	delete melody;
-	lgfx.drawBmpFile(instr.c_str());
-
-	Events::listen(Facility::Input, &evts);
-	for(;;){
-		Event evt{};
-		if(!evts.get(evt, portMAX_DELAY)) continue;
-
-		if(evt.facility == Facility::Input){
-			auto data = (Input::Data*) evt.data;
-			if(data->btn != Input::Menu && data->action == Input::Data::Release){
-				free(evt.data);
-				break;
-			}
-		}else if(evt.facility == Facility::Battery){
-			auto data = (Battery::Event*) evt.data;
-			if(data->action == Battery::Event::LevelChange && data->level == Battery::Critical){
-				free(evt.data);
-				Events::unlisten(&evts);
-				return;
-			}
-		}
-		free(evt.data);
-	}
-	Events::unlisten(&evts);
 
 	srand(micros());
 
@@ -116,6 +91,14 @@ void GameRunner::endGame(){
 	currentGame->stop();
 	currentGame.reset();
 	currentGameEnum = Games::COUNT;
+}
+
+void GameRunner::exitGame(){
+	if(!currentGame){
+		return;
+	}
+
+	currentGame->exit();
 }
 
 void GameRunner::resume(){

@@ -26,6 +26,7 @@
 #include "Periph/NVSFlash.h"
 #include "Services/XPSystem.h"
 #include "Services/AchievementSystem.h"
+#include "Services/HighScoreManager.h"
 #include "Filepaths.hpp"
 
 BacklightBrightness* bl;
@@ -128,6 +129,8 @@ void init(){
 	// GameManager before robot detector, in case robot is plugged in during boot
 	auto games = new GameManager();
 	Services.set(Service::Games, games);
+	auto highScore = new HighScoreManager();
+	Services.set(Service::HighScore, highScore);
 	auto rob = new Robots();
 	Services.set(Service::Robots, rob);
 

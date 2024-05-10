@@ -27,6 +27,8 @@ public:
 		} action;
 	};
 
+	bool isPressed(Button button) const;
+
 private:
 	void scan();
 	void pressed(Button btn);

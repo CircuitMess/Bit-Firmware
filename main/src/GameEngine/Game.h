@@ -16,6 +16,7 @@
 #include "Services/ChirpSystem.h"
 #include <atomic>
 #include "RoboCtrl/RobotDriver.h"
+#include "Services/GameManager.h"
 
 class Game {
 
@@ -32,8 +33,12 @@ public:
 
 	void loop(uint micros);
 
+	inline Games getType() const { return gameType; }
+
+	void exit();
+
 protected:
-	Game(Sprite& base, const char* root, std::vector<ResDescriptor> resources);
+	Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources);
 
 	virtual void onStart();
 	virtual void onStop();
@@ -55,13 +60,19 @@ protected:
 
 	ChirpSystem& audio;
 
-	void exit();
-
 	void setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot);
 
-	virtual uint32_t getXP()= 0;
+	virtual uint32_t getXP() const = 0;
 
+	inline virtual uint32_t getScore() const { return 0; }
+
+	inline static bool exited = false; // yolo
+	// Exit is going to get called in the game's onLoop, and when exit is called, the Game object
+	// will get deleted. Once onLoop exits (in Game::loop), the object is already deleted. When that
+	// happens, the loop function should return immeidatelly after onLoop is done. Since the object
+	// is already deleted at that point, we can't store the exited variable inside the Game class.
 private:
+	const Games gameType;
 	Sprite& base;
 	ResourceManager resMan;
 	const std::vector<ResDescriptor> resources;
