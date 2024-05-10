@@ -8,6 +8,7 @@
 #include "Util/Notes.h"
 #include "Services/HighScoreManager.h"
 #include "Screens/Game/AwardsScreen.h"
+#include "Services/AchievementSystem.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
 		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), gameType(gameType), base(base),
@@ -90,6 +91,14 @@ void Game::handleInput(const Input::Data& data){
 void Game::exit(){
 	exited = true;
 
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
+
+	std::vector<AchievementData> achievements;
+	achievementSystem->endSession(achievements);
+
 	auto ui = (UIThread*) Services.get(Service::UI);
 	if(ui == nullptr){
 		return;
@@ -154,9 +163,24 @@ void Game::loop(uint micros){
 	}
 }
 
-void Game::onStart(){}
+void Game::onStart(){
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
 
-void Game::onStop(){}
+	achievementSystem->startSession();
+}
+
+void Game::onStop(){
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
+
+	std::vector<AchievementData> achievements;
+	achievementSystem->endSession(achievements);
+}
 
 void Game::onLoad(){}
 

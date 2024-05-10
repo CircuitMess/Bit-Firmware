@@ -75,8 +75,9 @@ void HertzGame::onLoop(float deltaTime){
 }
 
 void HertzGame::onStart(){
-	duckAnim->start();
+	Game::onStart();
 
+	duckAnim->start();
 }
 
 void HertzGame::onStop(){

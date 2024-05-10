@@ -108,6 +108,8 @@ void TestGame::onRender(Sprite& canvas){
 }
 
 void TestGame::onStart(){
+	Game::onStart();
+
 	startTime = millis();
 	reinterpret_cast<AnimRC*>(pat->getRenderComponent().get())->start();
 }

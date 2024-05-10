@@ -46,6 +46,8 @@ Dance::Dance(Sprite& base) : Game(base, Games::Buttons, "/Games/Buttons", {
 }
 
 void Dance::onStart(){
+	Game::onStart();
+
 	playerRC->start();
 }
 

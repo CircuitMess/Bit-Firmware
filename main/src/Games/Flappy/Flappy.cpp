@@ -64,6 +64,8 @@ void Flappy::onLoad(){
 }
 
 void Flappy::onStart(){
+	Game::onStart();
+
 	anim->start();
 }
 
