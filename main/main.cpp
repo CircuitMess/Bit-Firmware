@@ -27,6 +27,7 @@
 #include "Services/XPSystem.h"
 #include "Services/AchievementSystem.h"
 #include "Services/HighScoreManager.h"
+#include "Services/SystemManager.h"
 #include "Filepaths.hpp"
 
 BacklightBrightness* bl;
@@ -74,6 +75,8 @@ void init(){
 
 	auto nvs = new NVSFlash();
 	Services.set(Service::NVS, nvs);
+
+	new SystemManager({});
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
