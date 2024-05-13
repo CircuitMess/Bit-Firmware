@@ -11,8 +11,8 @@
 class NVSUpgrade{
 public:
 	virtual ~NVSUpgrade() = default;
-	virtual uint32_t getVersion() const = 0;
-	virtual void upgrade() const {}
+	virtual uint32_t getTargetVersion() const = 0;
+	virtual void execute() const {}
 };
 
 class NVSFlash {

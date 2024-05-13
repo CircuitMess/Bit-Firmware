@@ -10,17 +10,19 @@ SystemManager::SystemManager(const std::vector<NVSUpgrade>& upgrades){
 	uint32_t flashVersion = 0;
 	nvs->get("Version", flashVersion);
 
-	for(const NVSUpgrade& upgrade : upgrades){
-		const uint32_t upgradeVersion = upgrade.getVersion();
+	if(flashVersion >= CurrentVersion){
+		return;
+	}
 
-		if(flashVersion < CurrentVersion){
-			if(upgradeVersion > flashVersion && upgradeVersion <= CurrentVersion){
-				upgrade.upgrade();
-			}
+	for(const NVSUpgrade& upgrade : upgrades){
+		const uint32_t upgradeVersion = upgrade.getTargetVersion();
+
+		if(upgradeVersion > flashVersion && upgradeVersion <= CurrentVersion){
+			upgrade.execute();
 		}
 	}
 
-	if(flashVersion > CurrentVersion){
+	if(flashVersion < CurrentVersion){
 		nvs->set("Version", CurrentVersion);
 	}
 }
