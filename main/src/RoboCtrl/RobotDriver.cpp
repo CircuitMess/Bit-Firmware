@@ -5,7 +5,7 @@ RoboCtrl::RobotDriver::RobotDriver(Robot type) : type(type){
 }
 
 bool RoboCtrl::RobotDriver::checkRobot() const{
-	return ((Robots*) Services.get(Service::Robots))->getInserted() == type;
+	return ((Robots*) Services.get(Service::Robots))->getInserted().robot == type;
 }
 
 void RoboCtrl::RobotDriver::loop(uint32_t micros){

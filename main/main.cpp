@@ -15,7 +15,7 @@
 #include <esp_spiffs.h>
 #include "UIThread.h"
 #include "Services/Robots.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
@@ -29,6 +29,7 @@
 #include "Services/HighScoreManager.h"
 #include "Services/SystemManager.h"
 #include "Filepaths.hpp"
+#include "NVSUpgrades/NVSUpgrades.h"
 
 BacklightBrightness* bl;
 
@@ -76,7 +77,7 @@ void init(){
 	auto nvs = new NVSFlash();
 	Services.set(Service::NVS, nvs);
 
-	new SystemManager({});
+	new SystemManager(NVSUpgrades);
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
@@ -130,7 +131,7 @@ void init(){
 	auto sleep = new Sleep();
 
 	// GameManager before robot detector, in case robot is plugged in during boot
-	auto games = new GameManager();
+	auto games = new RobotManager();
 	Services.set(Service::Games, games);
 	auto highScore = new HighScoreManager();
 	Services.set(Service::HighScore, highScore);
