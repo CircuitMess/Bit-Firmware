@@ -59,7 +59,7 @@ MainMenu::~MainMenu(){
 }
 
 void MainMenu::launch(Games game){
-	auto games = (RobotManager*) Services.get(Service::Games);
+	auto games = (RobotManager*) Services.get(Service::RobotManager);
 	if(!games->isUnlocked(game)){
 		auto audio = (ChirpSystem*) Services.get(Service::Audio);
 		audio->play({ { 300, 300, 50 },
@@ -172,8 +172,8 @@ void MainMenu::handleGameInsert(const RobotManager::Event& evt){
 		return;
 	}
 
-	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t ) rob.token : (uint8_t) rob.robot)){
-		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t ) rob.token : (uint8_t) rob.robot);
+	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot)){
+		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot);
 		const auto icon = RobotIcons[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
 		const auto path = imgUnl(icon);
 		item->setIcon(path.c_str());
@@ -327,7 +327,7 @@ void MainMenu::buildUI(){
 		}
 	};
 
-	auto games = (RobotManager*) Services.get(Service::Games);
+	auto games = (RobotManager*) Services.get(Service::RobotManager);
 	items.reserve(sizeof(MenuEntries) / sizeof(MenuEntries[0]));
 	for(const auto& entry : MenuEntries){
 		std::string path;
@@ -342,8 +342,8 @@ void MainMenu::buildUI(){
 		lv_group_add_obj(inputGroup, *item);
 
 		items.push_back(item);
-		if(entry.rob.robot != Robot::COUNT && entry.rob.token != Token::COUNT){
-			robGames.insert(std::make_pair(entry.rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t ) entry.rob.token : (uint8_t) entry.rob.robot, item));
+		if(entry.rob.robot != Robot::COUNT || entry.rob.token != Token::COUNT){
+			robGames.insert(std::make_pair(entry.rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) entry.rob.token : (uint8_t) entry.rob.robot, item));
 		}
 
 		lv_obj_add_event_cb(*item, onClick, LV_EVENT_CLICKED, this);

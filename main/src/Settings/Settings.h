@@ -8,7 +8,8 @@ enum class Theme : uint8_t {
 	Theme1,
 	Theme2,
 	Theme3,
-	Theme4
+	Theme4,
+	COUNT
 };
 
 #define THEMED_COLOR(Color, theme)     \

@@ -38,7 +38,7 @@ const std::unordered_map<Pet, RobotData> RobotManager::PetRobot = {
 		{ Pet::Sheep, { .token = Token::SheepPet } }
 };
 
-RobotManager::RobotManager() : Threaded("GameMan", 2 * 1024, 5, 1), events(12){
+RobotManager::RobotManager() : Threaded("RobotManager", 5 * 1024, 5, 1), events(12){
 	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
 	if(nvs == nullptr){
 		return;
@@ -57,10 +57,18 @@ RobotManager::RobotManager() : Threaded("GameMan", 2 * 1024, 5, 1), events(12){
 	start();
 }
 
-bool RobotManager::isUnlocked(Games game){
+bool RobotManager::isUnlocked(Games game) const{
+	if(game == Games::COUNT){
+		return false;
+	}
+
 	if(!GameRobot.contains(game)) return true;
 	auto rob = GameRobot.at(game);
 
+	if(rob.robot == Robot::COUNT && rob.token == Token::COUNT){
+		return false;
+	}
+
 	if(rob.robot >= Robot::COUNT){
 		return unlocked[(uint8_t) Robot::COUNT + (uint8_t) rob.token];
 	}
@@ -68,10 +76,18 @@ bool RobotManager::isUnlocked(Games game){
 	return unlocked[(uint8_t) rob.robot];
 }
 
-bool RobotManager::isUnlocked(Theme theme){
+bool RobotManager::isUnlocked(Theme theme) const{
+	if(theme == Theme::COUNT){
+		return false;
+	}
+
 	if(!ThemeRobot.contains(theme)) return true;
 	auto rob = ThemeRobot.at(theme);
 
+	if(rob.robot == Robot::COUNT && rob.token == Token::COUNT){
+		return false;
+	}
+
 	if(rob.robot >= Robot::COUNT){
 		return unlocked[(uint8_t) Robot::COUNT + (uint8_t) rob.token];
 	}
@@ -79,15 +95,65 @@ bool RobotManager::isUnlocked(Theme theme){
 	return unlocked[(uint8_t) rob.robot];
 }
 
-bool RobotManager::isUnlocked(Pet pet){
+bool RobotManager::isUnlocked(Pet pet) const{
+	if(pet == Pet::COUNT){
+		return false;
+	}
+
 	if(!PetRobot.contains(pet)) return true;
 	auto rob = PetRobot.at(pet);
+
+	if(rob.robot == Robot::COUNT && rob.token == Token::COUNT){
+		return false;
+	}
 
 	if(rob.robot >= Robot::COUNT){
 		return unlocked[(uint8_t) Robot::COUNT + (uint8_t) rob.token];
 	}
 
 	return unlocked[(uint8_t) rob.robot];
+}
+
+bool RobotManager::isUnlocked(RobotData robot) const{
+	if(robot.robot == Robot::COUNT && robot.token == Token::COUNT){
+		return false;
+	}
+
+	if(robot.robot >= Robot::COUNT){
+		return unlocked[(uint8_t) Robot::COUNT + (uint8_t) robot.token];
+	}
+
+	return unlocked[(uint8_t) robot.robot];
+}
+
+Games RobotManager::toGame(RobotData robot) {
+	for(auto entry : GameRobot){
+		if(entry.second.token == robot.token && entry.second.robot == robot.robot){
+			return entry.first;
+		}
+	}
+
+	return Games::COUNT;
+}
+
+Theme RobotManager::toTheme(RobotData robot) {
+	for(auto entry : ThemeRobot){
+		if(entry.second.token == robot.token && entry.second.robot == robot.robot){
+			return entry.first;
+		}
+	}
+
+	return Theme::COUNT;
+}
+
+Pet RobotManager::toPet(RobotData robot) {
+	for(auto entry : PetRobot){
+		if(entry.second.token == robot.token && entry.second.robot == robot.robot){
+			return entry.first;
+		}
+	}
+
+	return Pet::COUNT;
 }
 
 void RobotManager::storeState(){
@@ -123,7 +189,7 @@ void RobotManager::loop(){
 		}
 
 		bool isNew = false;
-		const bool wasUnlocked = rob.robot >= Robot::COUNT ? unlocked[(uint8_t) Robot::COUNT + (uint8_t) rob.token] : unlocked[(uint8_t) rob.robot];
+		const bool wasUnlocked = unlocked[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
 
 		if(!wasUnlocked){
 			isNew = true;
@@ -131,7 +197,13 @@ void RobotManager::loop(){
 			storeState();
 		}
 
-		sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Robots::isGame(rob) ? Facility::Games : Robots::isPet(rob) ? Facility::Pets : Robots::isTheme(rob) ? Facility::Themes : Facility::Games);
+		if(Robots::isGame(rob)){
+			sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Facility::Games);
+		}else if(Robots::isTheme(rob)){
+			sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Facility::Themes);
+		}else if(Robots::isPet(rob)){
+			sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Facility::Pets);
+		}
 	}else if(data->action == Robots::Event::Remove){
 		if(Robots::isGame(rob)){
 			sendEvent(Event { .action = Event::Remove }, Facility::Games);

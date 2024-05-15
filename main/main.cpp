@@ -132,7 +132,7 @@ void init(){
 
 	// GameManager before robot detector, in case robot is plugged in during boot
 	auto games = new RobotManager();
-	Services.set(Service::Games, games);
+	Services.set(Service::RobotManager, games);
 	auto highScore = new HighScoreManager();
 	Services.set(Service::HighScore, highScore);
 	auto rob = new Robots();

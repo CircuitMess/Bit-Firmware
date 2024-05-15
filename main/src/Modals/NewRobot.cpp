@@ -96,17 +96,35 @@ void NewRobot::buildMain(){
 }
 
 void NewRobot::buildNew(){
-	auto icon = lv_img_create(*this);
-	lv_obj_set_size(icon, 22, 35);
-	lv_img_set_src(icon, Filepath::Unlocked);
+	if(isNew){
+		auto icon = lv_img_create(*this);
+		lv_obj_set_size(icon, 22, 35);
+		lv_img_set_src(icon, Filepath::Unlocked);
+	}else if(Robots::isPet(rob)){
+		auto icon = lv_img_create(*this);
+		lv_img_set_src(icon, PetIcons[(uint8_t) RobotManager::toPet(rob)]);
+	}else if(Robots::isTheme(rob)){
+		auto icon = lv_img_create(*this);
+		lv_img_set_src(icon, ThemeIcons[(uint8_t) RobotManager::toTheme(rob)]);
+	}
 
 	auto label = lv_label_create(*this);
 	lv_obj_set_size(label, lv_pct(100), LV_SIZE_CONTENT);
 
+	const std::string text(RobotNames[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot]);
+
 	if(Robots::isPet(rob)){
-		lv_label_set_text(label, "PET UNLOCKED");
+		if(isNew){
+			lv_label_set_text(label, (text + "\nPET UNLOCKED").c_str());
+		}else{
+			lv_label_set_text(label, (text + "\nPET INSERTED").c_str());
+		}
 	}else if(Robots::isTheme(rob)){
-		lv_label_set_text(label, "THEME UNLOCKED");
+		if(isNew){
+			lv_label_set_text(label, (text + "\nTHEME UNLOCKED").c_str());
+		}else{
+			lv_label_set_text(label, (text + "\nTHEME INSERTED").c_str());
+		}
 	}else if(Robots::isGame(rob)){
 		lv_label_set_text(label, "GAME UNLOCKED");
 	}

@@ -50,14 +50,16 @@ bool HighScoreManager::hasHighScore(Games game) const{
 }
 
 bool HighScoreManager::hasScore(Games game) const{
-	static constexpr const std::array<Games, 8> NoScoreGames = { Games::Artemis,
-																 Games::Robby,
-																 Games::Bob,
-																 Games::Buttons,
-																 Games::Hertz,
-																 Games::Marv,
-																 Games::Pong,
-																 Games::COUNT};
+	static constexpr const std::array<Games, 8> NoScoreGames = {
+			Games::Artemis,
+			Games::Robby,
+			Games::Bob,
+			Games::Buttons,
+			Games::Hertz,
+			Games::Marv,
+			Games::Pong,
+			Games::COUNT
+	};
 
 	return std::find(NoScoreGames.begin(), NoScoreGames.end(), game) == NoScoreGames.end();
 }

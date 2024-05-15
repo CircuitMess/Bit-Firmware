@@ -37,7 +37,8 @@ enum class Pet : uint8_t {
 	Frog,
 	Dog,
 	Sheep,
-	Cat
+	Cat,
+	COUNT
 };
 
 // Ordered by address (enum Robot (COUNT + enum Token if robot == COUNT))
@@ -87,15 +88,15 @@ static constexpr const char* RobotNames[] = {
 		"Plank",
 		"Dusty",
 		"Sparkly",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
+		"Cow",
+		"Parrot",
+		"Frog",
+		"Dog",
+		"Sheep",
+		"Mountain",
+		"Cyber",
+		"Fire",
+		"Cat",
 };
 
 // Ordered by game (enum Game)
@@ -123,6 +124,24 @@ static constexpr const char* GameIcons[] = {
 		/*TODO add new game icons content*/
 };
 
+// Ordered by pet (enum Pet)
+static constexpr const char* PetIcons[] = {
+		"S:/Pets/Cow.bin",
+		"S:/Pets/Parrot.bin",
+		"S:/Pets/Frog.bin",
+		"S:/Pets/Dog.bin",
+		"S:/Pets/Sheep.bin",
+		"S:/Pets/Cat.bin"
+};
+
+// Ordered by theme (enum Theme)
+static constexpr const char* ThemeIcons[] = {
+	"S:/ThemeIcons/Theme1.bin",
+	"S:/ThemeIcons/Theme2.bin",
+	"S:/ThemeIcons/Theme3.bin",
+	"S:/ThemeIcons/Theme4.bin"
+};
+
 class RobotManager : private Threaded {
 public:
 	RobotManager();
@@ -133,9 +152,14 @@ public:
 		bool isNew;
 	};
 
-	bool isUnlocked(Games game);
-	bool isUnlocked(Theme theme);
-	bool isUnlocked(Pet pet);
+	bool isUnlocked(Games game) const;
+	bool isUnlocked(Theme theme) const;
+	bool isUnlocked(Pet pet) const;
+	bool isUnlocked(RobotData robot) const;
+
+	static Games toGame(RobotData robot);
+	static Theme toTheme(RobotData robot);
+	static Pet toPet(RobotData robot);
 
 	static const std::unordered_map<Games, RobotData> GameRobot;
 	static const std::unordered_map<Theme, RobotData> ThemeRobot;
