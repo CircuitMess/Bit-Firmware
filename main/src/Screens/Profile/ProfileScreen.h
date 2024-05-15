@@ -19,21 +19,12 @@ public:
 
 private:
 	void buildUI();
-	static constexpr uint8_t RowWidth = 3;
-
-	std::vector<MenuItem*> items;
-	lv_obj_t* itemCont;
-	lv_obj_t* padTop = nullptr;
-	class XPBar* xpBar = nullptr;
 
 	void onStarting() override;
 	void onStart() override;
 	void onStop() override;
 	static void onScrollEnd(lv_event_t*);
 	bool loopBlocked = true;
-
-	static std::string imgUnl(const char* game);
-	static std::string imgLoc(const char* game);
 
 	EventQueue events;
 	void loop() override;
