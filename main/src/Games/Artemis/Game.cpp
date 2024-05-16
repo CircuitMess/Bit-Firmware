@@ -2,7 +2,7 @@
 #include "Ray.h"
 #include "GameEngine/Rendering/StaticRC.h"
 
-ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
+ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, Games::Artemis, "/Games/Arte", {
 		{ "/bg.raw", {}, true },
 		{ "/bg_bot.raw", {}, true },
 		{ "/curt_l.raw", {}, true },
@@ -35,7 +35,7 @@ ArtemisGame::PewPew::PewPew(Sprite& canvas) : Game(canvas, "/Games/Arte", {
 	setRobot(robot);
 }
 
-uint32_t ArtemisGame::PewPew::getXP(){
+uint32_t ArtemisGame::PewPew::getXP() const{
 	return ((float) score / 6.0f) * 150.0f;
 }
 
@@ -100,6 +100,8 @@ void ArtemisGame::PewPew::onLoad(){
 }
 
 void ArtemisGame::PewPew::onStart(){
+	Game::onStart();
+
 	xhair->btnReset();
 }
 

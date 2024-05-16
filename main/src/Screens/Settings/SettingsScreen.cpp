@@ -7,19 +7,26 @@
 #include "SliderElement.h"
 #include "DiscreteSliderElement.h"
 #include "UIThread.h"
+#include "Filepaths.hpp"
 
 SettingsScreen::SettingsScreen() : evts(6), settings(*(Settings*) Services.get(Service::Settings)){
 	buildUI();
 }
 
 void SettingsScreen::onStart(){
-	bg->start();
+	if(bg != nullptr){
+		bg->start();
+	}
+
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
 
 void SettingsScreen::onStop(){
-	bg->stop();
+	if(bg != nullptr){
+		bg->stop();
+	}
+
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
@@ -50,15 +57,22 @@ void SettingsScreen::loop(){
 void SettingsScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
-	bg = new LVGIF(*this, "S:/bg");
-	lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+	if(settings.get().theme == Theme::Theme1){
+		bg = new LVGIF(*this, "S:/bg");
+		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+		lv_obj_set_pos(*bg, 0, 0);
+	}else{
+		auto img = lv_img_create(*this);
+		lv_img_set_src(img, THEMED_FILE(Background, settings.get().theme));
+		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
+	}
 
 	auto top = lv_obj_create(*this);
 	lv_obj_set_size(top, 128, 32);
 	lv_obj_set_style_pad_ver(top, 4, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, "S:/Settings.bin");
+	lv_img_set_src(img, Filepath::Settings);
 	lv_obj_center(img);
 
 	auto rest = lv_obj_create(*this);

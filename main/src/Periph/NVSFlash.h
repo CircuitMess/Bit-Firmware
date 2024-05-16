@@ -5,6 +5,15 @@
 #include <string>
 #include <esp_log.h>
 #include <array>
+#include <unordered_map>
+#include <functional>
+
+class NVSUpgrade{
+public:
+	virtual ~NVSUpgrade() = default;
+	virtual uint32_t getTargetVersion() const = 0;
+	virtual void execute() const {}
+};
 
 class NVSFlash {
 public:
@@ -77,7 +86,6 @@ private:
 	static constexpr const char* NVSNamespace = "Bit";
 	static constexpr const char* TAG = "NVS";
 	nvs_handle_t handle{};
-
 };
 
 #endif //BIT_FIRMWARE_NVSFLASH_H

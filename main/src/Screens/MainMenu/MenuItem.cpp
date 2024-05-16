@@ -1,7 +1,8 @@
 #include "MenuItem.h"
+#include "Filepaths.hpp"
 
 MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
-	lv_obj_set_size(*this, 17, 18);
+	lv_obj_set_size(*this, 37, 38);
 	lv_obj_set_flex_align(*this, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
 	lv_obj_add_flag(*this, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
@@ -11,12 +12,12 @@ MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
 	lv_obj_add_style(*this, glow, LV_STATE_FOCUSED);
 
 	img = lv_img_create(*this);
-	lv_obj_set_size(img, 15, 16);
+	lv_obj_set_size(img, 35, 36);
 	lv_img_set_src(img, path);
 
 	border = lv_img_create(*this);
-	lv_obj_set_size(border, 17, 18);
-	lv_img_set_src(border, "S:/IconBorder.bin");
+	lv_obj_set_size(border, 37, 38);
+	lv_img_set_src(border, Filepath::IconBorder);
 	lv_obj_add_flag(border, LV_OBJ_FLAG_FLOATING);
 
 	setBorder(false);

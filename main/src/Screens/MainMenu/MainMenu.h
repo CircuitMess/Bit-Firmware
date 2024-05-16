@@ -29,7 +29,7 @@ private:
 	std::vector<MenuItem*> items;
 	std::unordered_map<Robot, MenuItem*> robGames;
 	lv_obj_t* itemCont;
-	LVGIF* bg;
+	LVGIF* bg = nullptr;
 	lv_obj_t* padTop = nullptr;
 
 	void onStarting() override;

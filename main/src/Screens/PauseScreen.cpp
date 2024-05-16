@@ -1,5 +1,6 @@
 #include "PauseScreen.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "Screens/Game/GameMenuScreen.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
 #include "Devices/Input.h"
@@ -9,6 +10,7 @@
 #include "Services/BacklightBrightness.h"
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
+#include "Filepaths.hpp"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
@@ -96,18 +98,31 @@ void PauseScreen::showControls(){
 
 void PauseScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);
+	if(disp == nullptr){
+		return;
+	}
+
 	auto lgfx = disp->getLGFX();
 	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	if(ui == nullptr){
+		return;
+	}
+
+	ui->exitGame();
 }
 
 void PauseScreen::buildUI(){
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, "S:/bg.bin");
+	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);
@@ -119,7 +134,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, "S:/Paused.bin");
+	lv_img_set_src(img, Filepath::Paused);
 
 	batt = new BatteryElement(top);
 
@@ -139,7 +154,6 @@ void PauseScreen::buildUI(){
 	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
 	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
 
-	auto settings = (Settings*) Services.get(Service::Settings);
 	auto initSet = settings->get();
 
 	audioSwitch = new BoolElement(rest, "Sound", [this](bool value){
@@ -185,14 +199,14 @@ void PauseScreen::buildUI(){
 	lv_obj_add_event_cb(ctrl, [](lv_event_t* e){
 		auto pause = (PauseScreen*) e->user_data;
 		pause->showControls();
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_obj_add_event_cb(exit, [](lv_event_t* e){
 		lv_async_call([](void* arg){
 			auto pause = (PauseScreen*) arg;
 			pause->exit();
 		}, e->user_data);
-	}, LV_EVENT_CLICKED, this);
+	}, LV_EVENT_PRESSED, this);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
 }

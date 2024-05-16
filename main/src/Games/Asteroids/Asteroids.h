@@ -16,10 +16,9 @@ public:
 protected:
 	void onLoad() override;
 	void onLoop(float deltaTime) override;
-	void onStart() override;
 	void onStop() override;
 	void handleInput(const Input::Data& data) override;
-	uint32_t getXP() override;
+	uint32_t getXP() const override;
 
 private:
 	std::unique_ptr<Hearts> hearts;
@@ -138,7 +137,6 @@ private:
 	static constexpr float MinAsteroidDistance = PlayerRadius;
 	static constexpr uint32_t WinLosePeriod = 200;
 	void updateRobotPeriod();
-
 };
 
 }

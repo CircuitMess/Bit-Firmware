@@ -5,6 +5,7 @@
 #include "LV_Interface/LVObject.h"
 #include "Util/Events.h"
 #include "Devices/Battery.h"
+#include "Filepaths.hpp"
 
 class BatteryElement : public LVObject {
 public:
@@ -33,7 +34,7 @@ private:
 	bool lowBatteryAnimToggle = false;
 	uint32_t lowBatMillis = 0;
 
-	static constexpr const char* BatteryIcons[] = { "S:/Batt/Low.bin", "S:/Batt/Mid.bin", "S:/Batt/Full.bin" };
+	static constexpr const char* BatteryIcons[] = { Filepath::Battery::Low, Filepath::Battery::Mid, Filepath::Battery::Full };
 };
 
 

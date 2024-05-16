@@ -1,6 +1,7 @@
 #include "GameManager.h"
 #include "Settings/Settings.h"
 #include "Util/Services.h"
+#include "Periph/NVSFlash.h"
 #include "Screens/MainMenu/MainMenu.h"
 
 const std::unordered_map<Games, Robot> GameManager::GameRobot = {

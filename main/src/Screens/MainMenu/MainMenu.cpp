@@ -15,6 +15,8 @@
 #include <unordered_set>
 #include "Util/Notes.h"
 #include "MenuHeader.h"
+#include "Screens/Game/GameMenuScreen.h"
+#include "Filepaths.hpp"
 
 struct Entry {
 	const char* icon;
@@ -61,7 +63,7 @@ void MainMenu::launch(Games game){
 	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startGame(game);
+	ui->startScreen([game](){ return std::make_unique<GameMenuScreen>(game); });
 }
 
 void MainMenu::onStarting(){
@@ -74,7 +76,11 @@ void MainMenu::onStarting(){
 void MainMenu::onStart(){
 	Events::listen(Facility::Games, &events);
 	Events::listen(Facility::Input, &events);
-	bg->start();
+
+	if(bg != nullptr){
+		bg->start();
+	}
+
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
@@ -98,7 +104,10 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 }
 
 void MainMenu::onStop(){
-	bg->stop();
+	if(bg != nullptr){
+		bg->stop();
+	}
+
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
 
@@ -179,11 +188,22 @@ void MainMenu::gameEvent(GameManager::Event evt){
 }
 
 void MainMenu::buildUI(){
+	const Settings* settings = (Settings*) Services.get(Service::Settings);
+	if(settings == nullptr){
+		return;
+	}
+
 	lv_obj_set_size(*this, 128, 128);
 
-	bg = new LVGIF(*this, "S:/bg");
-	lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
-	lv_obj_set_pos(*bg, 0, 0);
+	if(settings->get().theme == Theme::Theme1){
+		bg = new LVGIF(*this, "S:/bg");
+		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
+		lv_obj_set_pos(*bg, 0, 0);
+	}else{
+		auto img = lv_img_create(*this);
+		lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
+		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
+	}
 
 	padTop = lv_obj_create(*this);
 	lv_obj_set_size(padTop, 128, 128);

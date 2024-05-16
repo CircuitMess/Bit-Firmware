@@ -2,9 +2,10 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Services/GameManager.h"
+#include "Util/Services.h"
 
-
-MarvGame::MarvGame::MarvGame(Sprite& canvas) : Game(canvas, "/Games/Marv", {
+MarvGame::MarvGame::MarvGame(Sprite& canvas) : Game(canvas, Games::Marv, "/Games/Marv", {
 		{ "/bg.raw", {}, true },
 		{ "/podium.raw", {}, false },
 		{ "/fence.raw", {}, true },
@@ -171,7 +172,7 @@ void MarvGame::MarvGame::onStop(){
 	duck->duckReleased();
 }
 
-uint32_t MarvGame::MarvGame::getXP(){
+uint32_t MarvGame::MarvGame::getXP() const{
 	float success = (float)(score)/(float)(scoreMax);
 	return success * 250.0f;
 }

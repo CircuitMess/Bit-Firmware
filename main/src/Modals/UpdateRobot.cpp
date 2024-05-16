@@ -3,6 +3,7 @@
 #include "Services/ChirpSystem.h"
 #include "Util/Notes.h"
 #include "Util/Services.h"
+#include "Filepaths.hpp"
 
 UpdateRobot::UpdateRobot(LVScreen* parent) : LVModal(parent){
 	buildUI();
@@ -33,7 +34,7 @@ UpdateRobot::UpdateRobot(LVScreen* parent) : LVModal(parent){
 void UpdateRobot::buildUI(){
 	auto parent = lv_obj_get_parent(*this);
 	lv_obj_set_width(parent, 128);
-	lv_obj_set_style_bg_img_src(parent, "S:/ModalBg2.bin", 0);
+	lv_obj_set_style_bg_img_src(parent, Filepath::RobotPopup, 0);
 	lv_obj_set_width(*this, 112);
 
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);

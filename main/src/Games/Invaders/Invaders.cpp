@@ -2,6 +2,10 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "Util/stdafx.h"
+#include "Services/HighScoreManager.h"
+#include "Util/Services.h"
+#include "UIThread.h"
+#include "Screens/Game/AwardsScreen.h"
 
 const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 200, 600, 100 }, { 600, 80,  300 } },
@@ -10,7 +14,7 @@ const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 400, 200, 100 }, { 0,   0,   50 },  { 250, 50,  100 } }
 };
 
-Invaders::Invaders::Invaders(Sprite& canvas) : Game(canvas, "/Games/Resistron", {
+Invaders::Invaders::Invaders(Sprite& canvas) : Game(canvas, Games::Resistron, "/Games/Resistron", {
 		{ "/bg.raw", {}, true },
 
 		{ InvaderSprites[0].path, {}, true },
@@ -131,7 +135,7 @@ void Invaders::Invaders::onStop(){
 	player->btnReleased(Input::Right);
 }
 
-uint32_t Invaders::Invaders::getXP(){
+uint32_t Invaders::Invaders::getXP() const{
 	return std::min(score, (uint32_t)XPCap); //20 for first wave, 29 for second, ...
 }
 

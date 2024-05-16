@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "UnknownRobot.h"
+#include "Filepaths.hpp"
 
 UnknownRobot::UnknownRobot(LVScreen* parent) : LVModal(parent){
 	buildUI();
@@ -25,7 +26,7 @@ void UnknownRobot::buildUI(){
 
 	auto icon = lv_img_create(*this);
 	lv_obj_set_size(icon, 22, 29);
-	lv_img_set_src(icon, "S:/Lock.bin");
+	lv_img_set_src(icon, Filepath::Locked);
 
 	auto label = lv_label_create(*this);
 	lv_obj_set_size(label, lv_pct(100), LV_SIZE_CONTENT);
