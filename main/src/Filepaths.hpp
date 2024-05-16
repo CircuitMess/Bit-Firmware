@@ -23,6 +23,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme1/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme1/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme1/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme1/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme1/barShort.bin";
 	}
 
@@ -31,6 +32,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme2/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme2/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme2/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme2/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme2/barShort.bin";
 	}
 
@@ -39,6 +41,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme3/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme3/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme3/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme3/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme3/barShort.bin";
 	}
 
@@ -47,6 +50,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme4/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme4/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme4/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme4/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme4/barShort.bin";
 	}
 

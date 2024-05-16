@@ -10,12 +10,11 @@
 #include "Devices/Input.h"
 #include <optional>
 #include "Services/ChirpSystem.h"
-#include "Screens/MainMenu/MenuItem.h"
 
 class ProfileScreen : public LVScreen {
 public:
 	ProfileScreen();
-	virtual ~ProfileScreen();
+	virtual ~ProfileScreen() override;
 
 private:
 	void buildUI();
@@ -23,8 +22,6 @@ private:
 	void onStarting() override;
 	void onStart() override;
 	void onStop() override;
-	static void onScrollEnd(lv_event_t*);
-	bool loopBlocked = true;
 
 	EventQueue events;
 	void loop() override;
@@ -33,10 +30,13 @@ private:
 
 	void launch(Games game);
 
-	static std::atomic<bool> running;
-
 	ChirpSystem* audio;
-};
 
+	lv_obj_t* achievementSection;
+	lv_obj_t* themeSection;
+	lv_obj_t* characterSection;
+
+	class XPBar* xpBar = nullptr;
+};
 
 #endif //BIT_FIRMWARE_PROFILESCREEN_H

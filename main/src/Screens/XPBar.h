@@ -5,6 +5,7 @@
 
 enum class XPBarLength : uint8_t {
 	Short,
+	Medium,
 	Long
 };
 
@@ -26,8 +27,7 @@ private:
 
 	const XPBarLength length;
 
-	static constexpr const char* BarImages[] = { "S:/XP/barShort.bin", "S:/XP/barLong.bin" };
-	static constexpr uint16_t Widths[] = { 84, 92 };
+	static constexpr uint16_t Widths[] = { 45, 84, 92 };
 	static constexpr uint16_t Height = 5;
 
 	static constexpr uint32_t AnimSpeed = 500; //[ms]
