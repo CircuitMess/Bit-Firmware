@@ -10,6 +10,8 @@
 #include "Devices/Input.h"
 #include <optional>
 #include "Services/ChirpSystem.h"
+#include "Services/AchievementSystem.h"
+#include "Settings/Settings.h"
 
 class ProfileScreen : public LVScreen {
 public:
@@ -19,22 +21,43 @@ public:
 private:
 	void buildUI();
 
-	void onStarting() override;
 	void onStart() override;
 	void onStop() override;
 
-	EventQueue events;
 	void loop() override;
 
 	void handleInput(const Input::Data& evt);
 
-	void launch(Games game);
+	static void onClick(lv_event_t * e);
 
+	struct Achievement {
+		::Achievement achievement = ::Achievement::COUNT;
+		lv_obj_t* icon;
+	};
+
+	struct Theme {
+		::Theme theme;
+		lv_obj_t* icon;
+	};
+
+	EventQueue events;
 	ChirpSystem* audio;
 
 	lv_obj_t* achievementSection;
 	lv_obj_t* themeSection;
 	lv_obj_t* characterSection;
+
+	bool pickingCharacter = false;
+	bool pickingTheme = false;
+
+	uint8_t focusedIndex = 6;
+
+	inline static constexpr const uint8_t AchievementColumns = 4;
+	inline static constexpr const uint8_t ThemeColumns = 2;
+	inline static constexpr const uint8_t CharacterInputIndex = 0;
+	inline static constexpr const uint8_t ThemeInputIndex = 1;
+	inline static constexpr const uint8_t AchievementInputIndex = 6;
+	inline static constexpr const uint8_t AchievementCount = 32; // TODO
 
 	class XPBar* xpBar = nullptr;
 };
