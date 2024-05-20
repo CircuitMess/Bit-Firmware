@@ -386,7 +386,7 @@ void AwardsScreen::exit(){
 		return;
 	}
 
-	HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
+	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
 	if(hsm == nullptr){
 		return;
 	}
