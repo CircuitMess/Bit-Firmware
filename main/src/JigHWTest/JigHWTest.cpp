@@ -363,7 +363,7 @@ bool JigHWTest::Robot(){
 	gpio_set_direction((gpio_num_t) CTRL_1, GPIO_MODE_OUTPUT);
 	gpio_set_level((gpio_num_t) CTRL_1, 0);
 
-	if(rob.getInserted() == Bob){
+	if(rob.getInserted().robot == Robot::Bob){
 		test->instr("Krivi Bob.\nUzmi iz kutije za\ntestiranje.");
 		test->log("bob", "krivi");
 		return false;
@@ -440,7 +440,7 @@ bool JigHWTest::Robot(){
 		return false;
 	}
 
-	if(evt.robot == COUNT){
+	if(evt.robot.robot == Robot::COUNT){
 		if(rob.testerBob()){
 			buzzDbl();
 			vTaskDelay(500);
@@ -453,7 +453,7 @@ bool JigHWTest::Robot(){
 			out();
 			return false;
 		}
-	}else if(evt.robot == Bob){
+	}else if(evt.robot.robot == Robot::Bob){
 		test->instr("Krivi\nBob.  Uzmi iz kutije\nza testiranje.");
 		test->log("err", "bob");
 		out();

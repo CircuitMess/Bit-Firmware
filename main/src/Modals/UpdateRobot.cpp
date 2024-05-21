@@ -54,7 +54,7 @@ void UpdateRobot::buildUI(){
 		return el;
 	};
 
-	label(*this, "NEW GAME UNLOCKED!");
+	label(*this, "NEW CONTENT UNLOCKED!");
 
 	auto container = lv_obj_create(*this);
 	lv_obj_set_size(container, lv_pct(100), LV_SIZE_CONTENT);

@@ -27,30 +27,37 @@ Robots::~Robots(){
 	stop();
 }
 
-Robot Robots::getInserted(){
-	if(!inserted) return Robot::COUNT;
-	return (Robot) current;
+RobotData Robots::getInserted(){
+	if(!inserted) return { Robot::COUNT, Token::COUNT};
+	return current;
 }
 
 void Robots::sleepyLoop(){
-	bool nowInserted = checkInserted();
+	const bool nowInserted = checkInserted();
 
 	if(inserted && !nowInserted){
 		inserted = false;
-		current = -1;
+		current = { Robot::COUNT, Token::COUNT };
 
 		Events::post(Facility::Robots, Event { .action = Event::Remove });
 	}else if(!inserted && nowInserted){
 		uint8_t addr = checkAddr();
-		if(addr >= Robot::COUNT){
-			// Unknown robot
-			addr = Robot::COUNT;
+		if(addr == 62){
+			current.token = (Token) checkToken();
+		}else{
+			current.token = Token::COUNT;
 		}
 
-		current = addr;
+		if(addr >= (uint8_t) Robot::COUNT){
+			// Unknown robot
+			addr = (uint8_t) Robot::COUNT;
+		}
+
+		current.robot = (Robot) addr;
+
 		inserted = true;
 
-		Events::post(Facility::Robots, Event { .action = Event::Insert, .robot = (Robot) current });
+		Events::post(Facility::Robots, Event { .action = Event::Insert, .robot = current });
 	}
 }
 
@@ -60,14 +67,30 @@ bool Robots::checkInserted(){
 	return det1 == 0 && det2 == 1;
 }
 
-uint8_t Robots::checkAddr(){
+uint8_t Robots::checkAddr() const{
 	uint8_t addr = 0;
+
+	// Check regular robots
 	for(int i = 0; i < 6; i++){
 		auto state = gpio_get_level((gpio_num_t) AddrPins[i]);
 		if(state){
 			addr |= 1 << i;
 		}
 	}
+
+	return addr;
+}
+
+uint8_t Robots::checkToken() const{
+	uint8_t addr = 0;
+
+	for(int i = 0; i < 6; i++){
+		auto state = gpio_get_level((gpio_num_t) CtrlPins[i]);
+		if(state){
+			addr |= 1 << i;
+		}
+	}
+
 	return addr;
 }
 

@@ -1,9 +1,9 @@
 #include "LockedGame.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include <string>
 #include "Filepaths.hpp"
 
-LockedGame::LockedGame(LVScreen* parent, Robot rob) : LVModal(parent), rob(rob){
+LockedGame::LockedGame(LVScreen* parent, RobotData rob) : LVModal(parent), rob(rob){
 	buildUI();
 
 	lv_obj_add_event_cb(*this, [](lv_event_t* e){
@@ -30,7 +30,7 @@ void LockedGame::buildUI(){
 	lv_img_set_src(icon, Filepath::Locked);
 
 	std::string text("Insert ");
-	text += RobotNames[rob];
+	text += RobotNames[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
 	text += " to unlock this game.";
 
 	auto label = lv_label_create(*this);

@@ -11,7 +11,7 @@
 class NVSUpgrade{
 public:
 	virtual ~NVSUpgrade() = default;
-	virtual uint32_t getTargetVersion() const = 0;
+	virtual constexpr uint32_t getTargetVersion() const = 0;
 	virtual void execute() const {}
 };
 
