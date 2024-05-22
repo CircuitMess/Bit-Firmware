@@ -18,7 +18,7 @@ WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStac
 		{ RobotPaths[5], {}, true },
 		{ RobotPaths[6], {}, true },
 }){
-
+	//swingLimits = { -((rand() * 40.0f + 20.0f) / INT_MAX), (rand() * 40.0f + 20.0f) / INT_MAX };
 }
 
 uint32_t WackyStacky::WackyStacky::getXP() const{
@@ -53,13 +53,51 @@ void WackyStacky::WackyStacky::onLoad(){
 			std::make_unique<StaticRC>(getFile("/hook.raw"), PixelDim{ 17, 40 }),
 			nullptr
 	);
-	hook->setPos(56, 56);
-	hook->setRot(1);
+
+	hook->setPos(56, 0);
 	addObject(hook);
 }
 
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
+	if(hook->getRot() <= SwingLimits.x){
+		swingDir = 1.0f;
 
+		//swingLimits.y = (rand() * 40.0f + 20.0f) / INT_MAX;
+	}else if(hook->getRot() >= SwingLimits.y){
+		swingDir = -1.0f;
+
+		//swingLimits.x = -((rand() * 40.0f + 20.0f) / INT_MAX);
+	}
+
+	const float speed = glm::max(-0.00001f * glm::pow(hook->getRot(), 4.0f) + SwingSpeed, 1.0f);
+
+	rotateHook(hook->getRot() + swingDir * speed * deltaTime);
+}
+
+void WackyStacky::WackyStacky::rotateHook(float deg) const{
+	if(!hook){
+		return;
+	}
+
+	static constexpr const glm::vec2 HookBaseRelativeLocation = {
+			0,
+			-20
+	};
+
+	const glm::vec2 hookRotationTransformBefore = {
+			HookBaseRelativeLocation.x * glm::cos(glm::radians(hook->getRot())) - HookBaseRelativeLocation.y * glm::sin(glm::radians(hook->getRot())),
+			HookBaseRelativeLocation.x *  glm::sin(glm::radians(hook->getRot())) + HookBaseRelativeLocation.y * glm::cos(glm::radians(hook->getRot()))
+	};
+
+	hook->setPos(hook->getPos() + (hookRotationTransformBefore - HookBaseRelativeLocation));
+
+	const glm::vec2 hookRotationTransform = {
+			HookBaseRelativeLocation.x * glm::cos(glm::radians(deg)) - HookBaseRelativeLocation.y * glm::sin(glm::radians(deg)),
+			HookBaseRelativeLocation.x *  glm::sin(glm::radians(deg)) + HookBaseRelativeLocation.y * glm::cos(glm::radians(deg))
+	};
+
+	hook->setRot(deg);
+	hook->setPos(hook->getPos() - (hookRotationTransform - HookBaseRelativeLocation));
 }

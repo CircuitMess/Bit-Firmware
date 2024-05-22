@@ -18,6 +18,11 @@ namespace WackyStacky {
 	private:
 		std::unique_ptr<Score> scoreDisplay;
 		GameObjPtr hook;
+		float swingDir = 1.0f;
+
+		inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f};
+
+		inline static constexpr const float SwingSpeed = 35.0f;
 
 		inline static constexpr const char* CloudPaths[] = {
 			"/Cloud1.raw",
@@ -37,6 +42,9 @@ namespace WackyStacky {
 		};
 
 		inline static constexpr const uint32_t HookSwingTime = 1000;
+
+	private:
+		void rotateHook(float deg) const;
 	};
 }
 
