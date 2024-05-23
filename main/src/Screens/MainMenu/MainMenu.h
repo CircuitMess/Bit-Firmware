@@ -7,7 +7,7 @@
 #include "LV_Interface/LVModal.h"
 #include "Util/Events.h"
 #include "Services/Robots.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include "Devices/Input.h"
 #include "Screens/BatteryElement.h"
 #include <optional>
@@ -18,7 +18,7 @@ public:
 	MainMenu();
 	virtual ~MainMenu();
 
-	static void gameEvent(GameManager::Event evt);
+	static void gameEvent(RobotManager::Event evt);
 
 private:
 	void buildUI();
@@ -27,7 +27,7 @@ private:
 	BatteryElement* batt;
 	class MenuHeader* menuHeader;
 	std::vector<MenuItem*> items;
-	std::unordered_map<Robot, MenuItem*> robGames;
+	std::unordered_map<uint8_t , MenuItem*> robGames;
 	lv_obj_t* itemCont;
 	LVGIF* bg = nullptr;
 	lv_obj_t* padTop = nullptr;
@@ -44,12 +44,14 @@ private:
 	EventQueue events;
 	void loop() override;
 
-	void handleInsert(const GameManager::Event& evt);
+	void handleGameInsert(const RobotManager::Event& evt);
+	void handleThemeInsert(const RobotManager::Event& evt);
+	void handlePetInsert(const RobotManager::Event& evt);
 	void handleInput(const Input::Data& evt);
 
 	void launch(Games game);
 
-	static std::optional<GameManager::Event> gmEvt;
+	static std::optional<RobotManager::Event> gmEvt;
 	static std::atomic<bool> running;
 
 	ChirpSystem* audio;

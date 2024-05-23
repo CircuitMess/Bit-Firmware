@@ -9,7 +9,7 @@ public:
 	inline static constexpr const uint32_t CurrentVersion = 2;
 
 public:
-	explicit SystemManager(const std::vector<NVSUpgrade>& upgrades);
+	explicit SystemManager(const std::vector<NVSUpgrade*>& upgrades);
 };
 
 #endif //BIT_FIRMWARE_SYSTEMMANAGER_H

@@ -7,7 +7,7 @@
 #include "Util/Events.h"
 #include "Screens/Settings/BoolElement.h"
 #include "Screens/Settings/SliderElement.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include "Screens/BatteryElement.h"
 
 class GameMenuScreen : public LVScreen {

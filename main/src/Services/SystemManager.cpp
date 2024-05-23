@@ -1,7 +1,7 @@
 #include "SystemManager.h"
 #include "Util/Services.h"
 
-SystemManager::SystemManager(const std::vector<NVSUpgrade>& upgrades){
+SystemManager::SystemManager(const std::vector<NVSUpgrade*>& upgrades){
 	const NVSFlash* nvs = (NVSFlash*) Services.get(Service::NVS);
 	if(nvs == nullptr){
 		return;
@@ -14,11 +14,11 @@ SystemManager::SystemManager(const std::vector<NVSUpgrade>& upgrades){
 		return;
 	}
 
-	for(const NVSUpgrade& upgrade : upgrades){
-		const uint32_t upgradeVersion = upgrade.getTargetVersion();
+	for(const NVSUpgrade* upgrade : upgrades){
+		const uint32_t upgradeVersion = upgrade->getTargetVersion();
 
 		if(upgradeVersion > flashVersion && upgradeVersion <= CurrentVersion){
-			upgrade.execute();
+			upgrade->execute();
 		}
 	}
 

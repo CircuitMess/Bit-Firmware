@@ -2,7 +2,7 @@
 #include "MenuItem.h"
 #include "LV_Interface/FSLVGL.h"
 #include "LV_Interface/InputLVGL.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "UIThread.h"
@@ -20,7 +20,7 @@
 
 struct Entry {
 	const char* icon;
-	Robot rob = Robot::COUNT;
+	RobotData rob = { Robot::COUNT, Token::COUNT };
 	Games game = Games::COUNT;
 };
 
@@ -28,18 +28,26 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Blocks", .game = Games::Blocks },
 		{ .icon = "Pong", .game = Games::Pong },
 		{ .icon = "Snake", .game = Games::Snake },
-		{ .icon = "Arte", .rob = Artemis, .game = Games::Artemis },
-		{ .icon = "Bee", .rob = MrBee, .game = Games::MrBee },
-		{ .icon = "Bob", .rob = Bob, .game = Games::Bob },
-		{ .icon = "Butt", .rob = Buttons, .game = Games::Buttons },
-		{ .icon = "Capa", .rob = Capacitron, .game = Games::Capacitron },
-		{ .icon = "Hertz", .rob = Hertz, .game = Games::Hertz },
-		{ .icon = "Marv", .rob = Marv, .game = Games::Marv },
-		{ .icon = "Resis", .rob = Resistron, .game = Games::Resistron },
-		{ .icon = "Robby", .rob = Robby, .game = Games::Robby }
+		{ .icon = "", .game = Games::WackyStacky },
+		{ .icon = "Arte", .rob = { .robot = Robot::Artemis }, .game = Games::Artemis },
+		{ .icon = "Bee", .rob = { .robot = Robot::MrBee }, .game = Games::MrBee },
+		{ .icon = "Bob", .rob = { .robot = Robot::Bob }, .game = Games::Bob },
+		{ .icon = "Butt", .rob = { .robot = Robot::Buttons }, .game = Games::Buttons },
+		{ .icon = "Capa", .rob = { .robot = Robot::Capacitron }, .game = Games::Capacitron },
+		{ .icon = "Hertz", .rob = { .robot = Robot::Hertz }, .game = Games::Hertz },
+		{ .icon = "Marv", .rob = { .robot = Robot::Marv }, .game = Games::Marv },
+		{ .icon = "Resis", .rob = { .robot = Robot::Resistron }, .game = Games::Resistron },
+		{ .icon = "Robby", .rob = { .robot = Robot::Robby }, .game = Games::Robby },
+		{ .icon = "", .rob = { .token = Token::Harald }, .game = Games::Harald },
+		{ .icon = "", .rob = { .token = Token::Frank }, .game = Games::Frank },
+		{ .icon = "", .rob = { .token = Token::RoboSpider }, .game = Games::RoboSpider },
+		{ .icon = "", .rob = { .token = Token::Fred }, .game = Games::Fred },
+		{ .icon = "", .rob = { .token = Token::Plank }, .game = Games::Plank },
+		{ .icon = "", .rob = { .token = Token::Dusty }, .game = Games::Dusty },
+		{ .icon = "", .rob = { .token = Token::Sparkly }, .game = Games::Sparkly },
 };
 
-std::optional<GameManager::Event> MainMenu::gmEvt = std::nullopt;
+std::optional<RobotManager::Event> MainMenu::gmEvt = std::nullopt;
 std::atomic<bool> MainMenu::running = false;
 
 MainMenu::MainMenu() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
@@ -51,13 +59,13 @@ MainMenu::~MainMenu(){
 }
 
 void MainMenu::launch(Games game){
-	auto games = (GameManager*) Services.get(Service::Games);
+	auto games = (RobotManager*) Services.get(Service::RobotManager);
 	if(!games->isUnlocked(game)){
 		auto audio = (ChirpSystem*) Services.get(Service::Audio);
 		audio->play({ { 300, 300, 50 },
 					  { 0,   0,   50 },
 					  { 200, 200, 250 } });
-		const auto rob = GameManager::GameRobot.at(game);
+		const auto rob = RobotManager::GameRobot.at(game);
 		new LockedGame(this, rob);
 		return;
 	}
@@ -75,6 +83,8 @@ void MainMenu::onStarting(){
 
 void MainMenu::onStart(){
 	Events::listen(Facility::Games, &events);
+	Events::listen(Facility::Pets, &events);
+	Events::listen(Facility::Themes, &events);
 	Events::listen(Facility::Input, &events);
 
 	if(bg != nullptr){
@@ -95,7 +105,15 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 
 	running = true;
 	if(gmEvt.has_value()){
-		menu->handleInsert(*gmEvt);
+		if(Robots::isGame(gmEvt->rob)){
+			menu->handleGameInsert(*gmEvt);
+		}else if(Robots::isTheme(gmEvt->rob)){
+			menu->handleThemeInsert(*gmEvt);
+		}else if(Robots::isPet(gmEvt->rob)){
+			menu->handlePetInsert(*gmEvt);
+		}
+
+		menu->handleGameInsert(*gmEvt);
 		gmEvt.reset();
 	}
 
@@ -122,38 +140,81 @@ void MainMenu::loop(){
 
 	Event evt{};
 	if(events.get(evt, 0)){
+		auto data = (RobotManager::Event*) evt.data;
+
 		if(evt.facility == Facility::Games){
-			auto data = (GameManager::Event*) evt.data;
-			handleInsert(*data);
+			handleGameInsert(*data);
+		}else if(evt.facility == Facility::Themes){
+			handleThemeInsert(*data);
+		}else if(evt.facility == Facility::Pets){
+			handlePetInsert(*data);
 		}else if(evt.facility == Facility::Input){
-			auto data = (Input::Data*) evt.data;
-			handleInput(*data);
+			auto inputData = (Input::Data*) evt.data;
+			handleInput(*inputData);
 		}
 		free(evt.data);
 	}
 }
 
-void MainMenu::handleInsert(const GameManager::Event& evt){
-	if(evt.action == GameManager::Event::Unknown){
+void MainMenu::handleGameInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
 		new UpdateRobot(this);
 		return;
-	}else if(evt.action != GameManager::Event::Inserted) return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
 
 	auto rob = evt.rob;
 	auto isNew = evt.isNew;
 
 	// "Coming soon" games
 	std::unordered_set<Robot> comingSoon = { };
-	if(comingSoon.contains(rob)){
+	if(comingSoon.contains(rob.robot)){
 		new UpdateRobot(this);
 		return;
 	}
 
-	if(isNew && robGames.count(rob)){
-		MenuItem* item = robGames.at(rob);
-		const auto icon = RobotIcons[rob];
+	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot)){
+		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot);
+		const auto icon = RobotIcons[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
 		const auto path = imgUnl(icon);
 		item->setIcon(path.c_str());
+	}
+
+	new NewRobot(this, rob, isNew);
+}
+
+void MainMenu::handleThemeInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
+		new UpdateRobot(this);
+		return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	// "Coming soon" themes
+	std::unordered_set<Token> comingSoon = { };
+	if(comingSoon.contains(rob.token)){
+		new UpdateRobot(this);
+		return;
+	}
+
+	new NewRobot(this, rob, isNew);
+}
+
+void MainMenu::handlePetInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
+		new UpdateRobot(this);
+		return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	// "Coming soon" pets
+	std::unordered_set<Token> comingSoon = { };
+	if(comingSoon.contains(rob.token)){
+		new UpdateRobot(this);
+		return;
 	}
 
 	new NewRobot(this, rob, isNew);
@@ -178,9 +239,9 @@ void MainMenu::handleInput(const Input::Data& evt){
 	}
 }
 
-void MainMenu::gameEvent(GameManager::Event evt){
+void MainMenu::gameEvent(RobotManager::Event evt){
 	if(running) return;
-	if(evt.action == GameManager::Event::Remove){
+	if(evt.action == RobotManager::Event::Remove){
 		gmEvt.reset();
 	}else{
 		gmEvt = { evt };
@@ -266,11 +327,11 @@ void MainMenu::buildUI(){
 		}
 	};
 
-	auto games = (GameManager*) Services.get(Service::Games);
+	auto games = (RobotManager*) Services.get(Service::RobotManager);
 	items.reserve(sizeof(MenuEntries) / sizeof(MenuEntries[0]));
 	for(const auto& entry : MenuEntries){
 		std::string path;
-		if(entry.rob == COUNT || entry.game == Games::COUNT || games->isUnlocked(entry.game)){
+		if((entry.rob.robot == Robot::COUNT && entry.rob.token == Token::COUNT) || entry.game == Games::COUNT || games->isUnlocked(entry.game)){
 			path = imgUnl(entry.icon);
 		}else{
 			path = imgLoc(entry.icon);
@@ -281,8 +342,8 @@ void MainMenu::buildUI(){
 		lv_group_add_obj(inputGroup, *item);
 
 		items.push_back(item);
-		if(entry.rob != COUNT){
-			robGames.insert(std::make_pair(entry.rob, item));
+		if(entry.rob.robot != Robot::COUNT || entry.rob.token != Token::COUNT){
+			robGames.insert(std::make_pair(entry.rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) entry.rob.token : (uint8_t) entry.rob.robot, item));
 		}
 
 		lv_obj_add_event_cb(*item, onClick, LV_EVENT_CLICKED, this);
