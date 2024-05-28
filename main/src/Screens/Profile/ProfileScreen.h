@@ -16,6 +16,13 @@
 #include "AchievementView.h"
 #include "ThemePicker.h"
 
+/*
+ * Navigation is handled in custom LV_KEY events, and whole screen is always forced to be in permanent input "edit" mode (instead of navigation).
+ *
+ * AchievementOverlay object floats on top of the achievement grid to show the focus/unfocus state.
+ * This was required since the entire grid is filled with icons and the background color change wasn't obvious.
+ * Maybe possible with a color filter style change?
+ */
 class ProfileScreen : public LVScreen {
 public:
 	ProfileScreen();
