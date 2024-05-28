@@ -1,8 +1,11 @@
 #include "WackyStacky.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include "GameEngine/Collision/RectCC.h"
+#include "Util/stdafx.h"
 
 WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStacky, "/Games/Stacky", {
 		RES_GOBLET,
+        RES_HEART,
 		{ "/bg.raw", {}, true },
 		{ "/floor.raw", {}, true },
 		{ "/hook.raw", {}, true },
@@ -17,8 +20,13 @@ WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStac
 		{ RobotPaths[4], {}, true },
 		{ RobotPaths[5], {}, true },
 		{ RobotPaths[6], {}, true },
-}){
+}), queue(16) {
 	//swingLimits = { -((rand() * 40.0f + 20.0f) / INT_MAX), (rand() * 40.0f + 20.0f) / INT_MAX };
+    Events::listen(Facility::Input, &queue);
+}
+
+WackyStacky::WackyStacky::~WackyStacky() {
+    Events::unlisten(&queue);
 }
 
 uint32_t WackyStacky::WackyStacky::getXP() const{
@@ -36,9 +44,9 @@ void WackyStacky::WackyStacky::onLoad(){
 	bg->getRenderComponent()->setLayer(-1);
 	addObject(bg);
 
-	auto floor = std::make_shared<GameObject>(
+	floor = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/floor.raw"), PixelDim{ 128, 16 }),
-			nullptr
+            std::make_unique<RectCC>(glm::vec2{ 128, 12 }, glm::vec2{ 64, 6 }) // TODO figure out exact dimensions and offset later if changing needed
 	);
 
 	floor->setPos(0, 112);
@@ -48,6 +56,12 @@ void WackyStacky::WackyStacky::onLoad(){
 	scoreDisplay = std::make_unique<Score>(getFile(FILE_GOBLET));
 	scoreDisplay->getGO()->setPos({ 128 - 2 - 28, 2 });
 	addObject(scoreDisplay->getGO());
+    scoreDisplay->setScore(robots.size());
+
+    hearts = std::make_unique<Hearts>(getFile(FILE_HEART));
+    hearts->getGO()->setPos({ 2, 2 });
+    addObject(hearts->getGO());
+    hearts->setLives(3);
 
 	hook = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/hook.raw"), PixelDim{ 17, 40 }),
@@ -60,6 +74,24 @@ void WackyStacky::WackyStacky::onLoad(){
 
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
+
+    for(Event e; queue.get(e, 0); ){
+        if(e.facility != Facility::Input){
+            continue;
+        }
+
+        Input::Data* inputData = (Input::Data*) e.data;
+        if(inputData == nullptr){
+            continue;
+        }
+
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A){
+            lastDrop = millis();
+            // Drop the thing
+            // Start timer to create a new one in the hook
+            // Start to scroll up (move all robots and the floor down)
+        }
+    }
 
 	if(hook->getRot() <= SwingLimits.x){
 		swingDir = 1.0f;
@@ -100,4 +132,12 @@ void WackyStacky::WackyStacky::rotateHook(float deg) const{
 
 	hook->setRot(deg);
 	hook->setPos(hook->getPos() - (hookRotationTransform - HookBaseRelativeLocation));
+
+    if(hookedRobot){
+        // Rotate the robot with the hook
+    }
+}
+
+void WackyStacky::WackyStacky::attachRobot(uint8_t robot) const {
+
 }
