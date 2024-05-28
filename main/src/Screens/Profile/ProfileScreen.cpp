@@ -22,6 +22,14 @@ void ProfileScreen::onStart(){
 
 void ProfileScreen::onStop(){
 	Events::unlisten(&events);
+
+	auto settings = (Settings*) Services.get(Service::Settings);
+	auto saved = settings->get();
+	saved.avatar = characterSection.getCharacterIndex();
+	saved.theme = themeSection.getSelected();
+	saved.pet = characterSection.getPet() == Pet::COUNT ? -1 : (int8_t) characterSection.getPet();
+	settings->set(saved);
+	settings->store();
 }
 
 void ProfileScreen::loop(){

@@ -19,8 +19,8 @@ ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Se
 	lv_obj_set_style_pad_top(obj, 9, 0);
 
 	auto onKey = [](lv_event_t* e){
-		auto themeview = (ThemePicker*) e->user_data;
-		auto group = themeview->inputGroup;
+		auto picker = (ThemePicker*) e->user_data;
+		auto group = picker->inputGroup;
 		auto key = lv_event_get_key(e);
 
 		const auto index = lv_obj_get_index(e->target); // only applies to odd number of menu items
@@ -56,7 +56,7 @@ ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Se
 				lv_group_focus_next(group);
 			}
 		}else if(key == LV_KEY_ESC){
-			themeview->deselect();
+			picker->deselect();
 		}
 	};
 
@@ -79,10 +79,11 @@ ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Se
 		lv_obj_clear_flag(img, LV_OBJ_FLAG_SCROLLABLE);
 
 		lv_obj_add_event_cb(img, [](lv_event_t* e){
-			ThemePicker* view = (ThemePicker*) e->user_data;
+			ThemePicker* picker = (ThemePicker*) e->user_data;
 			Theme theme = (Theme) lv_obj_get_index(e->target);
-			if(view->robotManager.isUnlocked(theme)){
-				view->changeTheme(theme);
+			if(picker->robotManager.isUnlocked(theme)){
+				picker->currentTheme = theme;
+
 			}else{
 				//TODO - error beep or popup?
 			}
@@ -90,23 +91,20 @@ ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Se
 		lv_obj_add_event_cb(img, onKey, LV_EVENT_KEY, this);
 	}
 
-	Theme current = settings.get().theme;
-	lv_group_focus_obj(lv_obj_get_child(obj, (uint32_t) current));
-}
-
-void ThemePicker::changeTheme(Theme theme){
-	SettingsStruct settingsStruct = settings.get();
-	settingsStruct.theme = theme;
-	settings.set(settingsStruct);
+	currentTheme = settings.get().theme;
+	lv_group_focus_obj(lv_obj_get_child(obj, (uint32_t) currentTheme));
 }
 
 void ThemePicker::onDeselect(){
-	Theme current = settings.get().theme;
-	lv_group_focus_obj(lv_obj_get_child(obj, (uint32_t) current));
+	lv_group_focus_obj(lv_obj_get_child(obj, (uint32_t) currentTheme));
 
 	lv_obj_set_style_bg_opa(obj, LV_OPA_40, LV_STATE_FOCUSED);
 }
 
 void ThemePicker::onSelect(){
 	lv_obj_set_style_bg_opa(obj, LV_OPA_0, LV_STATE_FOCUSED);
+}
+
+Theme ThemePicker::getSelected() const{
+	return currentTheme;
 }

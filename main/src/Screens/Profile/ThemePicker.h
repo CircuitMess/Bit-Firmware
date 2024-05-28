@@ -9,6 +9,7 @@
 class ThemePicker : public LVSelectable {
 public:
 	explicit ThemePicker(lv_obj_t* parent);
+	Theme getSelected() const;
 
 protected:
 	void onDeselect() override;
@@ -18,10 +19,10 @@ private:
 	LVStyle focusedStyle;
 	LVStyle defaultStyle;
 
-	void changeTheme(Theme theme);
-
 	Settings& settings;
 	RobotManager& robotManager;
+
+	Theme currentTheme;
 
 	static constexpr uint8_t RowWidth = 2;
 };
