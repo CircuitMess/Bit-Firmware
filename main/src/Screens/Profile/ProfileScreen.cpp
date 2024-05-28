@@ -99,6 +99,7 @@ void ProfileScreen::buildUI(){
 	lv_obj_set_pos(achievementOverlay, 55, 4);
 	lv_obj_set_size(achievementOverlay, lv_obj_get_width(achievementSection), lv_obj_get_height(achievementSection));
 	lv_obj_add_style(achievementOverlay, unfocusedSection, LV_STATE_DEFAULT);
+
 	lv_obj_set_align(achievementSection, LV_ALIGN_TOP_LEFT);
 	lv_obj_set_pos(achievementSection, 55, 4);
 	lv_group_add_obj(inputGroup, achievementSection);
@@ -116,52 +117,13 @@ void ProfileScreen::buildUI(){
 	lv_obj_refr_size(achievementSection);
 	lv_obj_refresh_self_size(achievementSection);
 
+
 	//Theme section
-	themeSection = lv_obj_create(*this);
 	lv_obj_set_align(themeSection, LV_ALIGN_TOP_LEFT);
 	lv_obj_set_pos(themeSection, 4, 86);
-	lv_obj_set_size(themeSection, 46, 38);
-	lv_group_add_obj(inputGroup, themeSection);
 	lv_obj_add_style(themeSection, unfocusedSection, LV_STATE_DEFAULT);
 	lv_obj_add_style(themeSection, focusedSection, LV_STATE_FOCUSED);
-	lv_obj_add_event_cb(themeSection, ProfileScreen::onClick, LV_EVENT_KEY, this);
-
-	lv_obj_set_flex_align(themeSection, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_SPACE_EVENLY);
-	lv_obj_set_flex_flow(themeSection, LV_FLEX_FLOW_ROW_WRAP);
-	lv_obj_set_style_pad_gap(themeSection, 1, 0);
-	lv_obj_set_style_pad_left(themeSection, 1, 0);
-	lv_obj_set_style_pad_top(themeSection, 9, 0);
-
-	// TODO: check if themes are locked, if so, show the lock on them as well
-
-	auto img = lv_img_create(themeSection);
-	lv_img_set_src(img, "S:/Profile/theme-01-icon.bin");
-//	lv_group_add_obj(inputGroup, img);
-	lv_obj_add_event_cb(img, ProfileScreen::onClick, LV_EVENT_KEY, this);
-
-	img = lv_img_create(themeSection);
-	lv_img_set_src(img, "S:/Profile/theme-02-icon.bin");
-	auto lock = lv_img_create(img);
-	lv_img_set_src(lock, "S:/Profile/lock.bin");
-	lv_obj_set_align(lock, LV_ALIGN_CENTER);
-//	lv_group_add_obj(inputGroup, img);
-	lv_obj_add_event_cb(img, ProfileScreen::onClick, LV_EVENT_KEY, this);
-
-	img = lv_img_create(themeSection);
-	lv_img_set_src(img, "S:/Profile/theme-03-icon.bin");
-	lock = lv_img_create(img);
-	lv_img_set_src(lock, "S:/Profile/lock.bin");
-	lv_obj_set_align(lock, LV_ALIGN_CENTER);
-//	lv_group_add_obj(inputGroup, img);
-	lv_obj_add_event_cb(img, ProfileScreen::onClick, LV_EVENT_KEY, this);
-
-	img = lv_img_create(themeSection);
-	lv_img_set_src(img, "S:/Profile/theme-04-icon.bin");
-	lock = lv_img_create(img);
-	lv_img_set_src(lock, "S:/Profile/lock.bin");
-	lv_obj_set_align(lock, LV_ALIGN_CENTER);
-//	lv_group_add_obj(inputGroup, img);
-	lv_obj_add_event_cb(img, ProfileScreen::onClick, LV_EVENT_KEY, this);
+	lv_group_add_obj(inputGroup, themeSection);
 
 
 	//manual focus definitions
@@ -199,7 +161,7 @@ void ProfileScreen::buildUI(){
 
 	lv_obj_add_event_cb(themeSection, [](lv_event_t* e){
 		ProfileScreen* screen = (ProfileScreen*) e->user_data;
-		if(lv_group_get_editing(screen->inputGroup)) return;
+		if(screen->themeSection.isActive()) return;
 
 		switch(lv_event_get_key(e)){
 			case LV_KEY_RIGHT:
@@ -213,6 +175,7 @@ void ProfileScreen::buildUI(){
 		}
 		lv_group_set_editing(screen->inputGroup, true);
 	}, LV_EVENT_KEY, this);
+
 	lv_obj_add_event_cb(achievementSection, [](lv_event_t* event){
 		ProfileScreen* screen = (ProfileScreen*) event->user_data;
 		auto ach = &screen->achievementSection;
@@ -224,125 +187,4 @@ void ProfileScreen::buildUI(){
 		}
 	}, LV_EVENT_CLICKED, this);
 
-}
-
-void ProfileScreen::onClick(lv_event_t* e){
-	return;
-
-	ProfileScreen* screen = (ProfileScreen*) e->user_data;
-	if(screen == nullptr){
-		return;
-	}
-
-	const uint32_t key = *((uint32_t*) e->param);
-	printf("Key: %lu\n", key);
-	printf("Focused: %d\n", screen->focusedIndex);
-
-	if(screen->focusedIndex == ThemeInputIndex && key == LV_KEY_ENTER){
-		++screen->focusedIndex;
-		lv_group_focus_next(screen->inputGroup);
-		screen->pickingTheme = true;
-		return;
-	}
-
-	if(screen->focusedIndex == CharacterInputIndex && key == LV_KEY_ENTER){
-		screen->pickingCharacter = true;
-		return;
-	}
-
-	if(screen->pickingTheme){
-		if(key == LV_KEY_ESC){
-			screen->pickingTheme = false;
-
-			while(screen->focusedIndex > ThemeInputIndex){
-				--screen->focusedIndex;
-				lv_group_focus_prev(screen->inputGroup);
-			}
-
-			return;
-		}
-
-		// TODO go through themes
-	}else if(screen->pickingCharacter){
-		if(key == LV_KEY_ESC){
-			screen->pickingCharacter = false;
-			return;
-		}
-
-		// TODO switch character and pet icons
-	}else{
-		if(key == LV_KEY_UP){
-			if(screen->focusedIndex == ThemeInputIndex){
-				--screen->focusedIndex;
-				lv_group_focus_prev(screen->inputGroup);
-			}else if(screen->focusedIndex == CharacterInputIndex){
-				++screen->focusedIndex;
-				lv_group_focus_next(screen->inputGroup);
-			}else if(screen->focusedIndex >= AchievementInputIndex){
-				// TODO
-			}
-
-			return;
-		}
-
-		if(key == LV_KEY_DOWN){
-			if(screen->focusedIndex == ThemeInputIndex){
-				--screen->focusedIndex;
-				lv_group_focus_prev(screen->inputGroup);
-			}else if(screen->focusedIndex == CharacterInputIndex){
-				++screen->focusedIndex;
-				lv_group_focus_next(screen->inputGroup);
-			}else if(screen->focusedIndex >= AchievementInputIndex){
-				// TODO
-			}
-
-			return;
-		}
-
-		if(key == LV_KEY_LEFT){
-			if(screen->focusedIndex == ThemeInputIndex){
-				// TODO
-			}else if(screen->focusedIndex == CharacterInputIndex){
-				// TODO
-			}else if(screen->focusedIndex >= AchievementInputIndex){
-				if(screen->focusedIndex % AchievementColumns == 0){
-					while(screen->focusedIndex > CharacterInputIndex){
-						--screen->focusedIndex;
-						lv_group_focus_prev(screen->inputGroup);
-					}
-				}else{
-					--screen->focusedIndex;
-					lv_group_focus_prev(screen->inputGroup);
-				}
-			}
-
-			return;
-		}
-
-		if(key == LV_KEY_RIGHT){
-			if(screen->focusedIndex == ThemeInputIndex){
-				while(screen->focusedIndex < AchievementInputIndex){
-					++screen->focusedIndex;
-					lv_group_focus_next(screen->inputGroup);
-				}
-			}else if(screen->focusedIndex == CharacterInputIndex){
-				while(screen->focusedIndex < AchievementInputIndex){
-					++screen->focusedIndex;
-					lv_group_focus_next(screen->inputGroup);
-				}
-			}else if(screen->focusedIndex >= AchievementInputIndex){
-				if(screen->focusedIndex % AchievementColumns == 3){
-					while(screen->focusedIndex > CharacterInputIndex){
-						--screen->focusedIndex;
-						lv_group_focus_prev(screen->inputGroup);
-					}
-				}else{
-					++screen->focusedIndex;
-					lv_group_focus_next(screen->inputGroup);
-				}
-			}
-
-			return;
-		}
-	}
 }

@@ -14,6 +14,7 @@
 #include "LV_Interface/LVStyle.h"
 #include "CharacterPicker.h"
 #include "AchievementView.h"
+#include "ThemePicker.h"
 
 class ProfileScreen : public LVScreen {
 public:
@@ -31,18 +32,6 @@ private:
 
 	void handleInput(const Input::Data& evt);
 
-	static void onClick(lv_event_t * e);
-
-	struct Achievement {
-		::Achievement achievement = ::Achievement::COUNT;
-		lv_obj_t* icon;
-	};
-
-	struct Theme {
-		::Theme theme;
-		lv_obj_t* icon;
-	};
-
 	EventQueue events;
 	ChirpSystem* audio;
 
@@ -50,21 +39,10 @@ private:
 	LVStyle focusedSection;
 
 	AchievementView achievementSection = AchievementView(*this);
-	lv_obj_t* themeSection;
+	ThemePicker themeSection = ThemePicker(*this);
 	CharacterPicker characterSection = CharacterPicker(*this);
 
 	lv_obj_t* achievementOverlay; //used for focus indication
-
-	bool pickingCharacter = false;
-	bool pickingTheme = false;
-
-	uint8_t focusedIndex = 6;
-
-	inline static constexpr const uint8_t AchievementColumns = 4;
-	inline static constexpr const uint8_t ThemeColumns = 2;
-	inline static constexpr const uint8_t CharacterInputIndex = 0;
-	inline static constexpr const uint8_t ThemeInputIndex = 1;
-	inline static constexpr const uint8_t AchievementInputIndex = 6;
 
 	class XPBar* xpBar = nullptr;
 };
