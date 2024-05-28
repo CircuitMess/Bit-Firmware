@@ -13,6 +13,7 @@
 #include "Settings/Settings.h"
 #include "LV_Interface/LVStyle.h"
 #include "CharacterPicker.h"
+#include "AchievementView.h"
 
 class ProfileScreen : public LVScreen {
 public:
@@ -48,11 +49,10 @@ private:
 	LVStyle unfocusedSection;
 	LVStyle focusedSection;
 
-	lv_obj_t* achievementSection;
+	AchievementView achievementSection = AchievementView(*this);
 	lv_obj_t* themeSection;
-	CharacterPicker characterSection;
+	CharacterPicker characterSection = CharacterPicker(*this);
 
-	lv_group_t* themeGroup;
 	lv_obj_t* achievementOverlay; //used for focus indication
 
 	bool pickingCharacter = false;
@@ -65,7 +65,6 @@ private:
 	inline static constexpr const uint8_t CharacterInputIndex = 0;
 	inline static constexpr const uint8_t ThemeInputIndex = 1;
 	inline static constexpr const uint8_t AchievementInputIndex = 6;
-	inline static constexpr const uint8_t AchievementCount = 32; // TODO
 
 	class XPBar* xpBar = nullptr;
 };

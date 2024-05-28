@@ -35,22 +35,25 @@ CharacterPicker::CharacterPicker(lv_obj_t* parent) : LVObject(parent), settings(
 
 	lv_obj_add_event_cb(obj, [](lv_event_t* event){
 		uint32_t c = lv_event_get_key(event);
-		auto editableAvatar = static_cast<CharacterPicker*>(event->user_data);
+		auto charPicker = static_cast<CharacterPicker*>(event->user_data);
+
+		if(!charPicker->isEditing()) return;
+
 		switch(c){
 			case LV_KEY_LEFT:
-				editableAvatar->scrollLeft();
+				charPicker->scrollLeft();
 				break;
 			case LV_KEY_RIGHT:
-				editableAvatar->scrollRight();
+				charPicker->scrollRight();
 				break;
 			case LV_KEY_UP:
-				editableAvatar->scrollUp();
+				charPicker->scrollUp();
 				break;
 			case LV_KEY_DOWN:
-				editableAvatar->scrollDown();
+				charPicker->scrollDown();
 				break;
 			case LV_KEY_ESC:
-				editableAvatar->exit();
+				charPicker->exit();
 				break;
 			default:
 				break;
@@ -349,4 +352,8 @@ void CharacterPicker::exit(){
 
 	lv_group_set_editing((lv_group_t*) lv_obj_get_group(obj), false);
 	arrowsState = false;
+}
+
+bool CharacterPicker::isEditing() const{
+	return arrowsState;
 }

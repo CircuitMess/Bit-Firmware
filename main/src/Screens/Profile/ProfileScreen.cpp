@@ -9,7 +9,7 @@
 #include "Services/XPSystem.h"
 #include "LV_Interface/Theme/theme.h"
 
-ProfileScreen::ProfileScreen() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)), characterSection(*this){
+ProfileScreen::ProfileScreen() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
 	setupThemes();
 	buildUI();
 }
@@ -92,6 +92,29 @@ void ProfileScreen::buildUI(){
 	lv_obj_set_style_text_color(lvlText, lv_color_make(85, 126, 150), 0);
 	lv_label_set_text(lvlText, ("LVL " + std::to_string(xpSystem->MapXPToLevel(xpSystem->getXP()).nextLvl - 1)).c_str());
 
+	//Achievement section
+	achievementOverlay = lv_obj_create(*this);
+	lv_obj_add_flag(achievementOverlay, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_align(achievementOverlay, LV_ALIGN_TOP_LEFT);
+	lv_obj_set_pos(achievementOverlay, 55, 4);
+	lv_obj_set_size(achievementOverlay, lv_obj_get_width(achievementSection), lv_obj_get_height(achievementSection));
+	lv_obj_add_style(achievementOverlay, unfocusedSection, LV_STATE_DEFAULT);
+	lv_obj_set_align(achievementSection, LV_ALIGN_TOP_LEFT);
+	lv_obj_set_pos(achievementSection, 55, 4);
+	lv_group_add_obj(inputGroup, achievementSection);
+
+	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
+		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_40, 0);
+	}, LV_EVENT_FOCUSED, achievementOverlay);
+	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
+		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_0, 0);
+	}, LV_EVENT_DEFOCUSED, achievementOverlay);
+
+	lv_obj_move_foreground(achievementOverlay);
+	achievementSection.setOverlay(achievementOverlay);
+
+	lv_obj_refr_size(achievementSection);
+	lv_obj_refresh_self_size(achievementSection);
 
 	//Theme section
 	themeSection = lv_obj_create(*this);
@@ -141,53 +164,66 @@ void ProfileScreen::buildUI(){
 	lv_obj_add_event_cb(img, ProfileScreen::onClick, LV_EVENT_KEY, this);
 
 
-	//Achievement section
-	achievementOverlay = lv_obj_create(*this);
-	lv_obj_add_flag(achievementOverlay, LV_OBJ_FLAG_FLOATING);
-	lv_obj_set_align(achievementOverlay, LV_ALIGN_TOP_LEFT);
-	lv_obj_set_pos(achievementOverlay, 53, 4);
-	lv_obj_set_size(achievementOverlay, 71, 123);
-	lv_obj_add_style(achievementOverlay, unfocusedSection, LV_STATE_DEFAULT);
+	//manual focus definitions
+	lv_group_set_editing(inputGroup, true);
+	lv_obj_add_event_cb(characterSection, [](lv_event_t* e){
+		ProfileScreen* screen = (ProfileScreen*) e->user_data;
+		if(screen->characterSection.isEditing()) return;
 
-	achievementSection = lv_obj_create(*this);
-	lv_obj_add_flag(achievementSection, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_set_align(achievementSection, LV_ALIGN_TOP_LEFT);
-	lv_obj_set_pos(achievementSection, 53, 4);
-	lv_obj_set_size(achievementSection, 71, 123);
-	lv_obj_set_flex_align(achievementSection, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-	lv_obj_set_flex_flow(achievementSection, LV_FLEX_FLOW_ROW_WRAP);
-	lv_obj_add_flag(achievementSection, LV_OBJ_FLAG_SCROLLABLE);
-	lv_obj_set_style_pad_gap(achievementSection, 1, 0);
-	lv_group_add_obj(inputGroup, achievementSection);
+		switch(lv_event_get_key(e)){
+			case LV_KEY_RIGHT:
+				lv_group_focus_obj(screen->achievementSection);
+				break;
+			case LV_KEY_DOWN:
+				lv_group_focus_obj(screen->themeSection);
+				break;
+			default:
+				lv_group_focus_obj(screen->characterSection);
+		}
+		lv_group_set_editing(screen->inputGroup, true);
+	}, LV_EVENT_KEY, this);
+
 	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
-		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_40, 0);
-	}, LV_EVENT_FOCUSED, achievementOverlay);
-	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
-		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_0, 0);
-	}, LV_EVENT_DEFOCUSED, achievementOverlay);
+		ProfileScreen* screen = (ProfileScreen*) e->user_data;
+		if(screen->achievementSection.isActive()) return;
 
-	// TODO once all achievements are added, do this for every achievement instead of just random placeholders
-	for(size_t i = 0; i < AchievementCount; ++i){
-		auto base = lv_obj_create(achievementSection);
-		lv_obj_set_size(base, 17, 16);
-		lv_obj_add_flag(base, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-		lv_obj_add_flag(base, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-//		lv_group_add_obj(inputGroup, base);
+		switch(lv_event_get_key(e)){
+			case LV_KEY_LEFT:
+				lv_group_focus_obj(screen->characterSection);
+				break;
+			default:
+				lv_group_focus_obj(screen->achievementSection);
+		}
+		lv_group_set_editing(screen->inputGroup, true);
+	}, LV_EVENT_KEY, this);
 
-		lv_obj_add_event_cb(base, ProfileScreen::onClick, LV_EVENT_KEY, this);
+	lv_obj_add_event_cb(themeSection, [](lv_event_t* e){
+		ProfileScreen* screen = (ProfileScreen*) e->user_data;
+		if(lv_group_get_editing(screen->inputGroup)) return;
 
-		auto ach = lv_img_create(base);
-		lv_img_set_src(ach, "S:/Profile/ach-placeholder.bin");
-		lv_obj_set_align(ach, LV_ALIGN_CENTER);
+		switch(lv_event_get_key(e)){
+			case LV_KEY_RIGHT:
+				lv_group_focus_obj(screen->achievementSection);
+				break;
+			case LV_KEY_UP:
+				lv_group_focus_obj(screen->characterSection);
+				break;
+			default:
+				lv_group_focus_obj(screen->themeSection);
+		}
+		lv_group_set_editing(screen->inputGroup, true);
+	}, LV_EVENT_KEY, this);
+	lv_obj_add_event_cb(achievementSection, [](lv_event_t* event){
+		ProfileScreen* screen = (ProfileScreen*) event->user_data;
+		auto ach = &screen->achievementSection;
 
-		auto border = lv_img_create(base);
-		lv_img_set_src(border, "S:/Profile/ach-border.bin"); // TODO this file should get removed when everything when visuals are done
-		lv_obj_set_align(border, LV_ALIGN_CENTER);
-	}
-	lv_obj_move_foreground(achievementOverlay);
+		if(ach->isActive()){
+			lv_obj_set_style_bg_opa(screen->achievementOverlay, LV_OPA_0, 0);
+		}else{
+			lv_obj_set_style_bg_opa(screen->achievementOverlay, LV_OPA_40, 0);
+		}
+	}, LV_EVENT_CLICKED, this);
 
-	lv_obj_refr_size(achievementSection);
-	lv_obj_refresh_self_size(achievementSection);
 }
 
 void ProfileScreen::onClick(lv_event_t* e){

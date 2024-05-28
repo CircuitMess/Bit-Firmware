@@ -21,6 +21,8 @@ void LVSelectable::select(){
 		parentGroup = InputLVGL::getInstance()->getIndev()->group;
 		lv_indev_set_group(InputLVGL::getInstance()->getIndev(), inputGroup);
 	}
+
+	onSelect();
 }
 
 void LVSelectable::deselect(){
@@ -32,6 +34,8 @@ void LVSelectable::deselect(){
 	active = false;
 
 	lv_event_send(obj, LV_EVENT_READY, nullptr);
+
+	onDeselect();
 }
 
 bool LVSelectable::isActive() const{

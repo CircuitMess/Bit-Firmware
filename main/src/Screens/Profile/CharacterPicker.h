@@ -17,10 +17,11 @@ public:
 	uint8_t getCharacterIndex() const;
 	Pet getPet() const;
 
+	bool isEditing() const;
+
 private:
 	uint8_t avatarIndex = 0;
 	int8_t petIndex = 0;
-	uint8_t PetCount = 0;
 	std::vector<Pet> unlockedPets;
 	uint8_t level = 0;
 
