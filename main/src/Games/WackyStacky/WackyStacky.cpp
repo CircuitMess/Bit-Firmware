@@ -21,7 +21,6 @@ WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStac
 		{ RobotPaths[5], {}, true },
 		{ RobotPaths[6], {}, true },
 }), queue(16) {
-	//swingLimits = { -((rand() * 40.0f + 20.0f) / INT_MAX), (rand() * 40.0f + 20.0f) / INT_MAX };
     Events::listen(Facility::Input, &queue);
 }
 
@@ -46,7 +45,7 @@ void WackyStacky::WackyStacky::onLoad(){
 
 	floor = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/floor.raw"), PixelDim{ 128, 16 }),
-            std::make_unique<RectCC>(glm::vec2{ 128, 12 }, glm::vec2{ 64, 6 }) // TODO figure out exact dimensions and offset later if changing needed
+            std::make_unique<RectCC>(glm::vec2{ 128, 12 })
 	);
 
 	floor->setPos(0, 112);
@@ -70,6 +69,8 @@ void WackyStacky::WackyStacky::onLoad(){
 
 	hook->setPos(56, 0);
 	addObject(hook);
+
+	attachRobot(0);
 }
 
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
@@ -95,20 +96,34 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 
 	if(hook->getRot() <= SwingLimits.x){
 		swingDir = 1.0f;
-
-		//swingLimits.y = (rand() * 40.0f + 20.0f) / INT_MAX;
 	}else if(hook->getRot() >= SwingLimits.y){
 		swingDir = -1.0f;
-
-		//swingLimits.x = -((rand() * 40.0f + 20.0f) / INT_MAX);
 	}
 
 	const float speed = glm::max(-0.00001f * glm::pow(hook->getRot(), 4.0f) + SwingSpeed, 1.0f);
 
 	rotateHook(hook->getRot() + swingDir * speed * deltaTime);
+
+	if(lastDrop != 0){
+		if(hookedRobot){
+			hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * 1.5f);
+		}
+
+		if(floor){
+			floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * 0.5f);
+		}
+
+		for(size_t i = 0; i < VisibleRobotCount; ++i){
+			if(!visibleRobots[i]){
+				continue;
+			}
+
+			visibleRobots[i]->setPos(visibleRobots[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * 0.5f);
+		}
+	}
 }
 
-void WackyStacky::WackyStacky::rotateHook(float deg) const{
+void WackyStacky::WackyStacky::rotateHook(float deg){
 	if(!hook){
 		return;
 	}
@@ -133,11 +148,66 @@ void WackyStacky::WackyStacky::rotateHook(float deg) const{
 	hook->setRot(deg);
 	hook->setPos(hook->getPos() - (hookRotationTransform - HookBaseRelativeLocation));
 
-    if(hookedRobot){
-        // Rotate the robot with the hook
+    if(hookedRobot && lastDrop == 0){
+		attachRobot(0);
     }
 }
 
-void WackyStacky::WackyStacky::attachRobot(uint8_t robot) const {
+void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
+	const std::string path = getRobotPath(robot);
+	const glm::vec2 dimensions = getRobotDim(robot);
 
+	if(!hook){
+		return;
+	}
+
+	const glm::vec2 hookCenter = hook->getPos() + glm::vec2{ 8.0f, 19.5f };
+
+	const glm::vec2 robotCenterRelativeLocation = glm::vec2{ 0, 19.5f } + glm::vec2{ 0, dimensions.y / 2.0f };
+
+	const glm::vec2 robotRotationTransform = {
+			robotCenterRelativeLocation.x * glm::cos(glm::radians(hook->getRot())) - robotCenterRelativeLocation.y * glm::sin(glm::radians(hook->getRot())),
+			robotCenterRelativeLocation.x *  glm::sin(glm::radians(hook->getRot())) + robotCenterRelativeLocation.y * glm::cos(glm::radians(hook->getRot()))
+	};
+
+	const glm::vec2 robotCenter = hookCenter + robotRotationTransform;
+
+	if(!hookedRobot){
+		hookedRobot = std::make_shared<GameObject>(
+				std::make_unique<StaticRC>(getFile(path), dimensions),
+				std::make_unique<RectCC>(dimensions)
+		);
+
+		addObject(hookedRobot);
+
+		auto onCollision = [this](){
+			lastDrop = 0;
+
+			if(visibleRobots.front()){
+				removeObject(visibleRobots.front());
+			}
+
+			for(size_t i = 0; i < VisibleRobotCount - 1; ++i){
+				visibleRobots[i] = visibleRobots[i + 1];
+			}
+
+			visibleRobots.back() = hookedRobot;
+			hookedRobot.reset();
+
+			attachRobot(1);
+		};
+
+		collision.addPair(*floor, *hookedRobot, onCollision);
+
+		for(size_t i = 0; i < VisibleRobotCount; ++i){
+			if(!visibleRobots[i]){
+				continue;
+			}
+
+			collision.addPair(*visibleRobots[i], *hookedRobot, onCollision);
+		}
+	}
+
+	hookedRobot->setPos(robotCenter - dimensions / 2.0f);
+	hookedRobot->setRot(hook->getRot());
 }

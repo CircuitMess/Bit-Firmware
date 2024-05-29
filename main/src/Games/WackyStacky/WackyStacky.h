@@ -65,8 +65,8 @@ namespace WackyStacky {
 		inline static constexpr const uint32_t HookSwingTime = 1000;
 
 	private:
-		void rotateHook(float deg) const;
-        void attachRobot(uint8_t robot) const;
+		void rotateHook(float deg);
+        void attachRobot(uint8_t robot);
 
         inline static constexpr std::string getRobotPath(uint8_t robot) {
             if(robot > 6){
@@ -75,6 +75,37 @@ namespace WackyStacky {
 
             return "/robot" + std::to_string(robot + 1) + ".raw";
         }
+
+		inline static constexpr PixelDim getRobotDim(uint8_t robot) {
+			switch(robot){
+				case 0:{
+					return { 39, 23 };
+				}
+				case 1:{
+					return { 51, 26 };
+				}
+				case 2:{
+					return { 31, 24 };
+				}
+				case 3:{
+					return { 35, 26 };
+				}
+				case 4:{
+					return { 21, 20 };
+				}
+				case 5:{
+					return { 25, 26 };
+				}
+				case 6:{
+					return { 39, 30 };
+				}
+				default:{
+					break;
+				}
+			}
+
+			return { 0, 0 };
+		}
 	};
 }
 
