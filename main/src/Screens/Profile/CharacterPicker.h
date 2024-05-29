@@ -45,10 +45,14 @@ private:
 
 	void buildUI();
 
-	void initAnim();
+	void initArrowAnim();
 
 	void setCharacterSrc();
 	void setPetSrc();
+
+	lv_anim_t animPetSprite;
+	void startPetBounce();
+	void stopPetBounce();
 
 	void exit();
 };

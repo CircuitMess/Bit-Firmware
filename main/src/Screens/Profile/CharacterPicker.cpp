@@ -26,7 +26,7 @@ CharacterPicker::CharacterPicker(lv_obj_t* parent) : LVObject(parent), settings(
 	}
 
 	buildUI();
-	initAnim();
+	initArrowAnim();
 
 	//toggle on click
 	lv_obj_add_event_cb(obj, [](lv_event_t* event){
@@ -60,7 +60,7 @@ CharacterPicker::CharacterPicker(lv_obj_t* parent) : LVObject(parent), settings(
 		}
 	}, LV_EVENT_KEY, this);
 
-
+	startPetBounce();
 }
 
 void CharacterPicker::buildUI(){
@@ -121,7 +121,7 @@ void CharacterPicker::buildUI(){
 
 }
 
-void CharacterPicker::initAnim(){
+void CharacterPicker::initArrowAnim(){
 	lv_anim_init(&animChar);
 	lv_anim_set_var(&animChar, arrowLeft);
 	lv_anim_set_playback_time(&animChar, 75);
@@ -175,6 +175,7 @@ void CharacterPicker::toggleState(){
 
 		lv_group_set_editing((lv_group_t*) lv_obj_get_group(obj), true);
 		arrowsState = true;
+		stopPetBounce();
 	}else{
 		exit();
 	}
@@ -352,8 +353,28 @@ void CharacterPicker::exit(){
 
 	lv_group_set_editing((lv_group_t*) lv_obj_get_group(obj), false);
 	arrowsState = false;
+
+	startPetBounce();
 }
 
 bool CharacterPicker::isEditing() const{
 	return arrowsState;
+}
+
+void CharacterPicker::startPetBounce(){
+	lv_anim_init(&animPetSprite);
+	lv_anim_set_playback_time(&animPetSprite, 500);
+	lv_anim_set_repeat_count(&animPetSprite, LV_ANIM_REPEAT_INFINITE);
+	lv_anim_set_path_cb(&animPetSprite, lv_anim_path_ease_in_out);
+	lv_anim_set_exec_cb(&animPetSprite, VerticalAnimCB);
+	lv_anim_set_values(&animPetSprite, -5, 5);
+	lv_anim_set_var(&animPetSprite, petContainer);
+
+	lv_anim_start(&animPetSprite);
+}
+
+void CharacterPicker::stopPetBounce(){
+	lv_anim_del(petContainer, VerticalAnimCB);
+	lv_obj_set_style_translate_y(petContainer, 0, 0);
+	lv_obj_invalidate(petContainer);
 }
