@@ -25,7 +25,6 @@
 #include "JigHWTest/JigHWTest.h"
 #include "Periph/NVSFlash.h"
 #include "Services/XPSystem.h"
-#include "Screens/Profile/ProfileScreen.h"
 #include "Services/AchievementSystem.h"
 #include "Services/HighScoreManager.h"
 #include "Services/SystemManager.h"
@@ -169,7 +168,7 @@ void init(){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<ProfileScreen>(); });
+	ui->startScreen([](){ return std::make_unique<IntroScreen>(); });
 
 	bl->fadeOut();
 	ui->start();

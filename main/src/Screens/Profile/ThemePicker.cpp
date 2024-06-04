@@ -1,6 +1,7 @@
 #include "ThemePicker.h"
 #include "Settings/Settings.h"
 #include "Util/Services.h"
+#include "Services/ChirpSystem.h"
 
 ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Settings*) Services.get(Service::Settings)),
 											 robotManager(*(RobotManager*) Services.get(Service::RobotManager)){
@@ -83,9 +84,12 @@ ThemePicker::ThemePicker(lv_obj_t* parent) : LVSelectable(parent), settings(*(Se
 			Theme theme = (Theme) lv_obj_get_index(e->target);
 			if(picker->robotManager.isUnlocked(theme)){
 				picker->currentTheme = theme;
-
+				picker->deselect();
 			}else{
-				//TODO - error beep or popup?
+				auto audio = (ChirpSystem*) Services.get(Service::Audio);
+				audio->play({{ 300, 300, 50 },
+							 { 0,   0,   50 },
+							 { 200, 200, 250 }});
 			}
 		}, LV_EVENT_CLICKED, this);
 		lv_obj_add_event_cb(img, onKey, LV_EVENT_KEY, this);

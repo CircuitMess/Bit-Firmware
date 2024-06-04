@@ -82,16 +82,6 @@ void AchievementView::buildUI(){
 		lv_obj_add_event_cb(base, [](lv_event_t* e){
 			lv_obj_set_style_border_opa(lv_event_get_target(e), LV_OPA_TRANSP, LV_STATE_FOCUSED);
 		}, LV_EVENT_DEFOCUSED, nullptr);
-
-
-//		auto ach = lv_img_create(base);
-//		lv_img_set_src(ach, );
-//		lv_obj_set_align(ach, LV_ALIGN_CENTER);
-
-//		auto border = lv_img_create(base);
-//		lv_img_set_src(border, "S:/Profile/ach-border.bin"); // TODO this file should get removed when everything when visuals are done
-//		lv_obj_set_align(border, LV_ALIGN_CENTER);
-
 	}
 }
 
