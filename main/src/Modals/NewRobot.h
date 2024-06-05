@@ -6,10 +6,10 @@
 
 class NewRobot : public LVModal {
 public:
-	NewRobot(LVScreen* parent, Robot rob, bool isNew);
+	NewRobot(LVScreen* parent, RobotData rob, bool isNew);
 
 private:
-	const Robot rob;
+	const RobotData rob;
 	const bool isNew;
 
 	void buildMain();

@@ -33,9 +33,9 @@
 #define CTRL_1 37
 #define CTRL_2 36
 #define CTRL_3 35
-#define CTRL_4 26
+#define CTRL_4 34
 #define CTRL_5 33
-#define CTRL_6 34
+#define CTRL_6 26
 
 
 #endif //BIT_LIBRARY_PINS_HPP

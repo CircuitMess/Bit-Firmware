@@ -7,10 +7,10 @@
 
 class LockedGame : public LVModal {
 public:
-	LockedGame(LVScreen* parent, Robot rob);
+	LockedGame(LVScreen* parent, RobotData rob);
 
 private:
-	const Robot rob;
+	const RobotData rob;
 
 	void buildUI();
 

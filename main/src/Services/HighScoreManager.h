@@ -3,7 +3,7 @@
 
 #include <array>
 #include <map>
-#include "GameManager.h"
+#include "RobotManager.h"
 
 struct HighScore {
 	char id[3] = {' ', ' ', ' '};

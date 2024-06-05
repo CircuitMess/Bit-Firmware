@@ -193,7 +193,7 @@ void AwardsScreen::setAwardMode(Award award){
 		xpBar = new XPBar(XPBarLength::Short, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
 
 		const LevelProgress progress = xpSystem->MapXPToLevel(xpSystem->getXP() + xp);
-		xpBar->setFill(progress.nextLvl > xpSystem->getLevel() + 1 ? 1.0f : progress.progress, true);
+		xpBar->setFill(progress.nextLvl > levelSet + 1 ? 1.0f : progress.progress, true);
 
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::LevelUp){
@@ -286,7 +286,7 @@ void AwardsScreen::loop(){
 		chirped = true;
 
 		if(xpBar != nullptr){
-			xpBar->setFill(xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
+			xpBar->setFill(XPSystem::MapXPToLevel(xpSystem->getXP() + xp).nextLvl > levelSet + 1 ? 1.0f : xpSystem->MapXPToLevel(xpSystem->getXP() + xp).progress, true);
 		}
 
 		if(ChirpSystem* chirp = (ChirpSystem*) Services.get(Service::Audio)){

@@ -2,7 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
-#include "Services/GameManager.h"
+#include "Services/RobotManager.h"
 #include "Util/Services.h"
 
 MarvGame::MarvGame::MarvGame(Sprite& canvas) : Game(canvas, Games::Marv, "/Games/Marv", {
