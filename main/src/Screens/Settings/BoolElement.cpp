@@ -21,9 +21,6 @@ BoolElement::BoolElement(lv_obj_t* parent, const char* name, std::function<void(
 	lv_style_set_radius(defaultStyle, 2);
 	lv_style_set_pad_all(defaultStyle, 3);
 
-	lv_style_set_bg_color(focusedStyle, THEMED_COLOR(HighlightPrimary, theme));
-	lv_style_set_bg_opa(focusedStyle, LV_OPA_30);
-
 	lv_style_set_border_width(switchStyle, 1);
 	lv_style_set_border_color(switchStyle, THEMED_COLOR(HighlightPrimary, theme));
 	lv_style_set_bg_opa(switchStyle, LV_OPA_0);
@@ -45,7 +42,6 @@ BoolElement::BoolElement(lv_obj_t* parent, const char* name, std::function<void(
 	// lv_obj_set_height(*this, Height);
 	// lv_obj_set_width(*this, lv_pct(100));
 
-	lv_obj_add_style(*this, focusedStyle, SelFocus);
 	lv_obj_add_style(*this, defaultStyle, SelDefault);
 
 	label = lv_label_create(*this);

@@ -91,7 +91,7 @@ void SettingsScreen::buildUI(){
 	lv_style_set_radius(itemStyle, 2);
 
 	lv_style_set_bg_color(focusStyle, THEMED_COLOR(HighlightPrimary, theme));
-	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
+	lv_style_set_bg_opa(focusStyle, LV_OPA_70);
 
 	auto initSet = settings.get();
 
@@ -109,12 +109,15 @@ void SettingsScreen::buildUI(){
 					});
 	}, initSet.sound);
 	lv_group_add_obj(inputGroup, *audioSwitch);
+	lv_obj_add_style(*audioSwitch, focusStyle, LV_STATE_FOCUSED);
 
 	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
 		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
 		bl->setBrightness(value);
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
+	lv_obj_add_style(*blSlider, focusStyle, LV_STATE_FOCUSED);
+
 
 	sleepSlider = new DiscreteSliderElement(rest, "Sleep time", [this](uint8_t value){
 		if(value >= Settings::SleepSteps) return;
@@ -123,6 +126,7 @@ void SettingsScreen::buildUI(){
 		settings.set(s);
 	}, std::vector<const char*>(Settings::SleepText, Settings::SleepText + Settings::SleepSteps), initSet.sleepTime);
 	lv_group_add_obj(inputGroup, *sleepSlider);
+	lv_obj_add_style(*sleepSlider, focusStyle, LV_STATE_FOCUSED);
 
 	auto mkBtn = [this, &rest, &theme](const char* text){
 		auto item = lv_obj_create(rest);

@@ -15,18 +15,13 @@ DiscreteSliderElement::DiscreteSliderElement(lv_obj_t* parent, const char* name,
 	lv_style_set_radius(defaultStyle, 2);
 	lv_style_set_pad_all(defaultStyle, 3);
 
-	lv_style_set_bg_color(focusedStyle, THEMED_COLOR(HighlightPrimary, theme));
-	lv_style_set_bg_opa(focusedStyle, LV_OPA_30);
-
 	lv_style_set_radius(sliderMainStyle, LV_RADIUS_CIRCLE);
 	lv_style_set_border_width(sliderMainStyle, 1);
 	lv_style_set_border_color(sliderMainStyle, THEMED_COLOR(HighlightPrimary, theme));
 
-
 	// lv_obj_set_height(*this, Height);
 	// lv_obj_set_width(*this, lv_pct(100));
 
-	lv_obj_add_style(*this, focusedStyle, selFocus);
 	lv_obj_add_style(*this, defaultStyle, sel);
 
 	label = lv_label_create(*this);
