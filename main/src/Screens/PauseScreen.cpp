@@ -136,7 +136,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, Filepath::Paused);
+	lv_img_set_src(img, THEMED_FILE(Paused, theme));
 
 	batt = new BatteryElement(top);
 
@@ -179,7 +179,7 @@ void PauseScreen::buildUI(){
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
 
-	auto mkBtn = [this, &rest](const char* text){
+	auto mkBtn = [this, &rest, &theme](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -191,6 +191,7 @@ void PauseScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, THEMED_COLOR(PausedForeground, theme), 0);
 
 		return item;
 	};

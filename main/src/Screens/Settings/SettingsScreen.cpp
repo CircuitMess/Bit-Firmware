@@ -74,7 +74,7 @@ void SettingsScreen::buildUI(){
 	lv_obj_set_style_pad_ver(top, 4, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, Filepath::Settings);
+	lv_img_set_src(img, THEMED_FILE(Settings, theme));
 	lv_obj_center(img);
 
 	auto rest = lv_obj_create(*this);
@@ -124,7 +124,7 @@ void SettingsScreen::buildUI(){
 	}, std::vector<const char*>(Settings::SleepText, Settings::SleepText + Settings::SleepSteps), initSet.sleepTime);
 	lv_group_add_obj(inputGroup, *sleepSlider);
 
-	auto mkBtn = [this, &rest](const char* text){
+	auto mkBtn = [this, &rest, &theme](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -136,12 +136,13 @@ void SettingsScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, THEMED_COLOR(PausedForeground, theme), 0);
 
 		return item;
 	};
 
 	auto save = mkBtn("Save and exit");
-	lv_obj_set_style_text_color(save, THEMED_COLOR(PausedForeground, theme), 0);
+
 	lv_obj_add_event_cb(save, [](lv_event_t* e){
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<MainMenu>(); });
