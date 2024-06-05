@@ -8,6 +8,7 @@
 #include "Screens/XPBar.h"
 #include "Services/XPSystem.h"
 #include "LV_Interface/Theme/theme.h"
+#include "../MainMenu/MainMenu.h"
 
 ProfileScreen::ProfileScreen() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
 	setupThemes();
@@ -57,6 +58,14 @@ void ProfileScreen::handleInput(const Input::Data& evt){
 
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<SettingsScreen>(); });
+	}
+
+	if(evt.btn == Input::B && evt.action == Input::Data::Press){
+
+		if(achievementSection.isActive() || themeSection.isActive() || characterSection.isEditing()) return;
+
+		auto ui = (UIThread*) Services.get(Service::UI);
+		ui->startScreen([](){ return std::make_unique<MainMenu>(); });
 	}
 
 	if((evt.btn == Input::Left || evt.btn == Input::Right || evt.btn == Input::Up || evt.btn == Input::Down) && evt.action == Input::Data::Press){

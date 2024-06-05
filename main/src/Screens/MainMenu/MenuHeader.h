@@ -3,6 +3,7 @@
 
 #include "LV_Interface/LVObject.h"
 #include "Screens/XPBar.h"
+#include "LV_Interface/LVStyle.h"
 
 class MenuHeader : public LVObject {
 public:
@@ -16,7 +17,13 @@ private:
 	static constexpr uint16_t Height = 13;
 
 	static constexpr const char* Background = "S:/MenuHeader.bin";
-	static constexpr uint32_t LVLTextColor = 0x4b5f6b;
+
+	lv_anim_t glowAnim;
+
+	void startAnim();
+	void stopAnim();
+
+	static void animFunc(void* var, int32_t val);
 };
 
 
