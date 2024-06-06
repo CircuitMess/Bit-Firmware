@@ -22,6 +22,7 @@ WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStac
 		{ RobotPaths[6], {}, true },
 }), queue(16) {
     Events::listen(Facility::Input, &queue);
+	currentRobot = rand() % 7;
 }
 
 WackyStacky::WackyStacky::~WackyStacky() {
@@ -29,7 +30,7 @@ WackyStacky::WackyStacky::~WackyStacky() {
 }
 
 uint32_t WackyStacky::WackyStacky::getXP() const{
-	return 0;
+	return score;
 }
 
 void WackyStacky::WackyStacky::onLoad(){
@@ -49,16 +50,18 @@ void WackyStacky::WackyStacky::onLoad(){
 	);
 
 	floor->setPos(0, 112);
-	floor->getRenderComponent()->setLayer(0);
+	floor->getRenderComponent()->setLayer(1);
 	addObject(floor);
 
 	scoreDisplay = std::make_unique<Score>(getFile(FILE_GOBLET));
 	scoreDisplay->getGO()->setPos({ 128 - 2 - 28, 2 });
+	scoreDisplay->getGO()->getRenderComponent()->setLayer(1);
 	addObject(scoreDisplay->getGO());
-    scoreDisplay->setScore(robots.size());
+    scoreDisplay->setScore(0);
 
     hearts = std::make_unique<Hearts>(getFile(FILE_HEART));
     hearts->getGO()->setPos({ 2, 2 });
+	hearts->getGO()->getRenderComponent()->setLayer(1);
     addObject(hearts->getGO());
     hearts->setLives(3);
 
@@ -68,9 +71,24 @@ void WackyStacky::WackyStacky::onLoad(){
 	);
 
 	hook->setPos(56, 0);
+	hook->getRenderComponent()->setLayer(1);
 	addObject(hook);
 
-	attachRobot(0);
+	attachRobot(currentRobot);
+
+	for(size_t i = 0; i < ActiveCloudCount; ++i){
+		const uint8_t cloudIndex = rand() % CloudCount;
+
+		clouds[i] = std::make_shared<GameObject>(
+				std::make_unique<StaticRC>(getFile(CloudPaths[cloudIndex]), CloudDims[cloudIndex]),
+				nullptr
+		);
+
+		clouds[i]->getRenderComponent()->setLayer(0);
+		clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, (rand() % 200) - 100.0f });
+
+		addObject(clouds[i]);
+	}
 }
 
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
@@ -86,13 +104,17 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
             continue;
         }
 
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A){
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && moveDelta == 0.0f){
             lastDrop = millis();
             // Drop the thing
             // Start timer to create a new one in the hook
             // Start to scroll up (move all robots and the floor down)
         }
     }
+
+	if(lives == 0){
+		exit();
+	}
 
 	if(hook->getRot() <= SwingLimits.x){
 		swingDir = 1.0f;
@@ -106,20 +128,61 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 
 	if(lastDrop != 0){
 		if(hookedRobot){
-			hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * 1.5f);
+			hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * 75.0f * deltaTime);
+			hookedRobot->setRot(hookedRobot->getRot() + (hookedRobot->getRot() > 0 ? -1.0f : hookedRobot->getRot() < 0 ? 1.0f : 0.0f) * 25.0f * deltaTime);
 		}
+	}
 
-		if(floor){
-			floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * 0.5f);
-		}
-
+	if(moveDelta > 0.0f){
+		size_t visibleCount = 0;
 		for(size_t i = 0; i < VisibleRobotCount; ++i){
 			if(!visibleRobots[i]){
 				continue;
+			}else{
+				++visibleCount;
+			}
+		}
+
+		if(visibleCount >= 1){
+			float move = 25.0f * deltaTime;
+			if(move > moveDelta){
+				move = moveDelta;
 			}
 
-			visibleRobots[i]->setPos(visibleRobots[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * 0.5f);
+			if(floor){
+				floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
+			}
+
+			if(lastDrop != 0 && hookedRobot){
+				hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
+			}
+
+			for(size_t i = 0; i < VisibleRobotCount; ++i){
+				if(!visibleRobots[i]){
+					continue;
+				}
+
+				visibleRobots[i]->setPos(visibleRobots[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
+			}
+
+			for(size_t i = 0; i < ActiveCloudCount; ++i){
+				if(!clouds[i]){
+					continue;
+				}
+
+				clouds[i]->setPos(clouds[i]->getPos() + glm::vec2{ 0.0f, 0.5f + (rand() % 6) * 0.05f } * move);
+
+				if(clouds[i]->getPos().y >= 128.0f){
+					clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, -(rand() % 100) -30.0f });
+				}
+			}
+
+			moveDelta -= move;
+		}else{
+			moveDelta = 0.0f;
 		}
+	}else if(moveDelta == 0.0f && !hookedRobot){
+		attachRobot(currentRobot);
 	}
 }
 
@@ -149,7 +212,7 @@ void WackyStacky::WackyStacky::rotateHook(float deg){
 	hook->setPos(hook->getPos() - (hookRotationTransform - HookBaseRelativeLocation));
 
     if(hookedRobot && lastDrop == 0){
-		attachRobot(0);
+		attachRobot(currentRobot);
     }
 }
 
@@ -178,10 +241,85 @@ void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
 				std::make_unique<RectCC>(dimensions)
 		);
 
+		hookedRobot->getRenderComponent()->setLayer(1);
+
 		addObject(hookedRobot);
 
 		auto onCollision = [this](){
+			if(hookedRobot && hookedRobot->getPos().y < 40.0f){
+				return;
+			}
+
 			lastDrop = 0;
+
+			if(hookedRobot->getRot() != 0.0f){
+				auto rect = CollisionSystem::getRotatedTranslatedRect(*hookedRobot.get());
+
+				glm::vec2 lowestPoint = { 0.0f, 0.0f};
+				for(auto point : rect){
+					if(point.y > lowestPoint.y){
+						lowestPoint = point;
+					}
+				}
+
+				hookedRobot->setRot(0.0f);
+
+				const float refPoint = visibleRobots.back() ? visibleRobots.back()->getPos().y : floor->getPos().y;
+				const float delta = getRobotDim(currentRobot).y;
+				const float center = hookedRobot->getPos().x + getRobotDim(currentRobot).x / 2;
+
+				hookedRobot->setPos(glm::vec2{ lowestPoint.x <= center ? lowestPoint.x : lowestPoint.x - getRobotDim(currentRobot).x, refPoint } - glm::vec2{ 0.0f, delta });
+			}
+
+			if(visibleRobots.back() && hookedRobot){
+				auto hookedRect = CollisionSystem::getRotatedTranslatedRect(*hookedRobot.get());
+				auto topRect = CollisionSystem::getRotatedTranslatedRect(*visibleRobots.back().get());
+
+				float hookedCenter = 0;
+				glm::vec2 limits = { 128.0f, 0.0f };
+
+				for(auto point : topRect){
+					if(point.x < limits.x){
+						limits.x = point.x;
+					}
+
+					if(point.x > limits.y){
+						limits.y = point.x;
+					}
+				}
+
+				for(auto point : hookedRect){
+					hookedCenter += point.x;
+				}
+
+				hookedCenter /= hookedRect.size();
+
+				if(hookedCenter < limits.x || hookedCenter > limits.y){
+					moveDelta = 0.0f;
+					removeObject(hookedRobot);
+					hookedRobot.reset();
+					currentRobot = rand() % 7;
+					--lives;
+					hearts->setLives(lives);
+					return;
+				}
+			}
+
+			size_t visibleCount = 0;
+			for(size_t i = 0; i < VisibleRobotCount; ++i){
+				if(!visibleRobots[i]){
+					continue;
+				}else{
+					++visibleCount;
+				}
+			}
+
+			++score;
+			scoreDisplay->setScore(score);
+
+			moveDelta = getRobotDim(currentRobot).y / (visibleCount < 1 ? 2.0f : 1.0f);
+
+			currentRobot = rand() % 7;
 
 			if(visibleRobots.front()){
 				removeObject(visibleRobots.front());
@@ -193,18 +331,14 @@ void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
 
 			visibleRobots.back() = hookedRobot;
 			hookedRobot.reset();
-
-			attachRobot(1);
 		};
 
 		collision.addPair(*floor, *hookedRobot, onCollision);
 
 		for(size_t i = 0; i < VisibleRobotCount; ++i){
-			if(!visibleRobots[i]){
-				continue;
+			if(visibleRobots[i]){
+				collision.addPair(*visibleRobots[i], *hookedRobot, onCollision);
 			}
-
-			collision.addPair(*visibleRobots[i], *hookedRobot, onCollision);
 		}
 	}
 
