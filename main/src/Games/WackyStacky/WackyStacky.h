@@ -32,6 +32,7 @@ private:
 	uint8_t currentRobot = 0;
 	float moveDelta = 0;
 	uint16_t score = 0;
+	glm::vec2 towerSwingLimits;
 
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
@@ -47,11 +48,22 @@ private:
 
 	inline static constexpr const float SwingSpeed = 55.0f;
 
+	inline static constexpr const float TowerSwingSpeed = 3.50f;
+
+	inline static constexpr const uint8_t TowerSwingCoordsCount = 4;
+
 	inline static constexpr PixelDim CloudDims[] {
 			{ 39, 15 },
 			{ 40, 22 },
 			{ 24, 9 },
 			{ 40, 10 }
+	};
+
+	inline static constexpr glm::vec2 TowerSwingCoords[] {
+			{ 20.0f, 100.0f },
+			{ 40.0f, 86.0f },
+			{ 60.0f, 116.0f },
+			{ 80.0f, 92.0f }
 	};
 
 	inline static constexpr const char* CloudPaths[] = {
@@ -74,6 +86,8 @@ private:
 private:
 	void rotateHook(float deg);
 	void attachRobot(uint8_t robot);
+	void miss();
+	void onCollision();
 
 	inline static constexpr std::string getRobotPath(uint8_t robot) {
 		if(robot > 6){
