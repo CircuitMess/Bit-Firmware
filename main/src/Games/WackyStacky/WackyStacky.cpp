@@ -31,7 +31,7 @@ WackyStacky::WackyStacky::~WackyStacky() {
 }
 
 uint32_t WackyStacky::WackyStacky::getXP() const{
-	return score;
+	return score * 3;
 }
 
 void WackyStacky::WackyStacky::onLoad(){
@@ -328,11 +328,14 @@ void WackyStacky::WackyStacky::onCollision(){
 		hookedRobot->setPos(glm::vec2{ lowestPoint.x <= center ? lowestPoint.x : lowestPoint.x - getRobotDim(currentRobot).x, refPoint } - glm::vec2{ 0.0f, delta });
 	}
 
+	bool perfectHit = false;
+
 	if(visibleRobots.back() && hookedRobot){
 		auto hookedRect = CollisionSystem::getRotatedTranslatedRect(*hookedRobot.get());
 		auto topRect = CollisionSystem::getRotatedTranslatedRect(*visibleRobots.back().get());
 
 		float hookedCenter = 0;
+		float topCenter = 0;
 		glm::vec2 limits = { 128.0f, 0.0f };
 
 		for(auto point : topRect){
@@ -351,9 +354,19 @@ void WackyStacky::WackyStacky::onCollision(){
 
 		hookedCenter /= hookedRect.size();
 
+		for(auto point : topRect){
+			topCenter += point.x;
+		}
+
+		topCenter /= topRect.size();
+
 		if(hookedCenter < limits.x || hookedCenter > limits.y){
 			miss();
 			return;
+		}
+
+		if(glm::abs(topCenter - hookedCenter) <= 2){
+			perfectHit = true;
 		}
 	}
 
@@ -367,6 +380,10 @@ void WackyStacky::WackyStacky::onCollision(){
 	}
 
 	++score;
+	if(perfectHit){
+		++score;
+	}
+
 	scoreDisplay->setScore(score);
 
 	moveDelta = getRobotDim(currentRobot).y / (visibleCount < 1 ? 2.0f : 1.0f);
@@ -384,5 +401,9 @@ void WackyStacky::WackyStacky::onCollision(){
 	visibleRobots.back() = hookedRobot;
 	hookedRobot.reset();
 
-	audio.play({ { 400, 600, 75 } });
+	if(perfectHit){
+		audio.play({ { 400, 600, 70 }, { 0, 0, 5 }, { 600, 900, 75 } });
+	}else{
+		audio.play({ { 400, 600, 75 } });
+	}
 }
