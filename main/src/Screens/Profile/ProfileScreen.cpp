@@ -9,6 +9,9 @@
 #include "Services/XPSystem.h"
 #include "LV_Interface/Theme/theme.h"
 #include "../MainMenu/MainMenu.h"
+#include "Modals/NewRobot.h"
+#include "Modals/LockedGame.h"
+#include "Modals/UpdateRobot.h"
 
 ProfileScreen::ProfileScreen() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
 	setupThemes();
@@ -19,6 +22,9 @@ ProfileScreen::~ProfileScreen(){}
 
 void ProfileScreen::onStart(){
 	Events::listen(Facility::Input, &events);
+	Events::listen(Facility::Games, &events);
+	Events::listen(Facility::Themes, &events);
+	Events::listen(Facility::Pets, &events);
 }
 
 void ProfileScreen::onStop(){
@@ -27,7 +33,7 @@ void ProfileScreen::onStop(){
 	auto settings = (Settings*) Services.get(Service::Settings);
 	auto saved = settings->get();
 	saved.avatar = characterSection.getCharacterIndex();
-	saved.theme = themeSection.getSelected();
+	saved.theme = themeSection->getSelected();
 	saved.pet = characterSection.getPet() == Pet::COUNT ? -1 : (int8_t) characterSection.getPet();
 	settings->set(saved);
 	settings->store();
@@ -36,12 +42,82 @@ void ProfileScreen::onStop(){
 void ProfileScreen::loop(){
 	Event evt{};
 	if(events.get(evt, 0)){
-		if(evt.facility == Facility::Input){
-			auto data = (Input::Data*) evt.data;
-			handleInput(*data);
+		auto data = (RobotManager::Event*) evt.data;
+
+		if(evt.facility == Facility::Games){
+			handleGameInsert(*data);
+		}else if(evt.facility == Facility::Themes){
+			handleThemeInsert(*data);
+		}else if(evt.facility == Facility::Pets){
+			handlePetInsert(*data);
+		}else if(evt.facility == Facility::Input){
+			auto inputData = (Input::Data*) evt.data;
+			handleInput(*inputData);
 		}
 		free(evt.data);
 	}
+}
+
+void ProfileScreen::handleGameInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
+		new UpdateRobot(this);
+		return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	// "Coming soon" games
+	std::unordered_set<Robot> comingSoon = { };
+	if(comingSoon.contains(rob.robot)){
+		new UpdateRobot(this);
+		return;
+	}
+
+	new NewRobot(this, rob, isNew);
+}
+
+void ProfileScreen::handleThemeInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
+		new UpdateRobot(this);
+		return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	// "Coming soon" themes
+	std::unordered_set<Token> comingSoon = { };
+	if(comingSoon.contains(rob.token)){
+		new UpdateRobot(this);
+		return;
+	}
+
+	delete themeSection;
+	themeSection = new ThemePicker(*this);
+
+	buildUI();
+
+	new NewRobot(this, rob, isNew);
+}
+
+void ProfileScreen::handlePetInsert(const RobotManager::Event& evt){
+	if(evt.action == RobotManager::Event::Unknown){
+		new UpdateRobot(this);
+		return;
+	}else if(evt.action != RobotManager::Event::Inserted) return;
+
+	auto rob = evt.rob;
+	auto isNew = evt.isNew;
+
+	// "Coming soon" pets
+	std::unordered_set<Token> comingSoon = { };
+	if(comingSoon.contains(rob.token)){
+		new UpdateRobot(this);
+		return;
+	}
+
+	new NewRobot(this, rob, isNew);
 }
 
 void ProfileScreen::handleInput(const Input::Data& evt){
@@ -62,7 +138,7 @@ void ProfileScreen::handleInput(const Input::Data& evt){
 
 	if(evt.btn == Input::B && evt.action == Input::Data::Press){
 
-		if(achievementSection.isActive() || themeSection.isActive() || characterSection.isEditing()) return;
+		if(achievementSection.isActive() || themeSection->isActive() || characterSection.isEditing()) return;
 
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<MainMenu>(); });
@@ -136,11 +212,11 @@ void ProfileScreen::buildUI(){
 
 
 	//Theme section
-	lv_obj_set_align(themeSection, LV_ALIGN_TOP_LEFT);
-	lv_obj_set_pos(themeSection, 4, 86);
-	lv_obj_add_style(themeSection, unfocusedSection, LV_STATE_DEFAULT);
-	lv_obj_add_style(themeSection, focusedSection, LV_STATE_FOCUSED);
-	lv_group_add_obj(inputGroup, themeSection);
+	lv_obj_set_align(*themeSection, LV_ALIGN_TOP_LEFT);
+	lv_obj_set_pos(*themeSection, 4, 86);
+	lv_obj_add_style(*themeSection, unfocusedSection, LV_STATE_DEFAULT);
+	lv_obj_add_style(*themeSection, focusedSection, LV_STATE_FOCUSED);
+	lv_group_add_obj(inputGroup, *themeSection);
 
 
 	//manual focus definitions
@@ -154,7 +230,7 @@ void ProfileScreen::buildUI(){
 				lv_group_focus_obj(screen->achievementSection);
 				break;
 			case LV_KEY_DOWN:
-				lv_group_focus_obj(screen->themeSection);
+				lv_group_focus_obj(*screen->themeSection);
 				break;
 			default:
 				lv_group_focus_obj(screen->characterSection);
@@ -176,9 +252,9 @@ void ProfileScreen::buildUI(){
 		lv_group_set_editing(screen->inputGroup, true);
 	}, LV_EVENT_KEY, this);
 
-	lv_obj_add_event_cb(themeSection, [](lv_event_t* e){
+	lv_obj_add_event_cb(*themeSection, [](lv_event_t* e){
 		ProfileScreen* screen = (ProfileScreen*) e->user_data;
-		if(screen->themeSection.isActive()) return;
+		if(screen->themeSection->isActive()) return;
 
 		switch(lv_event_get_key(e)){
 			case LV_KEY_RIGHT:
@@ -188,7 +264,7 @@ void ProfileScreen::buildUI(){
 				lv_group_focus_obj(screen->characterSection);
 				break;
 			default:
-				lv_group_focus_obj(screen->themeSection);
+				lv_group_focus_obj(*screen->themeSection);
 		}
 		lv_group_set_editing(screen->inputGroup, true);
 	}, LV_EVENT_KEY, this);

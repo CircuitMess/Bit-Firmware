@@ -37,6 +37,9 @@ private:
 
 	void loop() override;
 
+	void handleGameInsert(const RobotManager::Event& evt);
+	void handleThemeInsert(const RobotManager::Event& evt);
+	void handlePetInsert(const RobotManager::Event& evt);
 	void handleInput(const Input::Data& evt);
 
 	EventQueue events;
@@ -46,7 +49,7 @@ private:
 	LVStyle focusedSection;
 
 	AchievementView achievementSection = AchievementView(*this);
-	ThemePicker themeSection = ThemePicker(*this);
+	ThemePicker* themeSection = new ThemePicker(*this);
 	CharacterPicker characterSection = CharacterPicker(*this);
 
 	lv_obj_t* achievementOverlay; //used for focus indication

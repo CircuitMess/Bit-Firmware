@@ -17,7 +17,7 @@ MenuHeader::MenuHeader(lv_obj_t* parent) : LVObject(parent){
 	lv_obj_set_style_border_color(*this, THEMED_COLOR(Foreground, settings->get().theme), 0);
 	lv_obj_set_style_border_opa(*this, LV_OPA_TRANSP, 0);
 
-	lv_obj_set_pos(bar, 5, 4);
+	lv_obj_set_pos(bar, 3, 2);
 
 	label = lv_label_create(*this);
 	lv_obj_set_pos(label, 98, 2);
