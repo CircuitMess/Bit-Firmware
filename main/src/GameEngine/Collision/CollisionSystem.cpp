@@ -70,6 +70,68 @@ void CollisionSystem::update(uint32_t deltaMicros){
 	removedPairs.clear();
 }
 
+CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedPoly(const GameObject& poly){
+	float rot = poly.getRot();
+	auto polyPoints = poly.getCollisionComponent()->getPolygon()->getPoints();
+	auto pos = poly.getPos();
+
+	if(rot == 0){
+		std::transform(polyPoints.begin(), polyPoints.end(), polyPoints.begin(), [&pos](glm::vec2& point){
+			return point + pos;
+		});
+		return polyPoints;
+	}
+
+	auto center = poly.getPos() + poly.getCollisionComponent()->getPolygon()->getCenter();
+
+	auto rotMat = glm::identity<glm::mat3>();
+	rotMat = glm::translate(rotMat, center);
+	rotMat = glm::rotate(rotMat, glm::radians(rot));
+	rotMat = glm::translate(rotMat, -center);
+
+	auto polyCopy = polyPoints;
+
+	std::transform(polyCopy.begin(), polyCopy.end(), polyCopy.begin(), [&rotMat, &pos](glm::vec2& point){
+		return rotMat * glm::vec3(point + pos, 1.0f);
+	});
+
+	return polyCopy;
+}
+
+CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedRect(const GameObject& rect){
+	float rot = rect.getRot();
+	auto dim = rect.getCollisionComponent()->getRect()->getDim();
+	auto offset = rect.getCollisionComponent()->getRect()->getOffset();
+	auto pos = rect.getPos() + offset;
+	glm::vec2 point1 = pos;
+	glm::vec2 point2 = { pos.x + dim.x, pos.y };
+	glm::vec2 point3 = pos + dim;
+	glm::vec2 point4 = { pos.x, pos.y + dim.y };
+	std::vector<glm::vec2> rectPoints = { point1, point2, point3, point4 };
+
+	if(rot == 0){
+		std::transform(rectPoints.begin(), rectPoints.end(), rectPoints.begin(), [](glm::vec2& point){
+			return point;
+		});
+		return rectPoints;
+	}
+
+	auto center = rect.getPos() + offset + (dim / 2.0f);
+
+	auto rotMat = glm::identity<glm::mat3>();
+	rotMat = glm::translate(rotMat, center);
+	rotMat = glm::rotate(rotMat, glm::radians(rot));
+	rotMat = glm::translate(rotMat, -center);
+
+	auto polyCopy = rectPoints;
+
+	std::transform(polyCopy.begin(), polyCopy.end(), polyCopy.begin(), [&rotMat](glm::vec2& point){
+		return rotMat * glm::vec3(point, 1.0f);
+	});
+
+	return polyCopy;
+}
+
 void CollisionSystem::addPair(const GameObject& first, const GameObject& second, std::function<void()> handler){
 	if(&first == &second) return;
 	if(!first.getCollisionComponent() || !second.getCollisionComponent()) return;
@@ -164,19 +226,23 @@ void CollisionSystem::wallsAll(const GameObject& obj, std::function<void()> hand
 }
 
 bool CollisionSystem::rectRect(const GameObject& square1, const GameObject& square2){
-	if(square1.getRot() != 0 || square2.getRot() != 0){
+	if(square1.getRot() != 0.0f || square2.getRot() != 0.0f){
 		auto points1 = getRotatedTranslatedRect(square1);
 		auto points2 = getRotatedTranslatedRect(square2);
 
-		bool isColliding = false;
-
 		for(auto i : points2){
 			if(polyContainsPoint(points1, i)){
-				isColliding = true;
+				return true;
 			}
 		}
 
-		return isColliding;
+		for(auto i : points1){
+			if(polyContainsPoint(points2, i)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 
@@ -264,17 +330,21 @@ bool CollisionSystem::polyRect(const GameObject& poly, const GameObject& rect){
 
 	auto rectPoints = getRotatedTranslatedRect(rect);
 
-	bool isColliding = false;
-
 	auto polyPoints = getRotatedTranslatedPoly(poly);
 
 	for(auto i : polyPoints){
 		if(polyContainsPoint(rectPoints, i)){
-			isColliding = true;
+			return true;
 		}
 	}
 
-	return isColliding;
+	for(auto i : rectPoints){
+		if(polyContainsPoint(polyPoints, i)){
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CollisionSystem::polyCircle(const GameObject& poly, const GameObject& circle){
@@ -308,34 +378,6 @@ bool CollisionSystem::polyContainsPoint(const CollisionSystem::Polygon& polygon,
 		}
 	}
 	return (intersects & 1) == 1;
-}
-
-CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedPoly(const GameObject& poly){
-	float rot = poly.getRot();
-	auto polyPoints = poly.getCollisionComponent()->getPolygon()->getPoints();
-	auto pos = poly.getPos();
-
-	if(rot == 0){
-		std::transform(polyPoints.begin(), polyPoints.end(), polyPoints.begin(), [&pos](glm::vec2& point){
-			return point + pos;
-		});
-		return polyPoints;
-	}
-
-	auto center = poly.getPos() + poly.getCollisionComponent()->getPolygon()->getCenter();
-
-	auto rotMat = glm::identity<glm::mat3>();
-	rotMat = glm::translate(rotMat, center);
-	rotMat = glm::rotate(rotMat, glm::radians(rot));
-	rotMat = glm::translate(rotMat, -center);
-
-	auto polyCopy = polyPoints;
-
-	std::transform(polyCopy.begin(), polyCopy.end(), polyCopy.begin(), [&rotMat, &pos](glm::vec2& point){
-		return rotMat * glm::vec3(point + pos, 1.0f);
-	});
-
-	return polyCopy;
 }
 
 void CollisionSystem::drawDebug(Sprite& canvas){
@@ -385,40 +427,6 @@ void CollisionSystem::drawPolygon(const GameObject& poly, Sprite& canvas, Color 
 
 		canvas.drawLine(p1.x, p1.y, p2.x, p2.y, color);
 	}
-}
-
-CollisionSystem::Polygon CollisionSystem::getRotatedTranslatedRect(const GameObject& rect){
-	float rot = rect.getRot();
-	auto dim = rect.getCollisionComponent()->getRect()->getDim();
-	auto offset = rect.getCollisionComponent()->getRect()->getOffset();
-	auto pos = rect.getPos() + offset;
-	glm::vec2 point1 = pos;
-	glm::vec2 point2 = { pos.x + dim.x, pos.y };
-	glm::vec2 point3 = pos + dim;
-	glm::vec2 point4 = { pos.x, pos.y + dim.y };
-	std::vector<glm::vec2> rectPoints = { point1, point2, point3, point4 };
-
-	if(rot == 0){
-		std::transform(rectPoints.begin(), rectPoints.end(), rectPoints.begin(), [](glm::vec2& point){
-			return point;
-		});
-		return rectPoints;
-	}
-
-	auto center = rect.getPos() + offset + (dim / 2.0f);
-
-	auto rotMat = glm::identity<glm::mat3>();
-	rotMat = glm::translate(rotMat, center);
-	rotMat = glm::rotate(rotMat, glm::radians(rot));
-	rotMat = glm::translate(rotMat, -center);
-
-	auto polyCopy = rectPoints;
-
-	std::transform(polyCopy.begin(), polyCopy.end(), polyCopy.begin(), [&rotMat, &pos](glm::vec2& point){
-		return rotMat * glm::vec3(point, 1.0f);
-	});
-
-	return polyCopy;
 }
 
 bool CollisionSystem::intersectSegmentCircle(glm::vec2 start, glm::vec2 end, glm::vec2 center, float radius){
