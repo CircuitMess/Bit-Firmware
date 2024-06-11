@@ -25,7 +25,7 @@ enum class Games : uint8_t {
 	Frank,
 	RoboSpider, // TODO name
 	Fred,
-	Plank,
+	Planck,
 	Dusty,
 	Sparkly,
 	COUNT
