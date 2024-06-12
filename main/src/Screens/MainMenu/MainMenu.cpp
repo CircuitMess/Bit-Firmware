@@ -43,7 +43,7 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "", .rob = { .token = Token::Frank }, .game = Games::Frank },
 		{ .icon = "", .rob = { .token = Token::RoboSpider }, .game = Games::RoboSpider },
 		{ .icon = "", .rob = { .token = Token::Fred }, .game = Games::Fred },
-		{ .icon = "", .rob = { .token = Token::Plank }, .game = Games::Plank },
+		{ .icon = "", .rob = { .token = Token::Planck }, .game = Games::Planck },
 		{ .icon = "", .rob = { .token = Token::Dusty }, .game = Games::Dusty },
 		{ .icon = "", .rob = { .token = Token::Sparkly }, .game = Games::Sparkly },
 };

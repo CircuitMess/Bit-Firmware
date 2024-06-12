@@ -17,7 +17,15 @@ protected:
 	inline uint32_t getScore() const override { return score; }
 
 private:
+	inline static constexpr const uint8_t VerticalTiles = 5;
+	inline static constexpr const uint8_t HorizontalTiles = 3;
+
 	uint32_t score = 0;
+	GameObjPtr car;
+	std::array<GameObjPtr, 14> leftEdge;
+	std::array<GameObjPtr, 14> rightEdge;
+	std::array<GameObjPtr, VerticalTiles * HorizontalTiles> road;
+	std::array<bool, 3> lastGenerated = { false, false, false };
 };
 } // Planck
 

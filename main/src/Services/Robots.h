@@ -22,7 +22,7 @@ enum class Token : uint8_t {
 	Frank,
 	RoboSpider/*TODO name, might end up being another robot*/,
 	Fred,
-	Plank,
+	Planck,
 	Dusty,
 	Sparkly,
 	CowPet,
