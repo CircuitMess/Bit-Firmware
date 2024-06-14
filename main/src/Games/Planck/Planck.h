@@ -2,6 +2,8 @@
 #define BIT_FIRMWARE_PLANCK_H
 
 #include "GameEngine/Game.h"
+#include "Games/Common/Hearts.h"
+#include "Games/Common/Score.h"
 
 namespace Planck {
 class Planck : public Game {
@@ -19,13 +21,30 @@ protected:
 private:
 	inline static constexpr const uint8_t VerticalTiles = 5;
 	inline static constexpr const uint8_t HorizontalTiles = 3;
+	inline static constexpr const float Speed = 25.0f;
+	inline static constexpr const float BoostSpeed = 45.0f;
+
+	inline static constexpr const char* Obstacles[] = {
+			"/cones.raw",
+			"/oil.raw",
+			"/rail.raw",
+			"/ramp.raw",
+			"/trash.raw"
+	};
 
 	uint32_t score = 0;
 	GameObjPtr car;
+	std::unique_ptr<Hearts> hearts;
+	std::unique_ptr<Score> scoreDisplay;
 	std::array<GameObjPtr, 14> leftEdge;
 	std::array<GameObjPtr, 14> rightEdge;
 	std::array<GameObjPtr, VerticalTiles * HorizontalTiles> road;
-	std::array<bool, 3> lastGenerated = { false, false, false };
+	bool lastGenerated = true;
+	uint8_t rowToGenerate = 0;
+	float direction = 0.0f;
+
+private:
+	void generateRoad();
 };
 } // Planck
 

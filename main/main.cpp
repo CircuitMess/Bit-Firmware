@@ -30,6 +30,7 @@
 #include "Services/SystemManager.h"
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
+#include "Screens/Game/GameMenuScreen.h"
 
 BacklightBrightness* bl;
 
@@ -168,7 +169,7 @@ void init(){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<IntroScreen>(); });
+	ui->startScreen([](){ return std::make_unique<GameMenuScreen>(Games::Planck); });
 
 	bl->fadeOut();
 	ui->start();
