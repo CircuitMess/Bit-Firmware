@@ -71,21 +71,21 @@ void Planck::Planck::onLoad(){
 			const uint8_t notObstacle = rand() % HorizontalTiles;
 
 			road[i * HorizontalTiles] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+					std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 					nullptr
 			);
 			road[i * HorizontalTiles]->setPos(10.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles]);
 
 			road[i * HorizontalTiles + 1] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+					std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 					nullptr
 			);
 			road[i * HorizontalTiles + 1]->setPos(46.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 1]);
 
 			road[i * HorizontalTiles + 2] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+					std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 					nullptr
 			);
 			road[i * HorizontalTiles + 2]->setPos(82.0f, 96.0f - i * 36.0f);
@@ -118,6 +118,16 @@ void Planck::Planck::onLoad(){
 void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
+	car->setPos(car->getPos() + glm::vec2{ direction, 0.0f } * CarSpeed * deltaTime);
+
+	if(car->getPos().x < 10.0f){
+		car->setPosX(10.0f);
+	}
+
+	if(car->getPos().x > 118.0f - 26.0f){
+		car->setPosX(118.0f - 26.0f);
+	}
+
 	for(int i = 0; i < HorizontalTiles * VerticalTiles; ++i){
 		road[i]->setPos(road[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * Speed * deltaTime);
 	}
@@ -131,11 +141,11 @@ void Planck::Planck::onLoop(float deltaTime){
 		rightEdge[i]->setPos(rightEdge[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * Speed * deltaTime);
 
 		if(leftEdge[i]->getPos().y >= 128.0f){
-			leftEdge[i]->setPosY(-12.0f);
+			leftEdge[i]->setPosY(leftEdge[i]->getPos().y - 140.0f);
 		}
 
 		if(rightEdge[i]->getPos().y >= 128.0f){
-			rightEdge[i]->setPosY(-12.0f);
+			rightEdge[i]->setPosY(rightEdge[i]->getPos().y - 140.0f);
 		}
 	}
 }
@@ -143,7 +153,14 @@ void Planck::Planck::onLoop(float deltaTime){
 void Planck::Planck::handleInput(const Input::Data& data){
 	Game::handleInput(data);
 
+	if((data.btn == Input::Button::Right && data.action == Input::Data::Press) || (data.btn == Input::Button::Left && data.action == Input::Data::Release)){
+		direction += 1.0f;
+	}else if((data.btn == Input::Button::Left && data.action == Input::Data::Press) || (data.btn == Input::Button::Right && data.action == Input::Data::Release)){
+		direction -= 1.0f;
+	}
 
+	direction = std::min(direction, 1.0f);
+	direction = std::max(direction, -1.0f);
 }
 
 void Planck::Planck::onStop(){
@@ -151,6 +168,10 @@ void Planck::Planck::onStop(){
 }
 
 void Planck::Planck::generateRoad(){
+	removeObject(road[rowToGenerate * HorizontalTiles]);
+	removeObject(road[rowToGenerate * HorizontalTiles + 1]);
+	removeObject(road[rowToGenerate * HorizontalTiles + 2]);
+
 	if(lastGenerated){
 		road[rowToGenerate * HorizontalTiles] = std::make_shared<GameObject>(
 				std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
@@ -178,21 +199,21 @@ void Planck::Planck::generateRoad(){
 		const uint8_t notObstacle = rand() % HorizontalTiles;
 
 		road[rowToGenerate * HorizontalTiles] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+				std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 				nullptr
 		);
 		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles]);
 
 		road[rowToGenerate * HorizontalTiles + 1] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+				std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 				nullptr
 		);
 		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 1]);
 
 		road[rowToGenerate * HorizontalTiles + 2] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 5]), PixelDim{ 36, 36 }),
+				std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
 				nullptr
 		);
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);

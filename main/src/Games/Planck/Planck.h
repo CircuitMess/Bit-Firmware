@@ -23,13 +23,15 @@ private:
 	inline static constexpr const uint8_t HorizontalTiles = 3;
 	inline static constexpr const float Speed = 25.0f;
 	inline static constexpr const float BoostSpeed = 45.0f;
+	inline static constexpr const float CarSpeed = 55.0f;
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
 			"/oil.raw",
 			"/rail.raw",
 			"/ramp.raw",
-			"/trash.raw"
+			"/trash.raw",
+			"/boost.raw"
 	};
 
 	uint32_t score = 0;
