@@ -1,6 +1,7 @@
 #include "Planck.h"
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
+#include "GameEngine/Collision/PolygonCC.h"
 
 Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Planck", {
 		{"/bat.raw", {}, true},
@@ -12,7 +13,7 @@ Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Plan
 		{"/life.raw", {}, true},
 		{"/lr.raw", {}, true},
 		{"/lw.raw", {}, true},
-		{"/oil.raw", {}, true},
+		{"/hole.raw", {}, true},
 		{"/pickup1.raw", {}, true},
 		{"/pickup2.raw", {}, true},
 		{"/rail.raw", {}, true},
@@ -30,8 +31,27 @@ Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Plan
 void Planck::Planck::onLoad(){
 	Game::onLoad();
 
+	batteryBar = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/bat-bar.raw"), PixelDim{ 71, 5 }),
+			nullptr
+	);
+	batteryBar->setPos(2.0f, 2.0f);
+	batteryBar->getRenderComponent()->setLayer(1);
+	addObject(batteryBar);
+
+	batteryLine = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/bat-line.raw"), PixelDim{ 60, 1 }),
+			nullptr
+	);
+	batteryLine->setPos(11.0f, 4.0f);
+	batteryLine->getRenderComponent()->setLayer(2);
+	addObject(batteryLine);
+
+	setBattery(0.73f);
+
 	hearts = std::make_unique<Hearts>(getFile(FILE_HEART));
-	hearts->getGO()->setPos({ 2, 2 });
+	hearts->getGO()->setPos({ 2, 10 });
+	hearts->setLives(lives);
 	addObject(hearts->getGO());
 
 	scoreDisplay = std::make_unique<Score>(getFile(FILE_GOBLET));
@@ -70,45 +90,27 @@ void Planck::Planck::onLoad(){
 		if(i == VerticalTiles - 1){
 			const uint8_t notObstacle = rand() % HorizontalTiles;
 
-			road[i * HorizontalTiles] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(rand() % 6));
 			road[i * HorizontalTiles]->setPos(10.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles]);
 
-			road[i * HorizontalTiles + 1] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(rand() % 6));
 			road[i * HorizontalTiles + 1]->setPos(46.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 1]);
 
-			road[i * HorizontalTiles + 2] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(rand() % 6));
 			road[i * HorizontalTiles + 2]->setPos(82.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 2]);
 		}else{
-			road[i * HorizontalTiles] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles] = createTile(TileType::Road);
 			road[i * HorizontalTiles]->setPos(10.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles]);
 
-			road[i * HorizontalTiles + 1] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles + 1] = createTile(TileType::Road);
 			road[i * HorizontalTiles + 1]->setPos(46.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 1]);
 
-			road[i * HorizontalTiles + 2] = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-					nullptr
-			);
+			road[i * HorizontalTiles + 2] = createTile(TileType::Road);
 			road[i * HorizontalTiles + 2]->setPos(82.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 2]);
 		}
@@ -117,6 +119,8 @@ void Planck::Planck::onLoad(){
 
 void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
+
+	const glm::vec2 deltaPos = glm::vec2{ 0.0f, CarSpeed * deltaTime/* + 0.5f * acceleration * 10000.0f * deltaTime * deltaTime*/ }; // TODO separate velocity calculation from delta position
 
 	car->setPos(car->getPos() + glm::vec2{ direction, 0.0f } * CarSpeed * deltaTime);
 
@@ -129,7 +133,7 @@ void Planck::Planck::onLoop(float deltaTime){
 	}
 
 	for(int i = 0; i < HorizontalTiles * VerticalTiles; ++i){
-		road[i]->setPos(road[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * Speed * deltaTime);
+		road[i]->setPos(road[i]->getPos() + deltaPos);
 	}
 
 	if(road[rowToGenerate * HorizontalTiles]->getPos().y >= 128.0f){
@@ -137,8 +141,8 @@ void Planck::Planck::onLoop(float deltaTime){
 	}
 
 	for(int i = 0; i < 14; ++i){
-		leftEdge[i]->setPos(leftEdge[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * Speed * deltaTime);
-		rightEdge[i]->setPos(rightEdge[i]->getPos() + glm::vec2{ 0.0f, 1.0f } * Speed * deltaTime);
+		leftEdge[i]->setPos(leftEdge[i]->getPos() + deltaPos);
+		rightEdge[i]->setPos(rightEdge[i]->getPos() + deltaPos);
 
 		if(leftEdge[i]->getPos().y >= 128.0f){
 			leftEdge[i]->setPosY(leftEdge[i]->getPos().y - 140.0f);
@@ -148,6 +152,11 @@ void Planck::Planck::onLoop(float deltaTime){
 			rightEdge[i]->setPosY(rightEdge[i]->getPos().y - 140.0f);
 		}
 	}
+
+	if(lives == 0){
+		exit();
+		return;
+	}
 }
 
 void Planck::Planck::handleInput(const Input::Data& data){
@@ -155,12 +164,21 @@ void Planck::Planck::handleInput(const Input::Data& data){
 
 	if((data.btn == Input::Button::Right && data.action == Input::Data::Press) || (data.btn == Input::Button::Left && data.action == Input::Data::Release)){
 		direction += 1.0f;
-	}else if((data.btn == Input::Button::Left && data.action == Input::Data::Press) || (data.btn == Input::Button::Right && data.action == Input::Data::Release)){
+	}
+
+	if((data.btn == Input::Button::Left && data.action == Input::Data::Press) || (data.btn == Input::Button::Right && data.action == Input::Data::Release)){
 		direction -= 1.0f;
 	}
 
-	direction = std::min(direction, 1.0f);
-	direction = std::max(direction, -1.0f);
+	if((data.btn == Input::Button::Up && data.action == Input::Data::Press) || (data.btn == Input::Button::Down && data.action == Input::Data::Release)){
+		acceleration += 1.0f;
+	}
+
+	if((data.btn == Input::Button::Down && data.action == Input::Data::Press) || (data.btn == Input::Button::Up && data.action == Input::Data::Release)){
+		acceleration -= 1.0f;
+	}
+
+	direction = std::clamp(direction, -1.0f, 1.0f);
 }
 
 void Planck::Planck::onStop(){
@@ -173,24 +191,15 @@ void Planck::Planck::generateRoad(){
 	removeObject(road[rowToGenerate * HorizontalTiles + 2]);
 
 	if(lastGenerated){
-		road[rowToGenerate * HorizontalTiles] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles] = createTile(TileType::Road);
 		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles]);
 
-		road[rowToGenerate * HorizontalTiles + 1] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles + 1] = createTile(TileType::Road);
 		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 1]);
 
-		road[rowToGenerate * HorizontalTiles + 2] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles + 2] = createTile(TileType::Road);
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
@@ -198,24 +207,15 @@ void Planck::Planck::generateRoad(){
 	}else{
 		const uint8_t notObstacle = rand() % HorizontalTiles;
 
-		road[rowToGenerate * HorizontalTiles] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 0 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(rand() % 6));
 		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles]);
 
-		road[rowToGenerate * HorizontalTiles + 1] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 1 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(rand() % 6));
 		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 1]);
 
-		road[rowToGenerate * HorizontalTiles + 2] = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile(notObstacle == 2 ? "/road.raw" : Obstacles[rand() % 6]), PixelDim{ 36, 36 }),
-				nullptr
-		);
+		road[rowToGenerate * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(rand() % 6));
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
@@ -223,4 +223,156 @@ void Planck::Planck::generateRoad(){
 	}
 
 	rowToGenerate = (rowToGenerate + 1) % VerticalTiles;
+}
+
+bool Planck::Planck::onCollision(){
+	if(inAir || lives == 0){
+		return false;
+	}
+
+	--lives;
+	hearts->setLives(lives);
+
+	return true;
+}
+
+void Planck::Planck::onBoost(){
+	// TODO speed, do this after the movement is changed
+}
+
+void Planck::Planck::onRamp(){
+	inAir = true;
+}
+
+void Planck::Planck::onHealthUp(){
+	if(lives >= 3){
+		return;
+	}
+
+	++lives;
+	hearts->setLives(lives);
+}
+
+void Planck::Planck::onBatteryUp(){
+	setBattery(battery + 0.5f);
+}
+
+void Planck::Planck::onPickup(){
+	++score;
+	scoreDisplay->setScore(score);
+}
+
+GameObjPtr Planck::Planck::createTile(Planck::Planck::TileType type){
+	if(type == Planck::TileType::Road){
+		return std::make_shared<GameObject>(
+				std::make_unique<StaticRC>(getFile("/road.raw"), PixelDim{ 36, 36 }),
+				nullptr
+		);
+	}
+
+	std::unique_ptr<RenderComponent> rc = std::make_unique<StaticRC>(getFile(Obstacles[(uint8_t) type]), PixelDim{ 36, 36 });
+	std::unique_ptr<CollisionComponent> cc = nullptr;
+
+	switch(type){
+		case Planck::TileType::Cones:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {8, 26}, {8, 22}, {12, 11}, {23, 11}, {27, 22}, {27, 26} });
+			break;
+		}
+		case Planck::TileType::Hole:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {5, 22}, {8, 14}, {12, 9}, {18, 9}, {28, 12}, {31, 15}, {31, 17}, {22, 26}, {8, 26} });
+			break;
+		}
+		case Planck::TileType::Rail:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {6, 28}, {4, 12}, {6, 10}, {29, 10}, {31, 12}, {30, 28} });
+			break;
+		}
+		case Planck::TileType::Ramp:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {4, 33}, {4, 1}, {31, 1}, {31, 33} });
+			break;
+		}
+		case Planck::TileType::Trash:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {6, 23}, {4, 20}, {4, 13}, {6, 11}, {17, 11}, {32, 17}, {32, 21}, {29, 23} });
+			break;
+		}
+		case Planck::TileType::Boost:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {4, 30}, {4, 11}, {17, 5}, {19, 5}, {32, 11}, {32, 30} });
+			break;
+		}
+		default:{
+			break;
+		}
+	}
+
+	GameObjPtr obj = std::make_shared<GameObject>(
+			std::move(rc),
+			std::move(cc)
+	);
+
+	switch(type){
+		case Planck::TileType::Cones:{
+			collision.addPair(*car, *obj, [this, obj](){
+				if(onCollision()){
+					auto rc = (StaticRC*) obj->getRenderComponent().get();
+					rc->setFile(getFile("/road.raw"));
+					collision.removePair(*car, *obj);
+				}
+			});
+			break;
+		}
+		case Planck::TileType::Hole:{
+			collision.addPair(*car, *obj, [this, obj](){
+				onCollision();
+				collision.removePair(*car, *obj);
+			});
+			break;
+		}
+		case Planck::TileType::Rail:{
+			collision.addPair(*car, *obj, [this, obj](){
+				if(onCollision()){
+					auto rc = (StaticRC*) obj->getRenderComponent().get();
+					rc->setFile(getFile("/road.raw"));
+					collision.removePair(*car, *obj);
+				}
+			});
+			break;
+		}
+		case Planck::TileType::Ramp:{
+			collision.addPair(*car, *obj, [this, obj](){
+				if(car->getPos().y <= obj->getPos().y + 30){
+					return;
+				}
+
+				onRamp();
+			});
+			break;
+		}
+		case Planck::TileType::Trash:{
+			collision.addPair(*car, *obj, [this, obj](){
+				if(onCollision()){
+					auto rc = (StaticRC*) obj->getRenderComponent().get();
+					rc->setFile(getFile("/road.raw"));
+					collision.removePair(*car, *obj);
+				}
+			});
+			break;
+		}
+		case Planck::TileType::Boost:{
+			collision.addPair(*car, *obj, [this](){
+				onBoost();
+			});
+			break;
+		}
+		default:{
+			break;
+		}
+	}
+
+	return obj;
+}
+
+void Planck::Planck::setBattery(float percent){
+	battery = std::clamp(percent, 0.0f, 1.0f);
+
+	StaticRC* rc = (StaticRC*)(batteryLine->getRenderComponent().get());
+	rc->setFile(getFile("/bat-line.raw"), {battery * 60, 1});
 }

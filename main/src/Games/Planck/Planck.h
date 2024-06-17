@@ -27,26 +27,58 @@ private:
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
-			"/oil.raw",
+			"/hole.raw",
 			"/rail.raw",
 			"/ramp.raw",
 			"/trash.raw",
 			"/boost.raw"
 	};
 
+	inline static constexpr const char* Pickups[] = {
+			"/bat.raw",
+			"/pickup1.raw",
+			"/pickup2.raw",
+	};
+
 	uint32_t score = 0;
+	uint32_t lives = 3;
+	float battery = 1.0f;
 	GameObjPtr car;
+	GameObjPtr batteryBar;
+	GameObjPtr batteryLine;
 	std::unique_ptr<Hearts> hearts;
 	std::unique_ptr<Score> scoreDisplay;
 	std::array<GameObjPtr, 14> leftEdge;
 	std::array<GameObjPtr, 14> rightEdge;
 	std::array<GameObjPtr, VerticalTiles * HorizontalTiles> road;
 	bool lastGenerated = true;
+	std::array<bool, HorizontalTiles> rampsGenerated = { false };
+	std::array<bool, HorizontalTiles> holesGenerated = { false };
 	uint8_t rowToGenerate = 0;
 	float direction = 0.0f;
+	bool inAir = false;
+	float acceleration = 0.0f;
+
+	enum TileType {
+		Cones,
+		Hole,
+		Rail,
+		Ramp,
+		Trash,
+		Boost,
+		Road
+	};
 
 private:
 	void generateRoad();
+	bool onCollision();
+	void onBoost();
+	void onRamp();
+	void onHealthUp();
+	void onBatteryUp();
+	void onPickup();
+	GameObjPtr createTile(TileType type);
+	void setBattery(float percent);
 };
 } // Planck
 
