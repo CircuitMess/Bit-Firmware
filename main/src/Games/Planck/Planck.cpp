@@ -2,6 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
+#include "Util/stdafx.h"
 
 Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Planck", {
 		{"/bat.raw", {}, true},
@@ -120,9 +121,25 @@ void Planck::Planck::onLoad(){
 void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
-	const glm::vec2 deltaPos = glm::vec2{ 0.0f, CarSpeed * deltaTime/* + 0.5f * acceleration * 10000.0f * deltaTime * deltaTime*/ }; // TODO separate velocity calculation from delta position
+	if(acceleration >= 1.0f && speed < speedLimits.y){
+		setBattery(battery - 0.25f * deltaTime);
+	}
 
-	car->setPos(car->getPos() + glm::vec2{ direction, 0.0f } * CarSpeed * deltaTime);
+	if(battery <= 0.0f && acceleration >= 1.0f){
+		acceleration -= 1.0f;
+	}
+
+	if(lastBoost != 0 && millis() - lastBoost >= BoostDuration){
+		acceleration -= 0.75f;
+		lastBoost = 0;
+	}
+
+	speed += acceleration * 100.0f * deltaTime;
+	speed = glm::clamp(speed, speedLimits.x, speedLimits.y);
+
+	const glm::vec2 deltaPos = glm::vec2{ 0.0f, speed * deltaTime };
+
+	car->setPos(car->getPos() + glm::vec2{ direction, 0.0f } * HorizontalSpeed * glm::pow((1.0f - map(speed, speedLimits.x, speedLimits.y, 0.0f, 0.25f)), 2.0f) * deltaTime);
 
 	if(car->getPos().x < 10.0f){
 		car->setPosX(10.0f);
@@ -170,11 +187,11 @@ void Planck::Planck::handleInput(const Input::Data& data){
 		direction -= 1.0f;
 	}
 
-	if((data.btn == Input::Button::Up && data.action == Input::Data::Press) || (data.btn == Input::Button::Down && data.action == Input::Data::Release)){
+	if((data.btn == Input::Button::Up && data.action == Input::Data::Press && battery > 0.0f) || (data.btn == Input::Button::Down && data.action == Input::Data::Release)){
 		acceleration += 1.0f;
 	}
 
-	if((data.btn == Input::Button::Down && data.action == Input::Data::Press) || (data.btn == Input::Button::Up && data.action == Input::Data::Release)){
+	if((data.btn == Input::Button::Down && data.action == Input::Data::Press) || (data.btn == Input::Button::Up && data.action == Input::Data::Release && battery > 0.0f)){
 		acceleration -= 1.0f;
 	}
 
@@ -237,7 +254,11 @@ bool Planck::Planck::onCollision(){
 }
 
 void Planck::Planck::onBoost(){
-	// TODO speed, do this after the movement is changed
+	if(lastBoost == 0){
+		acceleration += 0.75f;
+	}
+
+	lastBoost = millis();
 }
 
 void Planck::Planck::onRamp(){

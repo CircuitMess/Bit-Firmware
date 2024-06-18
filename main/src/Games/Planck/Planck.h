@@ -21,9 +21,8 @@ protected:
 private:
 	inline static constexpr const uint8_t VerticalTiles = 5;
 	inline static constexpr const uint8_t HorizontalTiles = 3;
-	inline static constexpr const float Speed = 25.0f;
-	inline static constexpr const float BoostSpeed = 45.0f;
-	inline static constexpr const float CarSpeed = 55.0f;
+	inline static constexpr const float HorizontalSpeed = 65.0f;
+	inline static constexpr const uint32_t BoostDuration = 1000;
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
@@ -58,6 +57,9 @@ private:
 	float direction = 0.0f;
 	bool inAir = false;
 	float acceleration = 0.0f;
+	float speed = 1.0f * HorizontalSpeed;
+	glm::vec2 speedLimits = { 0.25f * HorizontalSpeed, 1.25f * HorizontalSpeed };
+	uint32_t lastBoost = 0;
 
 	enum TileType {
 		Cones,
