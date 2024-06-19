@@ -233,7 +233,7 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		xpBar = new XPBar(XPBarLength::Short, bar, 0.0f);
+		xpBar = new XPBar(XPBarLength::Medium, bar, 0.0f);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
 		// TODO: init achievement unlocked up UI

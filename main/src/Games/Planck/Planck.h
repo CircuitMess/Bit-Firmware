@@ -14,8 +14,7 @@ protected:
 	void onLoad() override;
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
-	void onStop() override;
-	inline uint32_t getXP() const override { return score * 3; }
+	inline uint32_t getXP() const override { return score * 5; }
 	inline uint32_t getScore() const override { return score; }
 
 private:
@@ -23,6 +22,7 @@ private:
 	inline static constexpr const uint8_t HorizontalTiles = 3;
 	inline static constexpr const float HorizontalSpeed = 65.0f;
 	inline static constexpr const uint32_t BoostDuration = 1000;
+	inline static constexpr const uint32_t AirDuration = 500;
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
@@ -50,16 +50,17 @@ private:
 	std::array<GameObjPtr, 14> leftEdge;
 	std::array<GameObjPtr, 14> rightEdge;
 	std::array<GameObjPtr, VerticalTiles * HorizontalTiles> road;
-	bool lastGenerated = true;
+	uint8_t sinceGenerated = 0;
 	std::array<bool, HorizontalTiles> rampsGenerated = { false };
 	std::array<bool, HorizontalTiles> holesGenerated = { false };
 	uint8_t rowToGenerate = 0;
 	float direction = 0.0f;
-	bool inAir = false;
 	float acceleration = 0.0f;
 	float speed = 1.0f * HorizontalSpeed;
 	glm::vec2 speedLimits = { 0.25f * HorizontalSpeed, 1.25f * HorizontalSpeed };
 	uint32_t lastBoost = 0;
+	uint32_t lastAir = 0;
+	std::set<GameObjPtr> pickups;
 
 	enum TileType {
 		Cones,

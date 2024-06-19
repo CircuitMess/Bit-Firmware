@@ -134,6 +134,10 @@ void Planck::Planck::onLoop(float deltaTime){
 		lastBoost = 0;
 	}
 
+	if(lastAir != 0 && millis() - lastAir >= AirDuration){
+		lastAir = 0;
+	}
+
 	speed += acceleration * 100.0f * deltaTime;
 	speed = glm::clamp(speed, speedLimits.x, speedLimits.y);
 
@@ -151,6 +155,22 @@ void Planck::Planck::onLoop(float deltaTime){
 
 	for(int i = 0; i < HorizontalTiles * VerticalTiles; ++i){
 		road[i]->setPos(road[i]->getPos() + deltaPos);
+	}
+
+	std::vector<GameObjPtr> pickupsToRemove;
+	for(const GameObjPtr& pickup : pickups){
+		if(pickup){
+			pickup->setPos(pickup->getPos() + deltaPos);
+		}
+
+		if(pickup->getPos().y > 128.0f){
+			pickupsToRemove.emplace_back(pickup);
+		}
+	}
+
+	for(const GameObjPtr& pickup : pickupsToRemove){
+		pickups.erase(pickup);
+		removeObject(pickup);
 	}
 
 	if(road[rowToGenerate * HorizontalTiles]->getPos().y >= 128.0f){
@@ -198,16 +218,12 @@ void Planck::Planck::handleInput(const Input::Data& data){
 	direction = std::clamp(direction, -1.0f, 1.0f);
 }
 
-void Planck::Planck::onStop(){
-	Game::onStop();
-}
-
 void Planck::Planck::generateRoad(){
 	removeObject(road[rowToGenerate * HorizontalTiles]);
 	removeObject(road[rowToGenerate * HorizontalTiles + 1]);
 	removeObject(road[rowToGenerate * HorizontalTiles + 2]);
 
-	if(lastGenerated){
+	if(sinceGenerated < 2){
 		road[rowToGenerate * HorizontalTiles] = createTile(TileType::Road);
 		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles]);
@@ -220,7 +236,72 @@ void Planck::Planck::generateRoad(){
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
-		lastGenerated = false;
+		const uint8_t pickupLocation = rand() % HorizontalTiles;
+
+		const float random = (1.0f * rand()) / INT_MAX;
+		if(random <= 0.1f){
+			GameObjPtr healthPickup = std::make_shared<GameObject>(
+					std::make_unique<StaticRC>(getFile("/life.raw"), PixelDim{ 9, 7 }),
+					std::make_unique<RectCC>(glm::vec2{9, 7})
+			);
+
+			healthPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{4.5f, 3.5f});
+			addObject(healthPickup);
+			pickups.insert(healthPickup);
+			healthPickup->getRenderComponent()->setLayer(1);
+
+			collision.addPair(*car, *healthPickup, [this, healthPickup](){
+				onHealthUp();
+				pickups.erase(healthPickup);
+				removeObject(healthPickup);
+			});
+		}else if(random <= 0.2f){
+			GameObjPtr batteryPickup = std::make_shared<GameObject>(
+					std::make_unique<StaticRC>(getFile("/bat.raw"), PixelDim{ 15, 17 }),
+					std::make_unique<RectCC>(glm::vec2{15, 17})
+			);
+
+			batteryPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{7.5f, 8.5f});
+			addObject(batteryPickup);
+			pickups.insert(batteryPickup);
+			batteryPickup->getRenderComponent()->setLayer(1);
+
+			collision.addPair(*car, *batteryPickup, [this, batteryPickup](){
+				onBatteryUp();
+				pickups.erase(batteryPickup);
+				removeObject(batteryPickup);
+			});
+		}else if(random <= 0.7f){
+			GameObjPtr coinPickup;
+
+			if(rand() % 2 == 0){
+				coinPickup = std::make_shared<GameObject>(
+						std::make_unique<StaticRC>(getFile("/pickup1.raw"), PixelDim{ 16, 11 }),
+						std::make_unique<RectCC>(glm::vec2{16, 11})
+				);
+
+				coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{8.0f, 5.5f});
+			}else{
+				coinPickup = std::make_shared<GameObject>(
+						std::make_unique<StaticRC>(getFile("/pickup2.raw"), PixelDim{ 11, 13 }),
+						std::make_unique<RectCC>(glm::vec2{11, 13})
+				);
+
+				coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{5.5f, 6.5f});
+			}
+
+			addObject(coinPickup);
+			pickups.insert(coinPickup);
+			coinPickup->getRenderComponent()->setLayer(1);
+
+			collision.addPair(*car, *coinPickup, [this, coinPickup](){
+				onPickup();
+				pickups.erase(coinPickup);
+				removeObject(coinPickup);
+			});
+		}
+
+		++sinceGenerated;
 	}else{
 		const uint8_t notObstacle = rand() % HorizontalTiles;
 
@@ -236,14 +317,14 @@ void Planck::Planck::generateRoad(){
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
-		lastGenerated = true;
+		sinceGenerated = 0;
 	}
 
 	rowToGenerate = (rowToGenerate + 1) % VerticalTiles;
 }
 
 bool Planck::Planck::onCollision(){
-	if(inAir || lives == 0){
+	if(lastAir != 0 || lives == 0){
 		return false;
 	}
 
@@ -254,6 +335,10 @@ bool Planck::Planck::onCollision(){
 }
 
 void Planck::Planck::onBoost(){
+	if(lastAir != 0){
+		return;
+	}
+
 	if(lastBoost == 0){
 		acceleration += 0.75f;
 	}
@@ -262,11 +347,11 @@ void Planck::Planck::onBoost(){
 }
 
 void Planck::Planck::onRamp(){
-	inAir = true;
+	lastAir = millis();
 }
 
 void Planck::Planck::onHealthUp(){
-	if(lives >= 3){
+	if(lives >= 3 || lastAir != 0){
 		return;
 	}
 
@@ -275,10 +360,18 @@ void Planck::Planck::onHealthUp(){
 }
 
 void Planck::Planck::onBatteryUp(){
+	if(lastAir != 0){
+		return;
+	}
+
 	setBattery(battery + 0.5f);
 }
 
 void Planck::Planck::onPickup(){
+	if(lastAir != 0){
+		return;
+	}
+
 	++score;
 	scoreDisplay->setScore(score);
 }
