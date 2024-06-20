@@ -22,10 +22,10 @@ enum class Games : uint8_t {
 	Resistron,
 	Robby,
 	Harald,
-	Frank,
-	RoboSpider, // TODO name
+	Frank, // TODO this will be added later as a game, leave it in here but add it to games that are coming in the future
+	Charlie,
 	Fred,
-	Plank,
+	Planck,
 	Dusty,
 	Sparkly,
 	COUNT
@@ -54,7 +54,7 @@ static constexpr const char* RobotIcons[] = {
 		"Hertz",
 		"Harald",
 		"Frank",
-		"RoboSpider", // TODO name
+		"Charlie",
 		"Fred",
 		"Plank",
 		"Dusty",
@@ -83,7 +83,7 @@ static constexpr const char* RobotNames[] = {
 		"Hertz",
 		"Harald",
 		"Frank",
-		"RoboSpider", // TODO name
+		"Charlie",
 		"Fred",
 		"Plank",
 		"Dusty",
@@ -116,7 +116,7 @@ static constexpr const char* GameIcons[] = {
 		"Robby",
 		"Harald",
 		"Frank",
-		"RoboSpider", // TODO name
+		"Charlie",
 		"Fred",
 		"Plank",
 		"Dusty",

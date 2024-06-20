@@ -41,9 +41,9 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Robby", .rob = { .robot = Robot::Robby }, .game = Games::Robby },
 		{ .icon = "", .rob = { .token = Token::Harald }, .game = Games::Harald },
 		{ .icon = "", .rob = { .token = Token::Frank }, .game = Games::Frank },
-		{ .icon = "", .rob = { .token = Token::RoboSpider }, .game = Games::RoboSpider },
+		{ .icon = "", .rob = { .token = Token::RoboSpider }, .game = Games::Charlie },
 		{ .icon = "", .rob = { .token = Token::Fred }, .game = Games::Fred },
-		{ .icon = "", .rob = { .token = Token::Plank }, .game = Games::Plank },
+		{ .icon = "", .rob = { .token = Token::Plank }, .game = Games::Planck },
 		{ .icon = "", .rob = { .token = Token::Dusty }, .game = Games::Dusty },
 		{ .icon = "", .rob = { .token = Token::Sparkly }, .game = Games::Sparkly },
 };
