@@ -46,13 +46,6 @@ void GameRunner::startGame(Games game){
 
 	if(!Launcher.contains(game)) return;
 
-	auto icon = GameIcons[(int) game];
-	std::string splash("/spiffs/Splash/"); splash += icon; splash += "_splash.bmp";
-
-	auto& canvas = display.getCanvas();
-	auto& lgfx = display.getLGFX();
-
-	lgfx.drawBmpFile(splash.c_str());
 	const auto startTime = millis();
 
 	auto launcher = Launcher.at(game);
@@ -301,5 +294,30 @@ const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds = {
 					Tone { NOTE_C4, 1 },
 					Tone { NOTE_E4, 4 },
 			});
+		} },
+		// TODO intro sounds for the new games
+		{ Games::WackyStacky, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Harald, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Frank, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Charlie, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Fred, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Planck, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Dusty, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Sparkly, [](){
+			return new MelodyPlayer(130, {});
 		} },
 };

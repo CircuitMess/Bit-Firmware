@@ -8,8 +8,7 @@
 #include "HighScoreScreen.h"
 #include "InstructionsScreen.h"
 #include "Services/HighScoreManager.h"
-#include "Settings/Settings.h"
-#include "Filepaths.hpp"
+#include "GameSplashScreen.h"
 
 GameMenuScreen::GameMenuScreen(Games current) : evts(6), currentGame(current){
 	switch(currentGame){
@@ -163,7 +162,7 @@ void GameMenuScreen::buildUI(){
 			auto screen = (GameMenuScreen*) arg;
 
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
-				ui->startGame(screen->currentGame);
+				ui->startScreen([screen](){ return std::make_unique<GameSplashScreen>(screen->currentGame); });
 			}
 		}, e->user_data);
 	}, LV_EVENT_PRESSED, this);
