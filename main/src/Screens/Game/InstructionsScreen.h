@@ -19,9 +19,7 @@ private:
 	EventQueue evts;
 	Games currentGame;
 
-	BatteryElement* batt;
-
-	lv_obj_t* instructionsImg;
+	std::string gameUIPath = "S:/Splash/";
 
 	void buildUI();
 
