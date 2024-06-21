@@ -5,6 +5,7 @@
 #include "Util/Threaded.h"
 #include "Util/Events.h"
 #include "Settings/Settings.h"
+#include <misc/lv_color.h>
 #include <unordered_set>
 
 enum class Games : uint8_t {
@@ -39,6 +40,30 @@ enum class Pet : uint8_t {
 	Sheep,
 	Cat,
 	COUNT
+};
+
+// Ordered by game (enum Games)
+static const lv_color_t GameTextColors[] = {
+		lv_color_make(255, 250, 250),
+		lv_color_white(),
+		lv_color_black(),
+		lv_color_black(),
+		lv_color_make(23, 21, 18),
+		lv_color_white(),
+		lv_color_make(255, 151, 0),
+		lv_color_white(),
+		lv_color_make(255, 174, 112),
+		lv_color_make(255, 220, 140),
+		lv_color_white(),
+		lv_color_white(),
+		lv_color_white(),
+		lv_color_black(),
+		lv_color_black(), // Frank, not used for now
+		lv_color_black(),
+		lv_color_black(),
+		lv_color_black(),
+		lv_color_white(),
+		lv_color_white()
 };
 
 // Ordered by address (enum Robot (COUNT + enum Token if robot == COUNT))

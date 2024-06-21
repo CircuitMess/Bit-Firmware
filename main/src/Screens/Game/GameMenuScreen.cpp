@@ -22,7 +22,7 @@ GameMenuScreen::GameMenuScreen(Games current) : evts(6), currentGame(current){
 			break;
 		}
 		case Games::Pong:{
-			gameUIPath.append("Pong/"); // TODO add asset
+			gameUIPath.append("Pong/");
 			break;
 		}
 		case Games::Snake:{
@@ -38,7 +38,7 @@ GameMenuScreen::GameMenuScreen(Games current) : evts(6), currentGame(current){
 			break;
 		}
 		case Games::Bob:{
-			gameUIPath.append("Bob/"); // TODO add asset
+			gameUIPath.append("Bob/");
 			break;
 		}
 		case Games::Buttons:{
@@ -151,6 +151,7 @@ void GameMenuScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, GameTextColors[(uint8_t) currentGame], 0);
 
 		return item;
 	};
