@@ -16,6 +16,10 @@ public:
 protected:
 	lv_group_t* inputGroup;
 
+	virtual void onSelect(){}
+
+	virtual void onDeselect(){}
+
 private:
 	lv_group_t* parentGroup = nullptr;
 	bool active = false;

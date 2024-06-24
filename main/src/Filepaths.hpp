@@ -21,6 +21,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme1/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme1/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme1/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme1/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme1/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme1/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme1/settings.bin";
@@ -31,6 +32,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme2/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme2/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme2/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme2/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme2/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme2/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme2/settings.bin";
@@ -41,6 +43,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme3/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme3/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme3/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme3/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme3/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme3/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme3/settings.bin";
@@ -51,6 +54,7 @@ namespace Filepath {
 		inline static constexpr const char* Popup = "S:/Theme4/popup.bin";
 		inline static constexpr const char* Header = "S:/Theme4/header.bin";
 		inline static constexpr const char* BarLong = "S:/Theme4/barLong.bin";
+		inline static constexpr const char* BarMedium = "S:/Theme4/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme4/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme4/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme4/settings.bin";

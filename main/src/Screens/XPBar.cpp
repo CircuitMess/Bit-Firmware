@@ -16,7 +16,7 @@ void XPBar::buildUI(){
 	bar = lv_bar_create(*this);
 	lv_obj_set_size(bar, Widths[index], Height);
 	lv_obj_set_style_bg_opa(bar, LV_OPA_TRANSP, LV_PART_MAIN);
-	lv_obj_set_style_bg_img_src(bar, (length == XPBarLength::Long) ? THEMED_FILE(BarLong, settings->get().theme) : THEMED_FILE(BarShort, settings->get().theme),
+	lv_obj_set_style_bg_img_src(bar, (length == XPBarLength::Long) ? THEMED_FILE(BarLong, settings->get().theme) : (length == XPBarLength::Short) ? THEMED_FILE(BarShort, settings->get().theme) : THEMED_FILE(BarMedium, settings->get().theme),
 								LV_PART_INDICATOR);
 	lv_obj_set_style_anim_time(bar, AnimSpeed, LV_PART_MAIN);
 

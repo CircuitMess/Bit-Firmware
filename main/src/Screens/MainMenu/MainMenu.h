@@ -55,7 +55,6 @@ private:
 	static std::atomic<bool> running;
 
 	ChirpSystem* audio;
-
 };
 
 

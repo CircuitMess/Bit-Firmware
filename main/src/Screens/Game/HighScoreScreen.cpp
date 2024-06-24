@@ -20,6 +20,95 @@ HighScoreScreen::HighScoreScreen(Games current) : evts(6), currentGame(current){
 		ignoreFirstInput = true;
 	}
 
+	switch(currentGame){
+		case Games::Artemis:{
+			gameUIPath.append("Artemis/");
+			break;
+		}
+		case Games::Blocks:{
+			gameUIPath.append("Blocks/");
+			break;
+		}
+		case Games::Pong:{
+			gameUIPath.append("Pong/");
+			break;
+		}
+		case Games::Snake:{
+			gameUIPath.append("Snake/");
+			break;
+		}
+		case Games::WackyStacky:{
+			gameUIPath.append("Stacky/");
+			break;
+		}
+		case Games::MrBee:{
+			gameUIPath.append("Bee/");
+			break;
+		}
+		case Games::Bob:{
+			gameUIPath.append("Bob/");
+			break;
+		}
+		case Games::Buttons:{
+			gameUIPath.append("Buttons/");
+			break;
+		}
+		case Games::Capacitron:{
+			gameUIPath.append("Capacitron/");
+			break;
+		}
+		case Games::Hertz:{
+			gameUIPath.append("Hertz/");
+			break;
+		}
+		case Games::Marv:{
+			gameUIPath.append("Marv/");
+			break;
+		}
+		case Games::Resistron:{
+			gameUIPath.append("Resistron/");
+			break;
+		}
+		case Games::Robby:{
+			gameUIPath.append("Robby/");
+			break;
+		}
+		case Games::Harald:{
+			gameUIPath.append("Harald/");
+			break;
+		}
+		case Games::Frank:{
+			gameUIPath.append("Frank/");
+			break;
+		}
+		case Games::Charlie:{
+			gameUIPath.append("Charlie/");
+			break;
+		}
+		case Games::Fred:{
+			gameUIPath.append("Fred/");
+			break;
+		}
+		case Games::Planck:{
+			gameUIPath.append("Planck/");
+			break;
+		}
+		case Games::Dusty:{
+			gameUIPath.append("Dusty/");
+			break;
+		}
+		case Games::Sparkly:{
+			gameUIPath.append("Sparkly/");
+			break;
+		}
+		case Games::COUNT:
+		default:{
+			break;
+		}
+	}
+
+	selectPath = gameUIPath + "select.bin";
+
 	buildUI();
 }
 
@@ -32,34 +121,27 @@ void HighScoreScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
+	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);
-	lv_obj_set_size(top, 128, 32);
+	lv_obj_set_size(top, 128, 42);
 	lv_obj_set_flex_flow(top, LV_FLEX_FLOW_ROW);
 	lv_obj_set_flex_align(top, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-	lv_obj_set_style_pad_ver(top, 4, 0);
-	lv_obj_set_style_pad_right(top, 2, 0);
-	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, "S:/Paused.bin"); // TODO this needs to be changed depending on the game launched
-
-	batt = new BatteryElement(top);
+	lv_img_set_src(img, (gameUIPath + "title.bin").c_str());
 
 	auto rest = lv_obj_create(*this);
-	lv_obj_set_size(rest, 128, 96);
+	lv_obj_set_size(rest, 128, 86);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
 	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 	lv_obj_set_style_pad_all(rest, 4, 0);
 
 	lv_style_set_width(itemStyle, lv_pct(100));
 	lv_style_set_height(itemStyle, 16);
-	lv_style_set_border_width(itemStyle, 1);
-	lv_style_set_border_color(itemStyle, lv_color_make(217, 153, 186));
-	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
-	lv_style_set_radius(itemStyle, 2);
+	lv_style_set_bg_img_opa(itemStyle, LV_OPA_100);
+	lv_style_set_bg_img_src(itemStyle, selectPath.c_str());
 
 	auto mkLabel = [this, &rest](const char* text){
 		auto item = lv_obj_create(rest);
@@ -69,11 +151,10 @@ void HighScoreScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, GameTextColors[(uint8_t) currentGame], 0);
 
 		return item;
 	};
-
-	mkLabel("HIGH SCORE:");
 
 	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
 		if(hsm->hasHighScore(currentGame)){
@@ -82,10 +163,14 @@ void HighScoreScreen::buildUI(){
 			for(const HighScore& highScore : highScores){
 				if(highScore.score > 0){
 					std::stringstream label;
-					label << highScore.id[0];
-					label << highScore.id[1];
-					label << highScore.id[2];
-					label << ": ";
+
+					for(char i : highScore.id){
+						if(i != ' '){
+							label << i;
+						}
+					}
+
+					label << " : ";
 					label << highScore.score;
 
 					mkLabel(label.str().c_str());
@@ -110,8 +195,6 @@ void HighScoreScreen::onStop(){
 }
 
 void HighScoreScreen::loop(){
-	batt->loop();
-
 	for(Event e{}; evts.get(e, 0); ){
 		if(e.facility != Facility::Input){
 			free(e.data);

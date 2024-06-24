@@ -64,6 +64,8 @@ struct SettingsStruct {
 	uint8_t screenBrightness = 100;
 	uint8_t sleepTime = 3;
 	Theme theme = Theme::Theme1;
+	uint8_t avatar = 0;
+	int8_t pet = -1;
 };
 
 class Settings {
