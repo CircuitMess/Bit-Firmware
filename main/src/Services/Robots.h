@@ -20,7 +20,7 @@ enum class Robot : uint8_t {
 enum class Token : uint8_t {
 	Harald,
 	Frank,
-	RoboSpider/*TODO name, might end up being another robot*/,
+	Charlie,
 	Fred,
 	Plank,
 	Dusty,

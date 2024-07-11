@@ -30,6 +30,7 @@
 #include "Services/SystemManager.h"
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
+#include "Screens/Game/GameMenuScreen.h"
 
 BacklightBrightness* bl;
 
