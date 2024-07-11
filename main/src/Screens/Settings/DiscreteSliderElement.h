@@ -18,9 +18,7 @@ private:
 	lv_obj_t* valueLabel;
 
 	static constexpr lv_style_selector_t sel = LV_PART_MAIN | LV_STATE_DEFAULT;
-	static constexpr lv_style_selector_t selFocus = LV_PART_MAIN | LV_STATE_FOCUSED;
 	LVStyle defaultStyle;
-	LVStyle focusedStyle;
 	LVStyle labelStyle;
 	LVStyle sliderMainStyle;
 	LVStyle sliderKnobStyle;

@@ -17,7 +17,6 @@ private:
 	lv_obj_t* label;
 	lv_obj_t* switchElement;
 	LVStyle defaultStyle;
-	LVStyle focusedStyle;
 	LVStyle labelStyle;
 	LVStyle switchStyle;
 	LVStyle switchCheckedStyle;
@@ -37,7 +36,6 @@ private:
 	std::function<void(bool)> cb;
 
 	static constexpr lv_style_selector_t SelDefault = LV_PART_MAIN | LV_STATE_DEFAULT;
-	static constexpr lv_style_selector_t SelFocus = LV_PART_MAIN | LV_STATE_FOCUSED;
 
 	static constexpr uint8_t SwitchWidth = 24;
 	static constexpr uint8_t SwitchHeight = 9;
