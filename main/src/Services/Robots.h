@@ -19,8 +19,8 @@ enum class Robot : uint8_t {
 
 enum class Token : uint8_t {
 	Harald,
-	Frank,// TODO remove this, wont be used
-	Charlie/*TODO name, might end up being another robot*/,
+	Frank,
+	Charlie,
 	Fred,
 	Planck,
 	Dusty,
@@ -39,6 +39,14 @@ enum class Token : uint8_t {
 
 struct RobotData {
 public:
+	inline bool operator < (const RobotData& other) const {
+		if((robot != Robot::COUNT || other.robot != Robot::COUNT) && robot != other.robot){
+			return robot < other.robot;
+		}
+
+		return token < other.token;
+	}
+
 	Robot robot = Robot::COUNT;
 	Token token = Token::COUNT;
 };

@@ -169,8 +169,8 @@ void MainMenu::handleGameInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" games
-	std::unordered_set<Robot> comingSoon = { };
-	if(comingSoon.contains(rob.robot)){
+	std::set<RobotData> comingSoon = { { Robot::COUNT, Token::Frank }, { Robot::COUNT, Token::Fred } };
+	if(comingSoon.contains(rob)){
 		new UpdateRobot(this);
 		return;
 	}
@@ -230,10 +230,6 @@ void MainMenu::handleInput(const Input::Data& evt){
 					  { 150, 150, 80 },
 					  { 0,   0,   80 },
 					  { 600, 600, 80 } });
-
-		if(Display* display = (Display*) Services.get(Service::Display)){
-			display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
-		}
 
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<SettingsScreen>(); });
