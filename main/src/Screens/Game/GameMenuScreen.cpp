@@ -239,7 +239,7 @@ void GameMenuScreen::loop(){
 void GameMenuScreen::exit(){
 	auto disp = (Display*) Services.get(Service::Display);
 	auto lgfx = disp->getLGFX();
-	lgfx.drawBmpFile("/spiffs/bgSplash.bmp");
+	lgfx.drawBmpFile(Filepath::SplashWithBackground);
 
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([](){ return std::make_unique<MainMenu>(); });

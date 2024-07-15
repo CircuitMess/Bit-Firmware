@@ -38,8 +38,7 @@ private:
 	static void onScrollEnd(lv_event_t*);
 	bool loopBlocked = true;
 
-	static std::string imgUnl(const char* game);
-	static std::string imgLoc(const char* game);
+	static std::string imgFullPath(const char* game);
 
 	EventQueue events;
 	void loop() override;
@@ -56,6 +55,5 @@ private:
 
 	ChirpSystem* audio;
 };
-
 
 #endif //BIT_FIRMWARE_MAINMENU_H
