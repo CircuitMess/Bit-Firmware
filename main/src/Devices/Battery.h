@@ -15,7 +15,7 @@ public:
 	Battery();
 	void begin();
 
-	enum Level { Critical = 0, VeryLow, Low, Mid, Full, COUNT };
+	enum Level { Critical = 0, VeryLow, Low, Mid, High, VeryHigh, Full, COUNT };
 
 	uint8_t getPerc() const;
 	Level getLevel() const;

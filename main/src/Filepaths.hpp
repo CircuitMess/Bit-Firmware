@@ -25,6 +25,16 @@ namespace Filepath {
 		inline static constexpr const char* BarShort = "S:/Theme1/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme1/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme1/settings.bin";
+
+		namespace Battery {
+			inline static constexpr const char* Background = "S:/Theme1/battery/bg.bin";
+			inline static constexpr const char* Level1 = "S:/Theme1/battery/1.bin";
+			inline static constexpr const char* Level2 = "S:/Theme1/battery/2.bin";
+			inline static constexpr const char* Level3 = "S:/Theme1/battery/3.bin";
+			inline static constexpr const char* Level4 = "S:/Theme1/battery/4.bin";
+			inline static constexpr const char* Level5 = "S:/Theme1/battery/5.bin";
+			inline static constexpr const char* Level6 = "S:/Theme1/battery/6.bin";
+		}
 	}
 
 	namespace Theme2 {
@@ -36,6 +46,16 @@ namespace Filepath {
 		inline static constexpr const char* BarShort = "S:/Theme2/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme2/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme2/settings.bin";
+
+		namespace Battery {
+			inline static constexpr const char* Background = "S:/Theme2/battery/bg.bin";
+			inline static constexpr const char* Level1 = "S:/Theme2/battery/1.bin";
+			inline static constexpr const char* Level2 = "S:/Theme2/battery/2.bin";
+			inline static constexpr const char* Level3 = "S:/Theme2/battery/3.bin";
+			inline static constexpr const char* Level4 = "S:/Theme2/battery/4.bin";
+			inline static constexpr const char* Level5 = "S:/Theme2/battery/5.bin";
+			inline static constexpr const char* Level6 = "S:/Theme2/battery/6.bin";
+		}
 	}
 
 	namespace Theme3 {
@@ -47,6 +67,16 @@ namespace Filepath {
 		inline static constexpr const char* BarShort = "S:/Theme3/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme3/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme3/settings.bin";
+
+		namespace Battery {
+			inline static constexpr const char* Background = "S:/Theme3/battery/bg.bin";
+			inline static constexpr const char* Level1 = "S:/Theme3/battery/1.bin";
+			inline static constexpr const char* Level2 = "S:/Theme3/battery/2.bin";
+			inline static constexpr const char* Level3 = "S:/Theme3/battery/3.bin";
+			inline static constexpr const char* Level4 = "S:/Theme3/battery/4.bin";
+			inline static constexpr const char* Level5 = "S:/Theme3/battery/5.bin";
+			inline static constexpr const char* Level6 = "S:/Theme3/battery/6.bin";
+		}
 	}
 
 	namespace Theme4 {
@@ -58,13 +88,20 @@ namespace Filepath {
 		inline static constexpr const char* BarShort = "S:/Theme4/barShort.bin";
 		inline static constexpr const char* Paused = "S:/Theme4/paused.bin";
 		inline static constexpr const char* Settings = "S:/Theme4/settings.bin";
+
+		namespace Battery {
+			inline static constexpr const char* Background = "S:/Theme4/battery/bg.bin";
+			inline static constexpr const char* Level1 = "S:/Theme4/battery/1.bin";
+			inline static constexpr const char* Level2 = "S:/Theme4/battery/2.bin";
+			inline static constexpr const char* Level3 = "S:/Theme4/battery/3.bin";
+			inline static constexpr const char* Level4 = "S:/Theme4/battery/4.bin";
+			inline static constexpr const char* Level5 = "S:/Theme4/battery/5.bin";
+			inline static constexpr const char* Level6 = "S:/Theme4/battery/6.bin";
+		}
 	}
 
 	namespace Battery {
 		inline static constexpr const char* EmptyBig = "S:/Batt/EmptyBig.bin";
-		inline static constexpr const char* Low = "S:/Batt/Low.bin";
-		inline static constexpr const char* Mid = "S:/Batt/Mid.bin";
-		inline static constexpr const char* Full = "S:/Batt/Full.bin";
 	}
 
 	namespace Award {
