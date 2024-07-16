@@ -1,6 +1,8 @@
 #ifndef BIT_FIRMWARE_FILEPATHS_HPP
 #define BIT_FIRMWARE_FILEPATHS_HPP
 
+#include "Services/AchievementSystem.h"
+
 #define THEMED_FILE(Filename, theme) 									\
 	theme == Theme::Theme1 ? Filepath::Theme1::Filename : 				\
 	theme == Theme::Theme2 ? Filepath::Theme2::Filename : 				\
@@ -78,10 +80,69 @@ namespace Filepath {
 	namespace Profile {
 
 	}
+}
 
-	namespace Achievement {
+constexpr const char* AchievementFiles[] = {
+		"S:/Ach/artemis-friendly.bin",
+		"S:/Ach/artemis-sharp.bin",
+		"S:/Ach/bee-b.bin",
+		"S:/Ach/bee-crow.bin",
+		"S:/Ach/bee-g.bin",
+		"S:/Ach/bee-s.bin",
+		"S:/Ach/blocks-4lines.bin",
+		"S:/Ach/blocks-b.bin",
+		"S:/Ach/blocks-clear.bin",
+		"S:/Ach/blocks-g.bin",
+		"S:/Ach/blocks-s.bin",
+		"S:/Ach/bob-bombs.bin",
+		"S:/Ach/bob-green.bin",
+		"S:/Ach/bob-yellow.bin",
+		"S:/Ach/bonk-5.bin",
+		"S:/Ach/bonk-comeback.bin",
+		"S:/Ach/buttons-triple.bin",
+		"S:/Ach/buttons-win.bin",
+		"S:/Ach/capacitron-b.bin",
+		"S:/Ach/capacitron-fire.bin",
+		"S:/Ach/capacitron-g.bin",
+		"S:/Ach/capacitron-s.bin",
+		"S:/Ach/charlie-nomercy.bin",
+		"S:/Ach/charlie-yesmercy.bin",
+		"S:/Ach/dusty-rat.bin",
+		"S:/Ach/dusty-shovel.bin",
+		"S:/Ach/fred-copper.bin",
+		"S:/Ach/fred-detective.bin",
+		"S:/Ach/fred-veteran.bin",
+		"S:/Ach/hertz-3.bin",
+		"S:/Ach/marv-5.bin",
+		"S:/Ach/marv-life.bin",
+		"S:/Ach/marv-newspapers.bin",
+		"S:/Ach/planck-b.bin",
+		"S:/Ach/planck-chauffeur.bin",
+		"S:/Ach/planck-g.bin",
+		"S:/Ach/planck-juice.bin",
+		"S:/Ach/planck-nobrake.bin",
+		"S:/Ach/planck-s.bin",
+		"S:/Ach/resistron-b.bin",
+		"S:/Ach/resistron-deflect.bin",
+		"S:/Ach/resistron-g.bin",
+		"S:/Ach/resistron-s.bin",
+		"S:/Ach/robby-asteroid.bin",
+		"S:/Ach/robby-sharp.bin",
+		"S:/Ach/snake-b.bin",
+		"S:/Ach/snake-fill.bin",
+		"S:/Ach/snake-g.bin",
+		"S:/Ach/snake-s.bin",
+		"S:/Ach/sparkly-nobrake.bin",
+		"S:/Ach/sparkly-overtake.bin",
+		"S:/Ach/sparkly-road.bin",
+		"S:/Ach/stacky-5.bin",
+		"S:/Ach/stacky-highrise.bin",
+		"S:/Ach/stacky-skyscrapper.bin",
+		"S:/Ach/stacky-super.bin"
+};
 
-	}
+constexpr const char* AchivementFile(Achievement achievement){
+	return AchievementFiles[(uint32_t)achievement];
 }
 
 #endif //BIT_FIRMWARE_FILEPATHS_HPP
