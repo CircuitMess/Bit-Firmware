@@ -1,20 +1,22 @@
 #ifndef BIT_FIRMWARE_MENUITEM_H
 #define BIT_FIRMWARE_MENUITEM_H
 
+#include <string>
+#include <array>
 #include "LV_Interface/LVObject.h"
 #include "LV_Interface/LVStyle.h"
 
 class MenuItem : public LVObject {
 public:
-	MenuItem(lv_obj_t* parent, const char* path);
+	MenuItem(lv_obj_t* parent, const std::string& path, bool grayedOut = false);
 	virtual ~MenuItem();
 
 	void setBorder(bool enabled);
 
-	void setIcon(const char* path);
+	void setLocked(bool value);
 
 private:
-	lv_obj_t* img;
+	class GrayscaleImageElement* img;
 	lv_obj_t* border;
 
 	LVStyle glow;
@@ -23,8 +25,6 @@ private:
 	void startAnim();
 	void stopAnim();
 	static void animFunc(void* var, int32_t val);
-
 };
-
 
 #endif //BIT_FIRMWARE_MENUITEM_H

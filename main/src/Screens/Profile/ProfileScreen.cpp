@@ -37,6 +37,10 @@ void ProfileScreen::onStop(){
 	saved.pet = characterSection.getPet() == Pet::COUNT ? -1 : (int8_t) characterSection.getPet();
 	settings->set(saved);
 	settings->store();
+
+	if(Display* display = (Display*) Services.get(Service::Display)){
+		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
+	}
 }
 
 void ProfileScreen::loop(){
@@ -68,8 +72,8 @@ void ProfileScreen::handleGameInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" games
-	std::unordered_set<Robot> comingSoon = { };
-	if(comingSoon.contains(rob.robot)){
+	std::set<RobotData> comingSoon = { { Robot::COUNT, Token::Frank }, { Robot::COUNT, Token::Fred } };
+	if(comingSoon.contains(rob)){
 		new UpdateRobot(this);
 		return;
 	}
