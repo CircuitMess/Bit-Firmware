@@ -1,6 +1,13 @@
 #include "GrayscaleImageElement.h"
 
-GrayscaleImageElement::GrayscaleImageElement(lv_obj_t* parent, const std::string& path, uint16_t width, uint16_t height, bool grayscale) : LVObject(parent), path(path), grayscale(grayscale){
+
+
+GrayscaleImageElement::GrayscaleImageElement(lv_obj_t* parent, const std::string& path, bool grayscale) : LVObject(parent), path(path), grayscale(grayscale){
+
+	lv_img_header_t header;
+	lv_img_decoder_get_info(this->path.c_str(), &header);
+	const auto width = header.w;
+	const auto height = header.h;
 	canvasData.resize(LV_CANVAS_BUF_SIZE_TRUE_COLOR(width, height), 0);
 
 	lv_obj_set_size(*this, width, height);

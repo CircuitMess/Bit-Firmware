@@ -4,6 +4,8 @@
 #include "Services/AchievementSystem.h"
 #include "Filepaths.hpp"
 #include "Services/AchievementTextData.hpp"
+#include "../GrayscaleImageElement.h"
+#include "Util/Services.h"
 
 AchievementView::AchievementView(lv_obj_t* parent) : LVSelectable(parent){
 	initStyles();
@@ -31,7 +33,7 @@ void AchievementView::buildUI(){
 		auto key = lv_event_get_key(e);
 
 		const auto index = lv_obj_get_index(e->target); // only applies to odd number of menu items
-		const auto itemCount = (uint32_t)Achievement::COUNT;
+		const auto itemCount = (uint32_t) Achievement::COUNT;
 
 		//Maybe simplify logic in these calculations, seems overkill but math should work for any grid width
 		if(key == LV_KEY_UP){
@@ -68,8 +70,11 @@ void AchievementView::buildUI(){
 	};
 
 
-	// TODO once all achievements are added, do this for every achievement instead of just random placeholders
-	for(size_t i = 0; i < (uint32_t)Achievement::COUNT; ++i){
+	auto achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	std::vector<AchievementData> unlockedData;
+	achievementSystem->getAll(unlockedData);
+
+	for(size_t i = 0; i < (uint32_t) Achievement::COUNT; ++i){
 		auto base = lv_obj_create(obj);
 		lv_obj_set_size(base, 22, 22);
 		lv_obj_add_flag(base, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
@@ -78,9 +83,8 @@ void AchievementView::buildUI(){
 		lv_obj_add_style(base, defaultStyle, 0);
 		lv_obj_set_style_bg_img_src(base, "S:/Ach/bg.bin", LV_STATE_DEFAULT);
 
-		auto img = lv_img_create(base);
-		lv_img_set_src(img, AchivementFile((Achievement)i));
-		lv_obj_center(img);
+		auto img = new GrayscaleImageElement(base, AchivementFile((Achievement) i), unlockedData[i].unlocked());
+		lv_obj_center(*img);
 
 		lv_obj_add_event_cb(base, onKey, LV_EVENT_KEY, this);
 		lv_obj_add_event_cb(base, [](lv_event_t* e){
