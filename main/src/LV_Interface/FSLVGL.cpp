@@ -140,7 +140,7 @@ void FSLVGL::addToCache(const char* path, bool use32bAligned){
 	auto found = findCache(p);
 	if(found != cache.end()) return;
 
-	auto file = SPIFFS::open(path);
+	auto file = SPIFFS::open(p.c_str());
 	auto ram = new File();
 	*ram = RamFile::open(file, use32bAligned);
 	if(ram->size() == 0){
