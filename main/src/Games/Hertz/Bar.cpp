@@ -1,4 +1,5 @@
 #include "Bar.h"
+#include <esp_random.h>
 
 Bar::Bar(std::shared_ptr<Sprite> sprite) : sprite(sprite){
 }
@@ -75,7 +76,7 @@ rgb hsv2rgb(hsv in){
 }
 
 void Bar::resetGoal(){
-	xGoal = rand() % (sprite->width() - 2);
+	xGoal = esp_random() % (sprite->width() - 2);
 	draw();
 }
 
