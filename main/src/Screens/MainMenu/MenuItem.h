@@ -8,7 +8,7 @@
 
 class MenuItem : public LVObject {
 public:
-	MenuItem(lv_obj_t* parent, const std::string& path, bool grayedOut = false);
+	MenuItem(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayedOut);
 	virtual ~MenuItem();
 
 	void setBorder(bool enabled);
