@@ -37,5 +37,14 @@
 #define CTRL_5 33
 #define CTRL_6 26
 
+#define LED_DOWN 48
+#define LED_UP 47
+#define LED_LEFT 0
+#define LED_RIGHT 18
+#define LED_A 17
+#define LED_B 45
+#define LED_MENU 46
+
+
 
 #endif //BIT_LIBRARY_PINS_HPP
