@@ -30,6 +30,7 @@
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "Services/LEDService/LEDService.h"
 
 BacklightBrightness* bl;
 
@@ -111,6 +112,10 @@ void init(){
 		return;
 	}
 	Services.set(Service::Battery, battery);
+
+
+	auto led = new LEDService();
+	Services.set(Service::LED, led);
 
 	if(!initSPIFFS()) return;
 
