@@ -20,7 +20,7 @@ MenuHeader::MenuHeader(lv_obj_t* parent) : LVObject(parent){
 	lv_obj_set_pos(bar, 3, 2);
 
 	label = lv_label_create(*this);
-	lv_obj_set_pos(label, 98, 2);
+	lv_obj_set_pos(label, 78, 2);
 	lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 	lv_obj_set_size(label, 27, 7);
 	lv_obj_set_style_text_font(label, &landerfont, 0);

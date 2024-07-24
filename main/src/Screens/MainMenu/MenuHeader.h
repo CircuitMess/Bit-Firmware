@@ -4,6 +4,7 @@
 #include "LV_Interface/LVObject.h"
 #include "Screens/XPBar.h"
 #include "LV_Interface/LVStyle.h"
+#include "Screens/BatteryElement.h"
 
 class MenuHeader : public LVObject {
 public:
@@ -11,9 +12,9 @@ public:
 
 private:
 	lv_obj_t* label;
-	XPBar bar = XPBar(XPBarLength::Long, *this);
+	XPBar bar = XPBar(XPBarLength::Medium, *this);
 
-	static constexpr uint16_t Width = 128;
+	static constexpr uint16_t Width = 106;
 	static constexpr uint16_t Height = 13;
 
 	static constexpr const char* Background = "S:/MenuHeader.bin";

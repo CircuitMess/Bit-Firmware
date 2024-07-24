@@ -10,7 +10,7 @@
 class BatteryElement : public LVObject {
 public:
 	enum Level {
-		Empty, Low, Mid, Full, Charging
+		Empty, VeryLow, Low, Mid, High, Full
 	};
 
 	BatteryElement(lv_obj_t* parent);
@@ -25,16 +25,19 @@ private:
 
 	void set(Battery::Level battLevel);
 
+	static constexpr uint8_t Width = 20;
+	static constexpr uint8_t Height = 13;
+
 	uint8_t chargingIndex = 0;
 	static constexpr uint32_t ChargingAnimTime = 500;
-	static constexpr uint8_t BatteryLevels = 3;
+	static constexpr uint8_t BatteryLevels = 6;
 	uint32_t chargingMillis = 0;
 
 	static constexpr uint32_t LowBatteryAnimTime = 500;
 	bool lowBatteryAnimToggle = false;
 	uint32_t lowBatMillis = 0;
 
-	static constexpr const char* BatteryIcons[] = { Filepath::Battery::Low, Filepath::Battery::Mid, Filepath::Battery::Full };
+	const char* BatteryIcons[BatteryLevels];
 };
 
 

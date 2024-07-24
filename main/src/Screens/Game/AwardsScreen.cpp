@@ -178,7 +178,7 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		xpBar = new XPBar(XPBarLength::Medium, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
+		xpBar = new XPBar(XPBarLength::Long, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
 
 		const LevelProgress progress = xpSystem->MapXPToLevel(xpSystem->getXP() + xp);
 		xpBar->setFill(progress.nextLvl > levelSet + 1 ? 1.0f : progress.progress, true);
@@ -221,7 +221,7 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		xpBar = new XPBar(XPBarLength::Medium, bar, 0.0f);
+		xpBar = new XPBar(XPBarLength::Long, bar, 0.0f);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
 		// TODO: init achievement unlocked up UI
