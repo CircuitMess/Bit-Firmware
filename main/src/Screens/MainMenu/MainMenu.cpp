@@ -358,12 +358,13 @@ void MainMenu::buildUI(){
 	items.reserve(sizeof(MenuEntries) / sizeof(MenuEntries[0]));
 	for(const auto& entry : MenuEntries){
 		const std::string path = imgFullPath(entry.icon);
+		const std::string pathGrayscale = imgGrayscalePath(entry.icon);
 		bool locked = true;
 		if((entry.rob.robot == Robot::COUNT && entry.rob.token == Token::COUNT) || entry.game == Games::COUNT || games->isUnlocked(entry.game)){
 			locked = false;
 		}
 
-		auto item = new MenuItem(itemCont, path, locked);
+		auto item = new MenuItem(itemCont, path, pathGrayscale, locked);
 		lv_obj_add_flag(*item, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 		lv_group_add_obj(inputGroup, *item);
 
@@ -397,6 +398,13 @@ void MainMenu::buildUI(){
 
 std::string MainMenu::imgFullPath(const char* game){
 	std::string path("S:/GameIcons/");
+	path.append(game);
+	path.append(".bin");
+	return path;
+}
+
+std::string MainMenu::imgGrayscalePath(const char* game){
+	std::string path("S:/GameIcons/bw/");
 	path.append(game);
 	path.append(".bin");
 	return path;

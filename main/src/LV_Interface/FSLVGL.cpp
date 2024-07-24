@@ -14,24 +14,9 @@ static const char* Cached[] = {
 		"/bg/1.bin",
 		"/bg/2.bin",
 		"/bg/3.bin",
-		"/GameIcons/Arte.bin",
-		"/GameIcons/Bee.bin",
 		"/GameIcons/Blocks.bin",
-		"/GameIcons/Bob.bin",
-		"/GameIcons/Butt.bin",
-		"/GameIcons/Capa.bin",
-		"/GameIcons/Charlie.bin",
-		"/GameIcons/Dusty.bin",
-		"/GameIcons/Hertz.bin",
-		"/GameIcons/Harald.bin",
-		"/GameIcons/Marv.bin",
-		"/GameIcons/Planck.bin",
 		"/GameIcons/Pong.bin",
-		"/GameIcons/Resis.bin",
-		"/GameIcons/Robby.bin",
 		"/GameIcons/Snake.bin",
-		"/GameIcons/Sparkly.bin",
-		"/GameIcons/Stacky.bin",
 		"/Profile/bg.bin",
 		"/Profile/barOutline.bin",
 		"/Profile/arrowUp.bin",
@@ -140,7 +125,7 @@ void FSLVGL::addToCache(const char* path, bool use32bAligned){
 	auto found = findCache(p);
 	if(found != cache.end()) return;
 
-	auto file = SPIFFS::open(path);
+	auto file = SPIFFS::open(p.c_str());
 	auto ram = new File();
 	*ram = RamFile::open(file, use32bAligned);
 	if(ram->size() == 0){

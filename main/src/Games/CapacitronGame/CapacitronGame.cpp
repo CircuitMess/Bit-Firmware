@@ -7,6 +7,7 @@
 #include "Util/Services.h"
 #include "UIThread.h"
 #include "Screens/Game/AwardsScreen.h"
+#include <esp_random.h>
 
 CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, Games::Capacitron, "/Games/Capacitron", {
 		{ "/bg1.raw", {}, true },
@@ -335,7 +336,7 @@ void CapacitronGame::CapacitronGame::spawnFireball(){
 			std::make_unique<RectCC>(glm::vec2{ 13, 21 })
 	);
 
-	const float x = rand() % (128 - 13);
+	const float x = esp_random() % (128 - 13);
 	fireball->setPos(x, -50);
 	fireballObjs.push_back(fireball);
 	addObject(fireball);

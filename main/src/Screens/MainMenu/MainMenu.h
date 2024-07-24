@@ -39,6 +39,7 @@ private:
 	bool loopBlocked = true;
 
 	static std::string imgFullPath(const char* game);
+	static std::string imgGrayscalePath(const char* game);
 
 	EventQueue events;
 	void loop() override;
