@@ -11,7 +11,7 @@
 #include "Util/Queue.h"
 
 enum class LED : uint8_t {
-	Up, Down, Left, Right, A, B, Menu, RobotCtrl1, RobotCtrl2, RobotCtrl3, Robot COUNT
+	Up, Down, Left, Right, A, B, Menu, RobotCtrl1, RobotCtrl2, RobotCtrl3, RobotCtrl4, RobotCtrl5, RobotCtrl6, COUNT
 };
 
 class LEDService : private Threaded {
@@ -20,10 +20,14 @@ public:
 
 	virtual ~LEDService();
 
-	template<typename T>
-	void add(LED led){
-		T* dev = new T();
+	template<typename T, typename... Args>
+	void add(LED led, Args&& ... args){
+		T* dev = new T(std::forward<Args>(args)...);
+
+		ledDevices[led] = dev;
 	}
+
+	void remove(LED led);
 
 	void on(LED led);
 
@@ -31,7 +35,7 @@ public:
 
 	void blink(LED led, uint32_t count = 1, uint32_t period = 1000);
 
-	void breathe(LED led, uint32_t period = 1000);
+	void breathe(LED led, uint32_t count = 0, uint32_t period = 1000);
 
 	void set(LED led, float percent);
 
@@ -39,21 +43,6 @@ public:
 
 protected:
 	virtual void loop() override;
-
-private:
-	struct PwnMappingInfo {
-		gpio_num_t pin = GPIO_NUM_NC;
-		ledc_channel_t channel = LEDC_CHANNEL_0;
-		uint8_t limit = 100;
-	};
-
-	struct ExpanderMappingInfo {
-		uint8_t pin = 0;
-		uint8_t limit = 0xFF;
-	};
-
-	static const std::map<LED, PwnMappingInfo> PwmMappings;
-	static const std::map<LED, ExpanderMappingInfo> ExpanderMappings;
 
 private:
 	enum LEDInstruction {
@@ -84,7 +73,7 @@ private:
 
 	void blinkInternal(LED led, uint32_t count, uint32_t period);
 
-	void breatheInternal(LED led, uint32_t period);
+	void breatheInternal(LED led, uint32_t count, uint32_t period);
 
 	void setInternal(LED led, float percent);
 

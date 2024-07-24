@@ -1,11 +1,14 @@
 #include "Resistron.h"
+#include "Services/LEDService/LEDService.h"
+#include "Devices/SingleDigitalLED.h"
+#include "Util/Services.h"
 
-RoboCtrl::Resistron::Resistron() : RobotDriver(Robot::Resistron), led1(CTRL_1), led2(CTRL_2){
+RoboCtrl::Resistron::Resistron() : RobotDriver(Robot::Resistron), ledService((LEDService*) Services.get(Service::LED)){
 }
 
 RoboCtrl::Resistron::~Resistron(){
-	led1.end();
-	led2.end();
+	ledService->remove(LED::RobotCtrl1);
+	ledService->remove(LED::RobotCtrl2);
 }
 
 void RoboCtrl::Resistron::blink(){
@@ -37,13 +40,13 @@ void RoboCtrl::Resistron::hello(){
 }
 
 void RoboCtrl::Resistron::init(){
-	led1.begin();
-	led2.begin();
+	ledService->add<SingleDigitalLED>(LED::RobotCtrl1, CTRL_1);
+	ledService->add<SingleDigitalLED>(LED::RobotCtrl2, CTRL_2);
 }
 
 void RoboCtrl::Resistron::deinit(){
-	led1.end();
-	led2.end();
+	ledService->remove(LED::RobotCtrl1);
+	ledService->remove(LED::RobotCtrl2);
 }
 
 void RoboCtrl::Resistron::onLoop(uint micros){
@@ -52,11 +55,11 @@ void RoboCtrl::Resistron::onLoop(uint micros){
 	timer += micros;
 	if(timer >= leftRightTime * 1000){
 		if(ledIndex){
-			led1.setSolid(255);
-			led2.setSolid(0);
+			ledService->set(LED::RobotCtrl1, 100);
+			ledService->set(LED::RobotCtrl2, 0);
 		}else{
-			led1.setSolid(0);
-			led2.setSolid(255);
+			ledService->set(LED::RobotCtrl1, 0);
+			ledService->set(LED::RobotCtrl2, 100);
 		}
 		ledIndex = !ledIndex;
 		timer = 0;
@@ -64,8 +67,8 @@ void RoboCtrl::Resistron::onLoop(uint micros){
 		if(repeatCounter > repeatNum){
 			leftRightAnim = false;
 			repeatCounter = 0;
-			led1.clear();
-			led2.clear();
+			ledService->off(LED::RobotCtrl1);
+			ledService->off(LED::RobotCtrl2);
 			return;
 		}
 	}

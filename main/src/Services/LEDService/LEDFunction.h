@@ -9,7 +9,11 @@ public:
 
 	virtual ~LEDFunction() = default;
 
-	virtual void loop() = 0;
+	/*
+	 * @brief Called every loop iteration
+	 * @return True if the function is still running, false if it is complete
+	 */
+	virtual bool loop() = 0;
 
 protected:
 	SingleLED& led;

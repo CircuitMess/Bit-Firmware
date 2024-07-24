@@ -1,10 +1,10 @@
 #include "SingleDigitalLED.h"
 
-SingleDigitalLED::SingleDigitalLED(uint8_t pin, uint8_t limit) : SingleLED(limit), pinout(pin){
+SingleDigitalLED::SingleDigitalLED(uint8_t pin) : SingleLED(0xFF), pinout(pin){
 
 }
 
 
 void SingleDigitalLED::write(uint8_t val){
-	pinout.write(val > 0);
+	pinout.set(val > 0);
 }

@@ -6,7 +6,7 @@
 
 class SingleDigitalLED : public SingleLED {
 public:
-	SingleDigitalLED(uint8_t pin, uint8_t limit);
+	SingleDigitalLED(uint8_t pin);
 	virtual ~SingleDigitalLED() override = default;
 
 protected:

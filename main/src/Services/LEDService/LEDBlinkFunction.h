@@ -10,7 +10,7 @@ public:
 	virtual ~LEDBlinkFunction() override;
 
 protected:
-	virtual void loop() override;
+	virtual bool loop() override;
 
 private:
 	uint32_t count;

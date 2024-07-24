@@ -8,7 +8,7 @@ public:
 	LEDBreatheToFunction(SingleLED& led, float targetPercent, uint32_t period);
 
 protected:
-	virtual void loop() override;
+	virtual bool loop() override;
 
 private:
 	uint32_t duration;
