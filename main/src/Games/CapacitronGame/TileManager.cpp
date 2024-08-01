@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include "CapacitronGame.h"
+#include <esp_random.h>
 
 CapacitronGame::TileManager::TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs,
 										 std::vector<GameObjPtr>& powerupObjs) :
@@ -49,7 +50,7 @@ void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled
 		if(tilesRequired <= 3){
 			numTiles = tilesRequired;
 		}else{
-			numTiles = 2 + (rand() % (tilesRequired - 3)); //numTiles range from 2 to (tilesRequired-2), to avoid 1 tile long pads
+			numTiles = 2 + (esp_random() % (tilesRequired - 3)); //numTiles range from 2 to (tilesRequired-2), to avoid 1 tile long pads
 		}
 
 		if(!padsPerSize.contains(numTiles)){
@@ -84,7 +85,7 @@ void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled
 	std::set<GameObjPtr> pads;
 	while(tilesPlaced < PadTilesPerLevel){
 		//choose between empty spaces and pads
-		int randNum = rand() % (emptySpaces + numberOfPads);
+		int randNum = esp_random() % (emptySpaces + numberOfPads);
 		if(randNum < emptySpaces){
 			emptySpaces--;
 			tilesPlaced++;
@@ -123,10 +124,10 @@ void CapacitronGame::TileManager::createPads(float surface, bool powerupsEnabled
 	//spawn powerup with random chance, position on random tile
 	Powerup powerup = spawnRandomPowerup(powerupsRate, powerupsEnabled);
 	if(powerup.obj){
-		int8_t powerupTile = rand() % PadTilesPerLevel;
+		int8_t powerupTile = esp_random() % PadTilesPerLevel;
 		if(powerup.type == Powerup::Type::Trampoline){
 			auto it = std::begin(usedTiles);
-			std::advance(it, rand() % usedTiles.size());
+			std::advance(it, esp_random() % usedTiles.size());
 			powerupTile = *it;
 		}
 		powerupCB(powerup);
@@ -152,8 +153,8 @@ void CapacitronGame::TileManager::drawTiles(int objectIndex){
 	}
 
 	for(int iTile = 0; iTile < BgTileDim / WallTileDim; iTile++){
-		int randWallL = rand() % wallLFiles.size();
-		int randWallR = rand() % wallRFiles.size();
+		int randWallL = esp_random() % wallLFiles.size();
+		int randWallR = esp_random() % wallRFiles.size();
 		Display::drawFile(*sprite, wallLFiles[randWallL], 0, iTile * WallTileDim, WallTileDim, WallTileDim);
 		Display::drawFile(*sprite, wallRFiles[randWallR], 128 - WallTileDim, iTile * WallTileDim, WallTileDim, WallTileDim);
 	}
@@ -177,7 +178,7 @@ void CapacitronGame::TileManager::drawPad(GameObjPtr padObj, uint8_t padSize){
 		iTile++;
 	}
 	for(; iTile < padSize - 1; ++iTile){
-		uint8_t i = rand() % (padFiles.size() - 2);
+		uint8_t i = esp_random() % (padFiles.size() - 2);
 		Display::drawFile(*sprite, padFiles[i], iTile * PadTileDim, 0, PadTileDim, PadTileDim);
 	}
 
@@ -186,7 +187,7 @@ void CapacitronGame::TileManager::drawPad(GameObjPtr padObj, uint8_t padSize){
 		Display::drawFile(*sprite, rightTile, iTile * PadTileDim, 0, PadTileDim, PadTileDim);
 		iTile++;
 	}else{
-		uint8_t i = rand() % (padFiles.size() - 2);
+		uint8_t i = esp_random() % (padFiles.size() - 2);
 		Display::drawFile(*sprite, padFiles[i], iTile * PadTileDim, 0, PadTileDim, PadTileDim);
 	}
 }
@@ -194,7 +195,7 @@ void CapacitronGame::TileManager::drawPad(GameObjPtr padObj, uint8_t padSize){
 uint8_t CapacitronGame::TileManager::getRandomWallIndex(){
 	//30% probability for tiles 0-2, 10% for tile 3
 	uint8_t index;
-	uint8_t i = rand() % 101;
+	uint8_t i = esp_random() % 101;
 	if(i < 90){
 		index = i / 30;
 	}else{
@@ -206,8 +207,8 @@ uint8_t CapacitronGame::TileManager::getRandomWallIndex(){
 CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(uint8_t rate, bool powerupsEnabled){
 	Powerup powerup;
 	std::shared_ptr<AnimRC> anim;
-	if((rand() % 100) < rate && powerupsEnabled){
-		powerup.type = Powerup::Type(rand() % 2);
+	if((esp_random() % 100) < rate && powerupsEnabled){
+		powerup.type = Powerup::Type(esp_random() % 2);
 
 		switch(powerup.type){
 			case Powerup::Type::Potion:
@@ -233,7 +234,7 @@ CapacitronGame::Powerup CapacitronGame::TileManager::spawnRandomPowerup(uint8_t 
 			default:
 				break;
 		}
-	}else if((rand() % 100) < TrampolineSpawnRate){
+	}else if((esp_random() % 100) < TrampolineSpawnRate){
 		powerup.type = Powerup::Type::Trampoline;
 		powerup.obj = std::make_shared<GameObject>(
 				std::make_unique<AnimRC>(powerupFiles[2]),

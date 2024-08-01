@@ -5,6 +5,7 @@
 #include "GameEngine/Collision/CircleCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
 #include "Util/Services.h"
+#include <esp_random.h>
 
 Asteroids::Asteroids::Asteroids(Sprite& canvas) : Game(canvas, Games::Robby, "/Games/Robby", {
 		{ "/bg.raw", {}, true },
@@ -251,7 +252,7 @@ void Asteroids::Asteroids::shootBullet(){
 
 void Asteroids::Asteroids::createAsteroid(Asteroids::Asteroids::AsteroidSize size, glm::vec2 pos){
 	GameObjPtr asteroid;
-	uint8_t spriteIndex = ((rand() % 2) * (uint8_t) AsteroidSize::Count) + (uint8_t) size;
+	uint8_t spriteIndex = ((esp_random() % 2) * (uint8_t) AsteroidSize::Count) + (uint8_t) size;
 	asteroid = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile(asteroidIcons[spriteIndex].path), asteroidIcons[spriteIndex].dim),
 			std::make_unique<CircleCC>(asteroidRadius[(uint8_t) size], glm::vec2{ asteroidRadius[(uint8_t) size], asteroidRadius[(uint8_t) size] }));
@@ -260,7 +261,7 @@ void Asteroids::Asteroids::createAsteroid(Asteroids::Asteroids::AsteroidSize siz
 	asteroid->setPos(pos);
 
 	//random direction, avoid right angles since they can keep the asteroids off-screen for long durations
-	float angle = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 360.0f));
+	float angle = static_cast <float> (esp_random()) / (static_cast <float> (RAND_MAX / 360.0f));
 	float rightAngleOffset = 15;
 	if(fmod(angle, 90) <= rightAngleOffset){
 		angle += rightAngleOffset;
@@ -398,10 +399,10 @@ void Asteroids::Asteroids::spawnRandomAsteroid(){
 	//pick border for asteroid to spawn on
 	enum class Border : uint8_t {
 		Up, Down, Left, Right
-	} side = static_cast<Border>(rand() % 4);
+	} side = static_cast<Border>(esp_random() % 4);
 
 	if(side == Border::Up || side == Border::Down){
-		float xpos = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (128.0f - topLeft.x)));
+		float xpos = static_cast <float> (esp_random()) / (static_cast <float> (RAND_MAX / (128.0f - topLeft.x)));
 
 		if(side == Border::Up){
 			pos = { topLeft.x + xpos, topLeft.y };
@@ -409,7 +410,7 @@ void Asteroids::Asteroids::spawnRandomAsteroid(){
 			pos = { topLeft.x + xpos, 128.0f };
 		}
 	}else if(side == Border::Left || side == Border::Right){
-		float ypos = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (128.0f - topLeft.y)));
+		float ypos = static_cast <float> (esp_random()) / (static_cast <float> (RAND_MAX / (128.0f - topLeft.y)));
 
 		if(side == Border::Left){
 			pos = { topLeft.x, topLeft.y + ypos };

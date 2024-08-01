@@ -17,6 +17,7 @@
 #include "MenuHeader.h"
 #include "Screens/Game/GameMenuScreen.h"
 #include "Filepaths.hpp"
+#include "../Profile/ProfileScreen.h"
 
 struct Entry {
 	const char* icon;
@@ -28,7 +29,7 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Blocks", .game = Games::Blocks },
 		{ .icon = "Pong", .game = Games::Pong },
 		{ .icon = "Snake", .game = Games::Snake },
-		{ .icon = "", .game = Games::WackyStacky },
+		{ .icon = "Stacky", .game = Games::WackyStacky },
 		{ .icon = "Arte", .rob = { .robot = Robot::Artemis }, .game = Games::Artemis },
 		{ .icon = "Bee", .rob = { .robot = Robot::MrBee }, .game = Games::MrBee },
 		{ .icon = "Bob", .rob = { .robot = Robot::Bob }, .game = Games::Bob },
@@ -38,13 +39,11 @@ static constexpr Entry MenuEntries[] = {
 		{ .icon = "Marv", .rob = { .robot = Robot::Marv }, .game = Games::Marv },
 		{ .icon = "Resis", .rob = { .robot = Robot::Resistron }, .game = Games::Resistron },
 		{ .icon = "Robby", .rob = { .robot = Robot::Robby }, .game = Games::Robby },
-		{ .icon = "", .rob = { .token = Token::Harald }, .game = Games::Harald },
-		{ .icon = "", .rob = { .token = Token::Frank }, .game = Games::Frank },
-		{ .icon = "", .rob = { .token = Token::RoboSpider }, .game = Games::RoboSpider },
-		{ .icon = "", .rob = { .token = Token::Fred }, .game = Games::Fred },
-		{ .icon = "", .rob = { .token = Token::Plank }, .game = Games::Plank },
-		{ .icon = "", .rob = { .token = Token::Dusty }, .game = Games::Dusty },
-		{ .icon = "", .rob = { .token = Token::Sparkly }, .game = Games::Sparkly },
+		{ .icon = "Harald", .rob = { .token = Token::Harald }, .game = Games::Harald },
+		{ .icon = "Charlie", .rob = { .token = Token::Charlie }, .game = Games::Charlie },
+		{ .icon = "Planck", .rob = { .token = Token::Planck }, .game = Games::Planck },
+		{ .icon = "Dusty", .rob = { .token = Token::Dusty }, .game = Games::Dusty },
+		{ .icon = "Sparkly", .rob = { .token = Token::Sparkly }, .game = Games::Sparkly },
 };
 
 std::optional<RobotManager::Event> MainMenu::gmEvt = std::nullopt;
@@ -68,6 +67,10 @@ void MainMenu::launch(Games game){
 		const auto rob = RobotManager::GameRobot.at(game);
 		new LockedGame(this, rob);
 		return;
+	}
+
+	if(Display* display = (Display*) Services.get(Service::Display)){
+		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
 	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
@@ -166,17 +169,15 @@ void MainMenu::handleGameInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" games
-	std::unordered_set<Robot> comingSoon = { };
-	if(comingSoon.contains(rob.robot)){
+	std::set<RobotData> comingSoon = { { Robot::COUNT, Token::Frank }, { Robot::COUNT, Token::Fred } };
+	if(comingSoon.contains(rob)){
 		new UpdateRobot(this);
 		return;
 	}
 
 	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot)){
 		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot);
-		const auto icon = RobotIcons[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
-		const auto path = imgUnl(icon);
-		item->setIcon(path.c_str());
+		item->setLocked(false);
 	}
 
 	new NewRobot(this, rob, isNew);
@@ -298,8 +299,8 @@ void MainMenu::buildUI(){
 		//Maybe simplify logic in these calculations, seems overkill but math should work for any grid width
 		if(key == LV_KEY_UP){
 			uint8_t moves;
-			if(itemCount % RowWidth != 0 && index < RowWidth){
-				moves = index + 1 + std::max(((int) itemCount % (int) RowWidth - (int) index - 1), (int) 0);
+			if(index < RowWidth){
+				moves = index + 1; // towards MenuHeader
 			}else{
 				moves = RowWidth;
 			}
@@ -313,7 +314,7 @@ void MainMenu::buildUI(){
 				if(index >= (itemCount - RowWidth) && index < (itemCount - itemCount % RowWidth)){ //predzadnji redak, elementi koji "vise" iznad ničega
 					moves = RowWidth - (index % RowWidth) - 1 + (itemCount % RowWidth);
 				}else if(index >= (itemCount - itemCount % RowWidth)){ //zadnji redak
-					moves = itemCount % RowWidth;
+					moves = 0; //no wrap
 				}else{
 					moves = RowWidth;
 				}
@@ -327,17 +328,43 @@ void MainMenu::buildUI(){
 		}
 	};
 
+	menuHeader = new MenuHeader(*this);
+	lv_obj_add_flag(*menuHeader, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_pos(*menuHeader, 0, 0);
+	lv_group_add_obj(inputGroup, *menuHeader);
+
+	lv_obj_add_event_cb(*menuHeader, [](lv_event_t* e){
+		auto group = (lv_group_t*) e->user_data;
+		auto key = *((uint32_t*) e->param);
+
+		if(key == LV_KEY_UP) return;
+
+		if(key == LV_KEY_DOWN){
+			lv_group_focus_next(group);
+		}
+
+	}, LV_EVENT_KEY, inputGroup);
+	lv_obj_add_event_cb(*menuHeader, [](lv_event_t* e){
+		if(Display* display = (Display*) Services.get(Service::Display)){
+			display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
+		}
+
+		auto ui = (UIThread*) Services.get(Service::UI);
+		ui->startScreen([](){ return std::make_unique<ProfileScreen>(); });
+
+	}, LV_EVENT_CLICKED, this);
+
 	auto games = (RobotManager*) Services.get(Service::RobotManager);
 	items.reserve(sizeof(MenuEntries) / sizeof(MenuEntries[0]));
 	for(const auto& entry : MenuEntries){
-		std::string path;
+		const std::string path = imgFullPath(entry.icon);
+		const std::string pathGrayscale = imgGrayscalePath(entry.icon);
+		bool locked = true;
 		if((entry.rob.robot == Robot::COUNT && entry.rob.token == Token::COUNT) || entry.game == Games::COUNT || games->isUnlocked(entry.game)){
-			path = imgUnl(entry.icon);
-		}else{
-			path = imgLoc(entry.icon);
+			locked = false;
 		}
 
-		auto item = new MenuItem(itemCont, path.c_str());
+		auto item = new MenuItem(itemCont, path, pathGrayscale, locked);
 		lv_obj_add_flag(*item, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 		lv_group_add_obj(inputGroup, *item);
 
@@ -352,17 +379,13 @@ void MainMenu::buildUI(){
 
 	lv_obj_refr_size(itemCont);
 	lv_obj_refresh_self_size(itemCont);
-	lv_group_focus_obj(*items.front());
+	lv_group_set_wrap(inputGroup, false);
 
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
 	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
-
-	menuHeader = new MenuHeader(*this);
-	lv_obj_add_flag(*menuHeader, LV_OBJ_FLAG_FLOATING);
-	lv_obj_set_pos(*menuHeader, 0, 0);
 
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
@@ -373,16 +396,16 @@ void MainMenu::buildUI(){
 	lv_obj_set_size(padBot, 128, lv_obj_get_height(itemCont));
 }
 
-std::string MainMenu::imgUnl(const char* game){
+std::string MainMenu::imgFullPath(const char* game){
 	std::string path("S:/GameIcons/");
 	path.append(game);
 	path.append(".bin");
 	return path;
 }
 
-std::string MainMenu::imgLoc(const char* game){
-	std::string path("S:/GameIcons/");
+std::string MainMenu::imgGrayscalePath(const char* game){
+	std::string path("S:/GameIcons/bw/");
 	path.append(game);
-	path.append("L.bin");
+	path.append(".bin");
 	return path;
 }

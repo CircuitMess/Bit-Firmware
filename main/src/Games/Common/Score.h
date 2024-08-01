@@ -7,7 +7,7 @@
 
 class Score {
 public:
-	Score(File icon);
+	explicit Score(File icon);
 
 	std::shared_ptr<GameObject> getGO() const;
 	void setScore(uint16_t score);
@@ -18,8 +18,6 @@ private:
 	std::shared_ptr<GameObject> go;
 	std::shared_ptr<SpriteRC> rc;
 	std::shared_ptr<Sprite> sprite;
-
 };
-
 
 #endif //BIT_FIRMWARE_SCORE_H

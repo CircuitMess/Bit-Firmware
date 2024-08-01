@@ -85,11 +85,11 @@ void AwardsScreen::setAwardMode(Award award){
 	rest = lv_obj_create(*this);
 	lv_obj_set_size(rest, 108, 82);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
-	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 	lv_obj_set_align(rest, LV_ALIGN_CENTER);
 
 	if(award == Award::HighScore){
-		lv_obj_set_style_pad_all(rest, 4, 0);
+		lv_obj_set_style_pad_all(rest, 3, 0);
 
 		lv_style_set_width(itemStyle, lv_pct(86));
 		lv_style_set_height(itemStyle, 16);
@@ -99,24 +99,16 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_style_set_radius(itemStyle, 2);
 		lv_style_set_align(itemStyle, LV_ALIGN_CENTER);
 
-		auto mkLabel = [this](const char* text){
-			auto item = lv_obj_create(rest);
-			lv_obj_add_style(item, itemStyle, 0);
-			lv_obj_set_style_height(item, 22, 0);
-			lv_obj_set_align(item, LV_ALIGN_CENTER);
+		lv_obj_t* enterImg = lv_img_create(rest);
+		lv_img_set_src(enterImg, "S:/Award/highscore.bin");
 
-			auto label = lv_label_create(item);
-			lv_label_set_text(label, text);
-			lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-			lv_obj_center(label);
-			lv_obj_set_style_text_color(label, lv_color_make(85, 126, 150), 0);
-			lv_obj_set_align(label, LV_ALIGN_CENTER);
-			lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-
-			return item;
-		};
-
-		mkLabel("ENTER\nHIGH SCORE:");
+		auto label = lv_label_create(rest);
+		lv_label_set_text_fmt(label, "SCORE: %d", (int)highScore);
+		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, lv_color_make(85, 126, 150), 0);
+		lv_obj_set_align(label, LV_ALIGN_CENTER);
+		lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
 		item = lv_obj_create(rest);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -146,10 +138,6 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_border_width(name[2], 1, 0);
 		lv_obj_set_style_text_color(name[2], lv_color_make(85, 126, 150), 0);
 
-		value = lv_label_create(item);
-		lv_label_set_text(value, (std::stringstream() << " : " << highScore).str().c_str());
-		lv_obj_set_size(value, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-		lv_obj_set_style_text_color(value, lv_color_make(85, 126, 150), 0);
 	}else if(award == Award::XP){
 		lv_obj_set_style_pad_all(rest, 6, 0);
 
@@ -190,7 +178,7 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		xpBar = new XPBar(XPBarLength::Short, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
+		xpBar = new XPBar(XPBarLength::Medium, bar, xpSystem->MapXPToLevel(xpSystem->getXP()).progress);
 
 		const LevelProgress progress = xpSystem->MapXPToLevel(xpSystem->getXP() + xp);
 		xpBar->setFill(progress.nextLvl > levelSet + 1 ? 1.0f : progress.progress, true);
@@ -233,7 +221,7 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_bg_img_src(bar, Filepath::Award::XpBackground, 0);
 		lv_obj_set_style_bg_opa(bar, 100, 0);
 
-		xpBar = new XPBar(XPBarLength::Short, bar, 0.0f);
+		xpBar = new XPBar(XPBarLength::Medium, bar, 0.0f);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
 		// TODO: init achievement unlocked up UI

@@ -13,24 +13,28 @@
 #include "Games/Dance/Dance.h"
 #include "Games/Asteroids/Asteroids.h"
 #include "Games/Artemis/Game.h"
+#include "Games/Harald/Harald.h"
+#include "Games/Planck/Planck.h"
 #include "Games/WackyStacky/WackyStacky.h"
 #include "Services/MelodyPlayer.h"
 #include "Util/Notes.h"
 
 static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
-		{ Games::MrBee,      	[](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
-		{ Games::Pong,       	[](Sprite& canvas){ return std::make_unique<Pong>(canvas); } },
-		{ Games::Snake,      	[](Sprite& canvas){ return std::make_unique<Snake>(canvas); } },
-		{ Games::Blocks,     	[](Sprite& canvas){ return std::make_unique<Blocks>(canvas); } },
-		{ Games::Marv,       	[](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); } },
-		{ Games::Hertz,      	[](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); } },
-		{ Games::Bob,        	[](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); } },
-		{ Games::Capacitron, 	[](Sprite& canvas){ return std::make_unique<CapacitronGame::CapacitronGame>(canvas); } },
-		{ Games::Resistron,  	[](Sprite& canvas){ return std::make_unique<Invaders::Invaders>(canvas); } },
-		{ Games::Buttons,  	 	[](Sprite& canvas){ return std::make_unique<Dance>(canvas); } },
-		{ Games::Robby,      	[](Sprite& canvas){ return std::make_unique<Asteroids::Asteroids>(canvas); } },
-		{ Games::Artemis,    	[](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } },
-		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } },
+		{ Games::MrBee,      [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
+		{ Games::Pong,       [](Sprite& canvas){ return std::make_unique<Pong>(canvas); } },
+		{ Games::Snake,      [](Sprite& canvas){ return std::make_unique<Snake>(canvas); } },
+		{ Games::Blocks,     [](Sprite& canvas){ return std::make_unique<Blocks>(canvas); } },
+		{ Games::Marv,       [](Sprite& canvas){ return std::make_unique<MarvGame::MarvGame>(canvas); } },
+		{ Games::Hertz,      [](Sprite& canvas){ return std::make_unique<HertzGame>(canvas); } },
+		{ Games::Bob,        [](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); } },
+		{ Games::Capacitron, [](Sprite& canvas){ return std::make_unique<CapacitronGame::CapacitronGame>(canvas); } },
+		{ Games::Resistron,  [](Sprite& canvas){ return std::make_unique<Invaders::Invaders>(canvas); } },
+		{ Games::Buttons,  [](Sprite& canvas){ return std::make_unique<Dance>(canvas); } },
+		{ Games::Robby,      [](Sprite& canvas){ return std::make_unique<Asteroids::Asteroids>(canvas); } },
+		{ Games::Artemis,    [](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } },
+		{ Games::Harald,    [](Sprite& canvas){ return std::make_unique<Harald::Harald>(canvas); } },
+		{ Games::Planck,    [](Sprite& canvas){ return std::make_unique<Planck::Planck>(canvas); } },
+		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } }
 };
 
 extern const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds;
@@ -48,18 +52,9 @@ void GameRunner::startGame(Games game){
 
 	if(!Launcher.contains(game)) return;
 
-	auto icon = GameIcons[(int) game];
-	std::string splash("/spiffs/Splash/"); splash += icon; splash += "_splash.bmp";
-
-	auto& canvas = display.getCanvas();
-	auto& lgfx = display.getLGFX();
-
-	lgfx.drawBmpFile(splash.c_str());
 	const auto startTime = millis();
 
 	auto launcher = Launcher.at(game);
-
-	srand(micros());
 
 	auto inst = launcher(display.getCanvas());
 
@@ -79,8 +74,6 @@ void GameRunner::startGame(Games game){
 		delayMillis(100);
 	}
 	delete melody;
-
-	srand(micros());
 
 	currentGameEnum = game;
 	currentGame = std::move(inst);
@@ -303,5 +296,30 @@ const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds = {
 					Tone { NOTE_C4, 1 },
 					Tone { NOTE_E4, 4 },
 			});
+		} },
+		// TODO intro sounds for the new games
+		{ Games::WackyStacky, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Harald, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Frank, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Charlie, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Fred, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Planck, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Dusty, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Sparkly, [](){
+			return new MelodyPlayer(130, {});
 		} },
 };

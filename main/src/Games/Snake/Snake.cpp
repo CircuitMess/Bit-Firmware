@@ -6,6 +6,7 @@
 #include "Util/Services.h"
 #include "UIThread.h"
 #include "Screens/Game/AwardsScreen.h"
+#include <esp_random.h>
 
 Snake::Snake(Sprite& canvas) : Game(canvas, Games::Snake, "/Games/Snake", {
 		{ "/bg.raw", {}, true },
@@ -271,7 +272,7 @@ void Snake::foodEaten(bool initial){
 				{ { 150, 150, 75 }, { 0,   0,   75 }, { 150, 150, 75 }, { 200, 700, 100 } },
 				{ { 400, 600, 75 }, { 0,   0,   50 }, { 500, 900, 75 } }
 		};
-		audio.play(EatSounds[rand() % (sizeof(EatSounds) / sizeof(EatSounds[0]))]);
+		audio.play(EatSounds[esp_random() % (sizeof(EatSounds) / sizeof(EatSounds[0]))]);
 
 		scoreElement->setScore(++score);
 		addSegment();
@@ -287,12 +288,12 @@ void Snake::foodEaten(bool initial){
 
 		baseSpeed += SpeedIncrement;
 	}
-	const auto& foodIndex = rand() % (sizeof(Foods) / sizeof(Foods[0]));
+	const auto& foodIndex = esp_random() % (sizeof(Foods) / sizeof(Foods[0]));
 	std::static_pointer_cast<StaticRC>(food->getRenderComponent())->setFile(getFile(Foods[foodIndex].path), Foods[foodIndex].dim);
 	std::static_pointer_cast<RectCC>(food->getCollisionComponent())->setOffset((Foods[foodIndex].dim - HitboxDim) / (short) 2);
 
 	//generate random pos for food but not on already existing snake positions, also not on edge of grid
-	auto randId = rand() % ((GridDim.x - 2) * (GridDim.y - 2) - snake.size()); //generates coords on 24x24 subgrid
+	auto randId = esp_random() % ((GridDim.x - 2) * (GridDim.y - 2) - snake.size()); //generates coords on 24x24 subgrid
 	std::set<uint32_t> snakeSpaces;
 	for(const auto& segment : snake){
 		auto pos = segment->getPos();

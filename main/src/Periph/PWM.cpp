@@ -28,7 +28,6 @@ PWM::~PWM(){
 void PWM::setFreq(uint16_t freq){
 	if(pin == (uint8_t) -1) return;
 
-
 	if(!checkFrequency(freq)){
 		ESP_LOGW(TAG, "couldnt write frequency %d because of clock divisor limitations\n", freq);
 		return;

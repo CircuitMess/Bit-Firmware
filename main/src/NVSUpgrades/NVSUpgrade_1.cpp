@@ -21,6 +21,8 @@ void NVSUpgrade_1::execute() const{
 		newSettings.screenBrightness = oldSettings.screenBrightness;
 		newSettings.sleepTime = oldSettings.sleepTime;
 		newSettings.sound = oldSettings.sound;
+		newSettings.avatar = 0;
+		newSettings.pet = -1;
 		nvs->set("Settings", newSettings);
 	}
 }

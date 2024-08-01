@@ -18,12 +18,13 @@ private:
 	EventQueue evts;
 	Games currentGame;
 
-	BatteryElement* batt;
-
 	LVStyle itemStyle;
 	LVStyle focusStyle;
 
 	lv_obj_t* rest;
+
+	std::string gameUIPath = "S:/Splash/";
+	std::string selectPath;
 
 	void buildUI();
 
