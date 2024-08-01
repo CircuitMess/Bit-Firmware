@@ -6,21 +6,21 @@
 
 const std::unordered_map<Games, RobotData> RobotManager::GameRobot = {
 		{ Games::MrBee, { .robot = Robot::MrBee }},
-		{ Games::Artemis, { .robot = Robot::Artemis }},
-		{ Games::Bob, { .robot = Robot::Bob }},
-		{ Games::Hertz, { .robot = Robot::Hertz }},
-		{ Games::Robby, { .robot = Robot::Robby }},
-		{ Games::Resistron, { .robot = Robot::Resistron }},
+		{ Games::Artemis,    { .robot = Robot::Artemis }},
+		{ Games::Bob,        { .robot = Robot::Bob }},
+		{ Games::Hertz,      { .robot = Robot::Hertz }},
+		{ Games::Robby,      { .robot = Robot::Robby }},
+		{ Games::Resistron,  { .robot = Robot::Resistron }},
 		{ Games::Capacitron, { .robot = Robot::Capacitron }},
-		{ Games::Marv, { .robot = Robot::Marv }},
-		{ Games::Buttons, { .robot = Robot::Buttons } },
-		{ Games::Harald, { .token = Token::Harald } },
-		{ Games::Frank, { .token = Token::Frank } },
-		{ Games::RoboSpider, { .token = Token::RoboSpider } },
-		{ Games::Fred, { .token = Token::Fred } },
-		{ Games::Planck, { .token = Token::Planck } },
-		{ Games::Dusty, { .token = Token::Dusty } },
-		{ Games::Sparkly, { .token = Token::Sparkly } }
+		{ Games::Marv,       { .robot = Robot::Marv }},
+		{ Games::Buttons,    { .robot = Robot::Buttons } },
+		{ Games::Harald,     { .token = Token::Harald } },
+		{ Games::Frank,      { .token = Token::Frank } },
+		{ Games::Charlie,    { .token = Token::Charlie } },
+		{ Games::Fred,       { .token = Token::Fred } },
+		{ Games::Planck,     { .token = Token::Planck } },
+		{ Games::Dusty,      { .token = Token::Dusty } },
+		{ Games::Sparkly,    { .token = Token::Sparkly } }
 };
 
 const std::unordered_map<Theme, RobotData> RobotManager::ThemeRobot = {

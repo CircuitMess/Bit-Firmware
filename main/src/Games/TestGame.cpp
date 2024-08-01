@@ -5,6 +5,7 @@
 #include "../GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/TextRC.h"
 #include "Util/stdafx.h"
+#include <esp_random.h>
 
 TestGame::TestGame(Sprite& canvas) : Game(canvas, Games::COUNT, "", {
 		{ "/Pat1.gif",            {}, true },
@@ -41,8 +42,8 @@ void TestGame::onLoad(){
 		);
 
 		Object obj{ gObj, glm::vec2{
-				(((float) rand() / (float) RAND_MAX) - .5f) * 20.0f,
-				(((float) rand() / (float) RAND_MAX) - .5f) * 20.0f
+				(((float) esp_random() / (float) RAND_MAX) - .5f) * 20.0f,
+				(((float) esp_random() / (float) RAND_MAX) - .5f) * 20.0f
 		} };
 
 		obj.velocity.x += std::copysignf(20.0f, obj.velocity.x);

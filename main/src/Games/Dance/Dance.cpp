@@ -3,6 +3,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include <esp_random.h>
 
 std::map<Input::Button, uint8_t> btnBarMap = { { Input::Button::Left,  0 },
 											   { Input::Button::Up,    1 },
@@ -92,7 +93,7 @@ void Dance::onLoop(float deltaTime){
 			beatTimer += deltaTime;
 			if(beatTimer >= beatInterval){
 				beatTimer = 0;
-				uint8_t randNotes = rand() % 8;
+				uint8_t randNotes = esp_random() % 8;
 				for(int i = 0; i < 3; ++i){
 					if(randNotes & (1 << i)){
 						createNote(i);
@@ -217,7 +218,7 @@ void Dance::noteHit(uint8_t track){
 				danceAnimSet.insert(i);
 			}
 		}
-		uint8_t i = rand() % (danceAnimSet.size());
+		uint8_t i = esp_random() % (danceAnimSet.size());
 		auto it = danceAnimSet.begin();
 		std::advance(it, i);
 		i = *it;

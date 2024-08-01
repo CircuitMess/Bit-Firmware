@@ -119,6 +119,8 @@ void PauseScreen::buildUI(){
 		return;
 	}
 
+	auto theme = settings->get().theme;
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
@@ -134,7 +136,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_style_pad_left(top, 6, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, Filepath::Paused);
+	lv_img_set_src(img, THEMED_FILE(Paused, theme));
 
 	batt = new BatteryElement(top);
 
@@ -147,12 +149,12 @@ void PauseScreen::buildUI(){
 	lv_style_set_width(itemStyle, lv_pct(100));
 	lv_style_set_height(itemStyle, 17);
 	lv_style_set_border_width(itemStyle, 1);
-	lv_style_set_border_color(itemStyle, lv_color_make(217, 153, 186));
+	lv_style_set_border_color(itemStyle, THEMED_COLOR(HighlightPrimary, theme));
 	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
 	lv_style_set_radius(itemStyle, 2);
 
-	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
-	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
+	lv_style_set_bg_color(focusStyle, THEMED_COLOR(HighlightPrimary, theme));
+	lv_style_set_bg_opa(focusStyle, LV_OPA_70);
 
 	auto initSet = settings->get();
 
@@ -170,14 +172,16 @@ void PauseScreen::buildUI(){
 					});
 	}, initSet.sound);
 	lv_group_add_obj(inputGroup, *audioSwitch);
+	lv_obj_add_style(*audioSwitch, focusStyle, LV_STATE_FOCUSED);
 
 	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
 		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
 		bl->setBrightness(value);
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
+	lv_obj_add_style(*blSlider, focusStyle, LV_STATE_FOCUSED);
 
-	auto mkBtn = [this, &rest](const char* text){
+	auto mkBtn = [this, &rest, &theme](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -189,6 +193,7 @@ void PauseScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, THEMED_COLOR(PausedForeground, theme), 0);
 
 		return item;
 	};

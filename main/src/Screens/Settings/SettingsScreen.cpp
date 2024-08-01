@@ -37,6 +37,10 @@ void SettingsScreen::onStop(){
 
 	settings.set(set);
 	settings.store();
+
+	if(Display* display = (Display*) Services.get(Service::Display)){
+		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
+	}
 }
 
 void SettingsScreen::loop(){
@@ -55,9 +59,11 @@ void SettingsScreen::loop(){
 }
 
 void SettingsScreen::buildUI(){
+	auto theme = settings.get().theme;
+
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
-	if(settings.get().theme == Theme::Theme1){
+	if(theme == Theme::Theme1){
 		bg = new LVGIF(*this, "S:/bg");
 		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
 		lv_obj_set_pos(*bg, 0, 0);
@@ -72,7 +78,7 @@ void SettingsScreen::buildUI(){
 	lv_obj_set_style_pad_ver(top, 4, 0);
 
 	auto img = lv_img_create(top);
-	lv_img_set_src(img, Filepath::Settings);
+	lv_img_set_src(img, THEMED_FILE(Settings, theme));
 	lv_obj_center(img);
 
 	auto rest = lv_obj_create(*this);
@@ -84,12 +90,12 @@ void SettingsScreen::buildUI(){
 	lv_style_set_width(itemStyle, lv_pct(100));
 	lv_style_set_height(itemStyle, 17);
 	lv_style_set_border_width(itemStyle, 1);
-	lv_style_set_border_color(itemStyle, lv_color_make(217, 153, 186));
+	lv_style_set_border_color(itemStyle, THEMED_COLOR(HighlightPrimary, theme));
 	lv_style_set_border_opa(itemStyle, LV_OPA_COVER);
 	lv_style_set_radius(itemStyle, 2);
 
-	lv_style_set_bg_color(focusStyle, lv_color_make(217, 153, 186));
-	lv_style_set_bg_opa(focusStyle, LV_OPA_30);
+	lv_style_set_bg_color(focusStyle, THEMED_COLOR(HighlightPrimary, theme));
+	lv_style_set_bg_opa(focusStyle, LV_OPA_70);
 
 	auto initSet = settings.get();
 
@@ -107,12 +113,15 @@ void SettingsScreen::buildUI(){
 					});
 	}, initSet.sound);
 	lv_group_add_obj(inputGroup, *audioSwitch);
+	lv_obj_add_style(*audioSwitch, focusStyle, LV_STATE_FOCUSED);
 
 	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
 		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
 		bl->setBrightness(value);
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
+	lv_obj_add_style(*blSlider, focusStyle, LV_STATE_FOCUSED);
+
 
 	sleepSlider = new DiscreteSliderElement(rest, "Sleep time", [this](uint8_t value){
 		if(value >= Settings::SleepSteps) return;
@@ -121,8 +130,9 @@ void SettingsScreen::buildUI(){
 		settings.set(s);
 	}, std::vector<const char*>(Settings::SleepText, Settings::SleepText + Settings::SleepSteps), initSet.sleepTime);
 	lv_group_add_obj(inputGroup, *sleepSlider);
+	lv_obj_add_style(*sleepSlider, focusStyle, LV_STATE_FOCUSED);
 
-	auto mkBtn = [this, &rest](const char* text){
+	auto mkBtn = [this, &rest, &theme](const char* text){
 		auto item = lv_obj_create(rest);
 		lv_group_add_obj(inputGroup, item);
 		lv_obj_add_style(item, itemStyle, 0);
@@ -134,11 +144,13 @@ void SettingsScreen::buildUI(){
 		lv_label_set_text(label, text);
 		lv_obj_set_size(label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 		lv_obj_center(label);
+		lv_obj_set_style_text_color(label, THEMED_COLOR(PausedForeground, theme), 0);
 
 		return item;
 	};
 
 	auto save = mkBtn("Save and exit");
+
 	lv_obj_add_event_cb(save, [](lv_event_t* e){
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<MainMenu>(); });
