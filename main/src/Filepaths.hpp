@@ -15,6 +15,7 @@ namespace Filepath {
 	inline static constexpr const char* Unlocked = "S:/Lock_unlocked.bin";
 	inline static constexpr const char* RobotPopup = "S:/ModalBg2.bin";
 	inline static constexpr const char* Splash = "/spiffs/Splash.bmp";
+	inline static constexpr const char* SplashWithBackground = "/spiffs/bgSplash.bmp";
 
 	namespace Theme1 {
 		inline static constexpr const char* Background = "S:/Theme1/bg.bin";

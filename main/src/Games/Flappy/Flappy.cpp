@@ -9,6 +9,7 @@
 #include "Util/Services.h"
 #include "UIThread.h"
 #include "Screens/Game/AwardsScreen.h"
+#include <esp_random.h>
 
 constexpr Flappy::ObstacleDesc Flappy::TopObstacles[];
 constexpr Flappy::ObstacleDesc Flappy::BotObstacles[];
@@ -221,8 +222,8 @@ void Flappy::resetDuck(){
 
 void Flappy::createObstaclePair(){
 
-	int topi = rand() % (sizeof(TopObstacles) / sizeof(TopObstacles[0]));
-	int boti = rand() % (sizeof(BotObstacles) / sizeof(BotObstacles[0]));
+	int topi = esp_random() % (sizeof(TopObstacles) / sizeof(TopObstacles[0]));
+	int boti = esp_random() % (sizeof(BotObstacles) / sizeof(BotObstacles[0]));
 
 	const auto& topDesc = TopObstacles[topi];
 	const auto& botDesc = BotObstacles[boti];
@@ -246,10 +247,10 @@ void Flappy::createObstaclePair(){
 			std::make_unique<PolygonCC>(botDesc.collision)
 	);
 
-	int offsetBoth = rand() % 40;
+	int offsetBoth = esp_random() % 40;
 
-	int offsetTop = rand() % 5;
-	int offsetBot = rand() % 5;
+	int offsetTop = esp_random() % 5;
+	int offsetBot = esp_random() % 5;
 
 	if(topi != 4){
 		offsetTop = 0;

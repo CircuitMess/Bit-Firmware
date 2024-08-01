@@ -4,6 +4,7 @@
 #include "GameEngine/Collision/PolygonCC.h"
 #include "Services/RobotManager.h"
 #include "Util/Services.h"
+#include <esp_random.h>
 
 MarvGame::MarvGame::MarvGame(Sprite& canvas) : Game(canvas, Games::Marv, "/Games/Marv", {
 		{ "/bg.raw", {}, true },
@@ -216,7 +217,7 @@ void MarvGame::MarvGame::spawn(){
 	}
 
 	auto item = obstacleIndex.begin();
-	std::advance(item, rand() % obstacleIndex.size());
+	std::advance(item, esp_random() % obstacleIndex.size());
 
 	uint8_t in = *item;
 	Obstacle obstacle;

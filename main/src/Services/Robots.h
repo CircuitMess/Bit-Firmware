@@ -22,7 +22,7 @@ enum class Token : uint8_t {
 	Frank,
 	Charlie,
 	Fred,
-	Plank,
+	Planck,
 	Dusty,
 	Sparkly,
 	CowPet,
@@ -39,6 +39,14 @@ enum class Token : uint8_t {
 
 struct RobotData {
 public:
+	inline bool operator < (const RobotData& other) const {
+		if((robot != Robot::COUNT || other.robot != Robot::COUNT) && robot != other.robot){
+			return robot < other.robot;
+		}
+
+		return token < other.token;
+	}
+
 	Robot robot = Robot::COUNT;
 	Token token = Token::COUNT;
 };

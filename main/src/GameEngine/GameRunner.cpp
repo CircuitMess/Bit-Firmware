@@ -52,8 +52,6 @@ void GameRunner::startGame(Games game){
 
 	auto launcher = Launcher.at(game);
 
-	srand(micros());
-
 	auto inst = launcher(display.getCanvas());
 
 	EventQueue evts(12);
@@ -72,8 +70,6 @@ void GameRunner::startGame(Games game){
 		delayMillis(100);
 	}
 	delete melody;
-
-	srand(micros());
 
 	currentGameEnum = game;
 	currentGame = std::move(inst);

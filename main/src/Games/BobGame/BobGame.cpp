@@ -2,6 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include <time.h>
+#include <esp_random.h>
 
 BobGame::BobGame::BobGame(Sprite& canvas) : Game(canvas, Games::Bob, "/Games/Bob", {
 		{ "/bg.raw", {}, true },
@@ -109,26 +110,26 @@ void BobGame::BobGame::spawnRandom(){
 	if(foodCounter == FoodInSet && bombCounter == BombInSet){
 		foodCounter = bombCounter = 0;
 	}
-	int randNum = rand() % (101);
+	int randNum = esp_random() % (101);
 	if((randNum <= 75 && foodCounter < FoodInSet) || bombCounter == BombInSet){
 		foodCounter++;
-		int pick = rand() % foods.size();
+		int pick = esp_random() % foods.size();
 		spawnItem(foods[pick]);
 	}else{
 		bombCounter++;
-		int pick = rand() % bombs.size();
+		int pick = esp_random() % bombs.size();
 		spawnItem(bombs[pick]);
 	}
 }
 
 void BobGame::BobGame::spawnItem(BobGame::BobGame::Template temp){
-	int randPos = rand() % (128 - temp.dim.x - 10) + 10; //10 - so that it doesn't spawn on the bar
+	int randPos = esp_random() % (128 - temp.dim.x - 10) + 10; //10 - so that it doesn't spawn on the bar
 	auto go = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile(temp.path), temp.dim),
 			std::make_unique<RectCC>(temp.dim)
 	);
 	addObject(go);
-	float speed = (rand() % (speedMax - speedMin + 1)) + speedMin;
+	float speed = (esp_random() % (speedMax - speedMin + 1)) + speedMin;
 
 	movingObjects.insert(std::make_pair(go, speed));
 	go->setPos({ randPos, -temp.dim.y });

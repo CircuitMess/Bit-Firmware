@@ -1,6 +1,7 @@
 #include "Debree.h"
 #include "GameEngine/Rendering/StaticRC.h"
 #include <gtx/rotate_vector.hpp>
+#include <esp_random.h>
 
 Debree::Debree(std::function<void(GameObjPtr)> addObject, std::function<void(GameObjPtr)> removeObject, std::function<File(const char*)> getFile) : addObj(addObject), remObj(removeObject), getFile(getFile){
 
@@ -25,7 +26,7 @@ void Debree::place(glm::ivec2 pos){
 	obj->setPos(glm::vec2(pos));
 	addObj(obj);
 
-	const float angle = ((float) rand() / (float) RAND_MAX) * M_PI_2 - M_PI_4;
+	const float angle = ((float) esp_random() / (float) RAND_MAX) * M_PI_2 - M_PI_4;
 	const auto dir = glm::rotate(glm::vec2(0, -1.0), angle);
 
 	if(objs.size() >= Limit){

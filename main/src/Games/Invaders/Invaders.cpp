@@ -6,6 +6,7 @@
 #include "Util/Services.h"
 #include "UIThread.h"
 #include "Screens/Game/AwardsScreen.h"
+#include <esp_random.h>
 
 const Sound Invaders::Invaders::InvaderDeathSounds[4] = {
 		{ { 200, 600, 100 }, { 600, 80,  300 } },
@@ -204,7 +205,7 @@ bool Invaders::Invaders::enemyShoot(){
 	audio.play({ { 600, 800, 50 },
 				 { 800, 600, 50 } });
 
-	const auto& inv = invaders[rand() % invaders.size()];
+	const auto& inv = invaders[esp_random() % invaders.size()];
 	auto invObj = inv.obj;
 
 	enemyBullet = std::make_shared<GameObject>(

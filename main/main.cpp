@@ -19,7 +19,6 @@
 #include "LV_Interface/LVGL.h"
 #include "LV_Interface/InputLVGL.h"
 #include "LV_Interface/FSLVGL.h"
-#include "Screens/IntroScreen.h"
 #include <esp_sleep.h>
 #include <Util/stdafx.h>
 #include "JigHWTest/JigHWTest.h"
@@ -30,7 +29,7 @@
 #include "Services/SystemManager.h"
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
-#include "Screens/Game/GameMenuScreen.h"
+#include "Screens/MainMenu/MainMenu.h"
 
 BacklightBrightness* bl;
 
@@ -169,7 +168,7 @@ void init(){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<IntroScreen>(); });
+	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
 
 	bl->fadeOut();
 	ui->start();

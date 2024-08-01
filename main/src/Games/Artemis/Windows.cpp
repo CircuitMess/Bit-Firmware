@@ -1,6 +1,7 @@
 #include "Windows.h"
 #include "GameEngine/Rendering/StaticRC.h"
 #include "Ray.h"
+#include <esp_random.h>
 
 struct CharInfo {
 	const char* path;
@@ -118,7 +119,7 @@ void Windows::relocChars(){
 	std::vector<uint8_t> indexes = { 0, 1, 2 }; // indices of free windows
 
 	for(int i = 0; i < 3; i++){
-		const uint8_t indexIndex = rand() % indexes.size(); // index in the above vector
+		const uint8_t indexIndex = esp_random() % indexes.size(); // index in the above vector
 		const uint8_t window = indexes[indexIndex]; // window index for the current character
 		indexes.erase(indexes.cbegin() + indexIndex); // remove the taken index from the free window indices vector
 		// i: character index, window: window index
@@ -138,7 +139,7 @@ void Windows::randOffsets(){
 	std::vector<float> offsets = { 0.2, 0.4, 0.6 };
 
 	for(int i = 0; i < 3; i++){
-		const uint8_t index = rand() % offsets.size(); // index in the above vector
+		const uint8_t index = esp_random() % offsets.size(); // index in the above vector
 		timeOffsets[i] = offsets[index]; // window index for the current character
 		offsets.erase(offsets.cbegin() + index); // remove the taken index from the free window indices vector
 	}
