@@ -153,6 +153,7 @@ void Game::loop(uint micros){
 	onLoop((float) micros / 1000000.0f);
 	if(exited) return;
 
+	preRender(base);
 	render.update(micros);
 	onRender(base);
 
@@ -185,6 +186,8 @@ void Game::onStop(){
 void Game::onLoad(){}
 
 void Game::onLoop(float deltaTime){}
+
+void Game::preRender(Sprite& canvas){}
 
 void Game::onRender(Sprite& canvas){}
 

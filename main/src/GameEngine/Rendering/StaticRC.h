@@ -15,6 +15,7 @@ public:
 
 	void setFile(File file); //no change in dim
 	void setFile(File file, PixelDim dim); //change in dim
+	void setScale(glm::vec2 value);
 
 protected:
 	void push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool flipY) const override;
@@ -22,6 +23,7 @@ protected:
 private:
 	File file;
 	PixelDim dim;
+	glm::vec2 scale{ 1.0f, 1.0f };
 };
 
 

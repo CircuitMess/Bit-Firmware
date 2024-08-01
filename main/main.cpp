@@ -30,6 +30,7 @@
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "Screens/Game/GameMenuScreen.h"
 
 BacklightBrightness* bl;
 
@@ -168,7 +169,7 @@ void init(){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
+	ui->startScreen([](){ return std::make_unique<GameMenuScreen>(Games::Sparkly); });
 
 	bl->fadeOut();
 	ui->start();
