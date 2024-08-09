@@ -142,8 +142,71 @@ constexpr const char* AchievementFiles[] = {
 		"S:/Ach/stacky-super.bin"
 };
 
+constexpr const char* AchievementFilesBW[] = {
+		"S:/Ach/bw/artemis-friendly.bin",
+		"S:/Ach/bw/artemis-sharp.bin",
+		"S:/Ach/bw/bee-b.bin",
+		"S:/Ach/bw/bee-crow.bin",
+		"S:/Ach/bw/bee-g.bin",
+		"S:/Ach/bw/bee-s.bin",
+		"S:/Ach/bw/blocks-4lines.bin",
+		"S:/Ach/bw/blocks-b.bin",
+		"S:/Ach/bw/blocks-clear.bin",
+		"S:/Ach/bw/blocks-g.bin",
+		"S:/Ach/bw/blocks-s.bin",
+		"S:/Ach/bw/bob-bombs.bin",
+		"S:/Ach/bw/bob-green.bin",
+		"S:/Ach/bw/bob-yellow.bin",
+		"S:/Ach/bw/bonk-5.bin",
+		"S:/Ach/bw/bonk-comeback.bin",
+		"S:/Ach/bw/buttons-triple.bin",
+		"S:/Ach/bw/buttons-win.bin",
+		"S:/Ach/bw/capacitron-b.bin",
+		"S:/Ach/bw/capacitron-fire.bin",
+		"S:/Ach/bw/capacitron-g.bin",
+		"S:/Ach/bw/capacitron-s.bin",
+		"S:/Ach/bw/charlie-nomercy.bin",
+		"S:/Ach/bw/charlie-yesmercy.bin",
+		"S:/Ach/bw/dusty-rat.bin",
+		"S:/Ach/bw/dusty-shovel.bin",
+		"S:/Ach/bw/fred-copper.bin",
+		"S:/Ach/bw/fred-detective.bin",
+		"S:/Ach/bw/fred-veteran.bin",
+		"S:/Ach/bw/hertz-3.bin",
+		"S:/Ach/bw/marv-5.bin",
+		"S:/Ach/bw/marv-life.bin",
+		"S:/Ach/bw/marv-newspapers.bin",
+		"S:/Ach/bw/planck-b.bin",
+		"S:/Ach/bw/planck-chauffeur.bin",
+		"S:/Ach/bw/planck-g.bin",
+		"S:/Ach/bw/planck-juice.bin",
+		"S:/Ach/bw/planck-nobrake.bin",
+		"S:/Ach/bw/planck-s.bin",
+		"S:/Ach/bw/resistron-b.bin",
+		"S:/Ach/bw/resistron-deflect.bin",
+		"S:/Ach/bw/resistron-g.bin",
+		"S:/Ach/bw/resistron-s.bin",
+		"S:/Ach/bw/robby-asteroid.bin",
+		"S:/Ach/bw/robby-sharp.bin",
+		"S:/Ach/bw/snake-b.bin",
+		"S:/Ach/bw/snake-fill.bin",
+		"S:/Ach/bw/snake-g.bin",
+		"S:/Ach/bw/snake-s.bin",
+		"S:/Ach/bw/sparkly-nobrake.bin",
+		"S:/Ach/bw/sparkly-overtake.bin",
+		"S:/Ach/bw/sparkly-road.bin",
+		"S:/Ach/bw/stacky-5.bin",
+		"S:/Ach/bw/stacky-highrise.bin",
+		"S:/Ach/bw/stacky-skyscrapper.bin",
+		"S:/Ach/bw/stacky-super.bin"
+};
+
 constexpr const char* AchivementFile(Achievement achievement){
-	return AchievementFiles[(uint32_t)achievement];
+	return AchievementFiles[(uint32_t) achievement];
+}
+
+constexpr const char* AchivementFileBW(Achievement achievement){
+	return AchievementFilesBW[(uint32_t) achievement];
 }
 
 #endif //BIT_FIRMWARE_FILEPATHS_HPP

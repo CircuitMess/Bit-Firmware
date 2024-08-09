@@ -83,7 +83,9 @@ void AchievementView::buildUI(){
 		lv_obj_add_style(base, defaultStyle, 0);
 		lv_obj_set_style_bg_img_src(base, "S:/Ach/bg.bin", LV_STATE_DEFAULT);
 
-		auto img = new GrayscaleImageElement(base, AchivementFile((Achievement) i), unlockedData[i].unlocked());
+		auto img = new GrayscaleImageElement(base, AchivementFile((Achievement) i),
+											 AchivementFileBW((Achievement) i),
+											 !unlockedData[i].unlocked());
 		lv_obj_center(*img);
 
 		lv_obj_add_event_cb(base, onKey, LV_EVENT_KEY, this);
