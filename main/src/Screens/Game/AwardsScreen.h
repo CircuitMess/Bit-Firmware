@@ -30,7 +30,7 @@ private:
 
 	Award awardMode = Award::None;
 
-	char characters[3] {' ', ' ', ' '};
+	char characters[3] {'A', 'A', 'A'};
 
 	lv_obj_t* name[3];
 	lv_obj_t* item;

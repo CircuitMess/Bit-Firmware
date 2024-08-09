@@ -3,6 +3,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/CircleCC.h"
+#include <esp_random.h>
 
 Pong::Pong(Sprite& base) : Game(base, Games::Pong, "/Games/Pong", {
 		{ "/bg.raw", {}, true }
@@ -176,12 +177,12 @@ void Pong::setCollision(){
 		enemyScore++;
 		scoreLabel->setText(std::to_string(playerScore) + " : " + std::to_string(enemyScore));
 		ballSpeed.x = abs(ballSpeed.x);
-		ballSpeed.y = (rand() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
+		ballSpeed.y = (esp_random() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
 
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			int16_t posY = rand() % 100;
+			int16_t posY = esp_random() % 100;
 			posY += 14;
 			ball->setPos(player->getPos().x + PlayerDim.x + 2, posY);
 			ballSpeed.x = BallBaseSpeed;
@@ -198,12 +199,12 @@ void Pong::setCollision(){
 		playerScore++;
 		scoreLabel->setText(std::to_string(playerScore) + " : " + std::to_string(enemyScore));
 		ballSpeed.x = -abs(ballSpeed.x);
-		ballSpeed.y = (rand() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
+		ballSpeed.y = (esp_random() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
 
 		if(enemyScore >= ScoreLimit || playerScore >= ScoreLimit){
 			changeState(State::End);
 		}else{
-			int16_t posY = rand() % 100;
+			int16_t posY = esp_random() % 100;
 			posY += 14;
 			ball->setPos(enemy->getPos().x - BallDim.x - 2, posY);
 			ballSpeed.x = -BallBaseSpeed;

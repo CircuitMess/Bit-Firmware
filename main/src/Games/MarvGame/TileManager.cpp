@@ -1,6 +1,7 @@
 #include "TileManager.h"
 #include "../../GameEngine/Rendering/SpriteRC.h"
 #include "../../GameEngine/Collision/RectCC.h"
+#include <esp_random.h>
 
 MarvGame::TileManager::TileManager(std::vector<std::shared_ptr<GameObject>>& movingObjects) : movingObjects(movingObjects){
 }
@@ -39,7 +40,7 @@ void MarvGame::TileManager::drawTiles(int objectIndex){
 
 	sprite->clear(TFT_TRANSPARENT);
 	for(int iTile = 0; iTile < tilesPerArray; iTile++){
-		int randTop = rand() % topFiles.size();
+		int randTop = esp_random() % topFiles.size();
 		Display::drawFile(*sprite, topFiles[randTop], iTile * tileDim.x, 0, tileDim.x, tileDim.y);
 	}
 }

@@ -7,16 +7,16 @@
 
 class GrayscaleImageElement : public LVObject {
 public:
-	GrayscaleImageElement(lv_obj_t* parent, const std::string& path, bool grayscale);
+	GrayscaleImageElement(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayscale = false);
 	virtual ~GrayscaleImageElement() override = default;
 
 	bool isGrayscale() const;
 	void setGrayscale(bool value);
 
 private:
-	lv_obj_t* canvas;
-	std::vector<uint8_t> canvasData;
+	lv_obj_t* img;
 	std::string path;
+	std::string pathGrayscale;
 	bool grayscale;
 };
 

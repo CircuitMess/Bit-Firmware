@@ -13,6 +13,9 @@
 #include "Games/Dance/Dance.h"
 #include "Games/Asteroids/Asteroids.h"
 #include "Games/Artemis/Game.h"
+#include "Games/Harald/Harald.h"
+#include "Games/Planck/Planck.h"
+#include "Games/WackyStacky/WackyStacky.h"
 #include "Services/MelodyPlayer.h"
 #include "Util/Notes.h"
 
@@ -28,7 +31,10 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Resistron,  [](Sprite& canvas){ return std::make_unique<Invaders::Invaders>(canvas); } },
 		{ Games::Buttons,  [](Sprite& canvas){ return std::make_unique<Dance>(canvas); } },
 		{ Games::Robby,      [](Sprite& canvas){ return std::make_unique<Asteroids::Asteroids>(canvas); } },
-		{ Games::Artemis,    [](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } }
+		{ Games::Artemis,    [](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } },
+		{ Games::Harald,    [](Sprite& canvas){ return std::make_unique<Harald::Harald>(canvas); } },
+		{ Games::Planck,    [](Sprite& canvas){ return std::make_unique<Planck::Planck>(canvas); } },
+		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } }
 };
 
 extern const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds;
@@ -50,8 +56,6 @@ void GameRunner::startGame(Games game){
 
 	auto launcher = Launcher.at(game);
 
-	srand(micros());
-
 	auto inst = launcher(display.getCanvas());
 
 	EventQueue evts(12);
@@ -70,8 +74,6 @@ void GameRunner::startGame(Games game){
 		delayMillis(100);
 	}
 	delete melody;
-
-	srand(micros());
 
 	currentGameEnum = game;
 	currentGame = std::move(inst);
