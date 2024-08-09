@@ -19,9 +19,8 @@ const std::map<LED, TwinkleService::PwnMappingInfo> TwinkleService::PwmMappings 
 		{ LED::Menu,  { (gpio_num_t) LED_MENU,  PWMLimit }}
 };
 
-TwinkleService::TwinkleService() : SleepyThreaded(500, "TwinkleService", 3000, 0, 1),
+TwinkleService::TwinkleService() : SleepyThreaded(500, "TwinkleService", 3000, 0, 0),
 								   ledService((LEDService*) Services.get(Service::LED)){
-	unregistered.insert({ LED::Up, LED::Down, LED::Left, LED::Right, LED::A, LED::B, LED::Menu });
 }
 
 void TwinkleService::sleepyLoop(){
@@ -55,7 +54,7 @@ void TwinkleService::sleepyLoop(){
 
 			auto& pwmInfo = PwmMappings.at(led);
 			ledService->add<SinglePwmLED>(led, pwmInfo.pin, newInfo.ledcChannel, pwmInfo.limit);
-			ledService->breathe(led, 1, info.period);
+			ledService->breathe(led, 1, newInfo.period);
 
 			ESP_LOGD(TAG, "ledService add %d on channel %d", (uint8_t) led, newInfo.ledcChannel);
 
@@ -70,10 +69,42 @@ void TwinkleService::sleepyLoop(){
 	}
 }
 
+bool TwinkleService::onStart(){
+	registered.clear();
+	unregistered.clear();
+	unregistered.insert({ LED::Up, LED::Down, LED::Left, LED::Right, LED::A, LED::B, LED::Menu });
+
+	for(int i = 0; i < MaxRegisteredCount; ++i){
+		//Same as registerRandomLED, but without actual LEDs starting
+		//Used only for randomizing the starting offsets
+		auto ledcChannel = ((ledc_channel_t) (i + 3));
+
+		uint32_t currentTime = millis();
+		uint32_t offset = esp_random() % MaxStartOffset;
+		auto it = unregistered.begin();
+		std::advance(it, esp_random() % unregistered.size());
+		LED led = *it;
+
+		TwinkleInfo info = { currentTime + offset, 0, led, ledcChannel };
+		registered.push_back(info);
+		unregistered.erase(led);
+	}
+
+	return true;
+}
+
+void TwinkleService::onStop(){
+	for(auto& i: PwmMappings){
+		ledService->remove(i.first);
+		ledService->add<SingleDigitalLED>(i.first, i.second.pin);
+	}
+}
+
 uint32_t TwinkleService::getRandomBreathePeriod() const{
 	return MinBreathePeriod + (esp_random() % (MaxBreathePeriod - MinBreathePeriod));
 }
 
+/*
 void TwinkleService::registerRandomLED(ledc_channel_t ledcChannel){
 	uint32_t currentTime = millis();
 	uint32_t offset = esp_random() % MaxStartOffset;
@@ -91,23 +122,4 @@ void TwinkleService::registerRandomLED(ledc_channel_t ledcChannel){
 
 	ESP_LOGD(TAG, "ledService add %d on channel %d", (uint8_t) led, ledcChannel);
 }
-
-bool TwinkleService::onStart(){
-	for(int i = 0; i < MaxRegisteredCount; ++i){
-		//Same as registerRandomLED, but without actual LEDs starting
-		//Used only for randomizing the starting offsets
-		auto ledcChannel = ((ledc_channel_t) (i + 3));
-
-		uint32_t currentTime = millis();
-		uint32_t offset = esp_random() % MaxStartOffset;
-		auto it = unregistered.begin();
-		std::advance(it, esp_random() % unregistered.size());
-		LED led = *it;
-
-		TwinkleInfo info = { currentTime + offset, getRandomBreathePeriod(), led, ledcChannel };
-		registered.push_back(info);
-		unregistered.erase(led);
-	}
-
-	return true;
-}
+*/

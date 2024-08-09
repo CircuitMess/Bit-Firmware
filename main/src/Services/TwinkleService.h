@@ -12,6 +12,7 @@ public:
 protected:
 	void sleepyLoop() override;
 	bool onStart() override;
+	void onStop() override;
 
 private:
 	struct PwnMappingInfo {
@@ -41,7 +42,7 @@ private:
 
 	uint32_t getRandomBreathePeriod() const;
 
-	void registerRandomLED(ledc_channel_t ledcChannel);
+//	void registerRandomLED(ledc_channel_t ledcChannel);
 };
 
 

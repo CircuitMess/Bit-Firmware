@@ -11,17 +11,25 @@
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
 #include "Filepaths.hpp"
+#include "Services/TwinkleService.h"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
 void PauseScreen::onStart(){
+	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+		twinkle->start();
+	}
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
 
 void PauseScreen::onStop(){
+	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+		twinkle->stop();
+	}
+
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 

@@ -119,6 +119,7 @@ void init(){
 	Services.set(Service::LED, led);
 
 	TwinkleService* twinkleService = new TwinkleService();
+	Services.set(Service::Twinkle, twinkleService);
 	twinkleService->start();
 
 	if(!initSPIFFS()) return;
