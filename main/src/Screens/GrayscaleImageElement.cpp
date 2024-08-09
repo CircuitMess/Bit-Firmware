@@ -1,9 +1,9 @@
 #include "GrayscaleImageElement.h"
 #include <LV_Interface/FSLVGL.h>
 
-GrayscaleImageElement::GrayscaleImageElement(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, uint16_t width, uint16_t height,
-											 bool grayscale) : LVObject(parent), path(path), pathGrayscale(pathGrayscale), grayscale(grayscale){
-	lv_obj_set_size(*this, width, height);
+GrayscaleImageElement::GrayscaleImageElement(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayscale) :
+		LVObject(parent), path(path), pathGrayscale(pathGrayscale), grayscale(grayscale){
+	lv_obj_set_size(*this, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 	img = lv_img_create(*this);
 	setGrayscale(grayscale);
 }
