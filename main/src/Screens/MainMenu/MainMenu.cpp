@@ -74,9 +74,6 @@ void MainMenu::launch(Games game){
 		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
 	}
 
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->stop();
-	}
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([game](){ return std::make_unique<GameMenuScreen>(game); });
 }
@@ -93,10 +90,6 @@ void MainMenu::onStart(){
 	Events::listen(Facility::Pets, &events);
 	Events::listen(Facility::Themes, &events);
 	Events::listen(Facility::Input, &events);
-
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		if(!twinkle->running()) twinkle->start();
-	}
 
 	if(bg != nullptr){
 		bg->start();

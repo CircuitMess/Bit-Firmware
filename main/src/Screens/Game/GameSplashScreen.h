@@ -21,6 +21,7 @@ private:
 
 	void buildUI();
 	void loop() override;
+	void onStart() override;
 };
 
 #endif //BIT_FIRMWARE_GAMESPLASHSCREEN_H

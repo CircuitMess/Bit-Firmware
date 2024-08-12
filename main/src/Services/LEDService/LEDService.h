@@ -9,9 +9,24 @@
 #include <mutex>
 #include "Util/Threaded.h"
 #include "Util/Queue.h"
+#include "Pins.hpp"
+
 
 enum class LED : uint8_t {
 	Up, Down, Left, Right, A, B, Menu, RobotCtrl1, RobotCtrl2, RobotCtrl3, RobotCtrl4, RobotCtrl5, RobotCtrl6, COUNT
+};
+struct PwmMappingInfo {
+	gpio_num_t pin = GPIO_NUM_NC;
+	uint8_t limit = 100;
+};
+const std::map<LED, PwmMappingInfo> PwmMappings = {
+		{ LED::Up,    { (gpio_num_t) LED_UP,    0x10 }},
+		{ LED::Down,  { (gpio_num_t) LED_DOWN,  0x10 }},
+		{ LED::Left,  { (gpio_num_t) LED_LEFT,  0x10 }},
+		{ LED::Right, { (gpio_num_t) LED_RIGHT, 0x10 }},
+		{ LED::A,     { (gpio_num_t) LED_A,     0x10 }},
+		{ LED::B,     { (gpio_num_t) LED_B,     0x10 }},
+		{ LED::Menu,  { (gpio_num_t) LED_MENU,  0x10 }}
 };
 
 class LEDService : private Threaded {
