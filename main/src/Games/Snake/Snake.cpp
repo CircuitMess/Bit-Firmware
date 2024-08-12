@@ -253,6 +253,7 @@ void Snake::moveSnake(glm::vec2 speed){
 }
 
 void Snake::gameOver(){
+	flashAll();
 	state = State::GameOver;
 	const uint16_t duration = std::clamp((int) score * 100, 400, 1400);
 	audio.play({ { 100, 80,  100 },

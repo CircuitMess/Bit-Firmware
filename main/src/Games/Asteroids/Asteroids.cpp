@@ -360,6 +360,8 @@ void Asteroids::Asteroids::updateInvincibility(float delta){
 void Asteroids::Asteroids::playerHit(){
 //	RGB.blinkTwice(Pixel::Red);
 
+	flashAll();
+
 	life--;
 	hearts->setLives(life);
 	if(life == 0){
