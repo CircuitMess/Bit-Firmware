@@ -44,17 +44,21 @@ public:
 
 	void remove(LED led);
 
-	void on(LED led);
+	void on(LED led, bool interrupt = true);
 
-	void off(LED led);
+	void off(LED led, bool interrupt = true);
 
 	void blink(LED led, uint32_t count = 1, uint32_t period = 1000);
 
 	void breathe(LED led, uint32_t count = 0, uint32_t period = 1000);
 
-	void set(LED led, float percent);
+	void set(LED led, float percent, bool interrupt = true);
 
 	void breatheTo(LED led, float targetPercent, uint32_t duration = 250);
+
+	inline bool isRegistered(LED led) const{
+		return ledDevices.contains(led);
+	}
 
 protected:
 	virtual void loop() override;
@@ -75,6 +79,7 @@ private:
 		uint32_t count;
 		uint32_t period;
 		float targetPercent;
+		bool interrupt;
 	};
 
 	std::map<LED, class SingleLED*> ledDevices;

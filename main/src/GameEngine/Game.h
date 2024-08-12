@@ -66,6 +66,11 @@ protected:
 
 	inline virtual uint32_t getScore() const { return 0; }
 
+	/**
+	 * Flashes all used LEDs. Used when taking damage, etc.
+	 */
+	void flashAll();
+
 	inline static bool exited = false; // yolo
 	// Exit is going to get called in the game's onLoop, and when exit is called, the Game object
 	// will get deleted. Once onLoop exits (in Game::loop), the object is already deleted. When that
@@ -90,6 +95,14 @@ private:
 	void loadFunc();
 
 	std::shared_ptr<RoboCtrl::RobotDriver> robot;
+
+	ButtonsUsage buttons;
+	class LEDService* ledService;
+
+	void handleLEDs(const Input::Data& data);
+
+	static constexpr uint32_t FlashPeriod = 350; //ms
+	static constexpr uint8_t FlashCount = 4;
 };
 
 

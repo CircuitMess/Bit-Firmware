@@ -15,8 +15,12 @@ public:
 	 */
 	virtual bool loop() = 0;
 
+	void setExitValue(uint8_t exitValue);
+	uint8_t getExitValue() const;
+
 protected:
 	SingleLED& led;
+	uint8_t exitValue;
 };
 
 #endif //PERSE_ROVER_LEDFUNCTION_H

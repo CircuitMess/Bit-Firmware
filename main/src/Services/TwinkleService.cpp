@@ -68,8 +68,7 @@ bool TwinkleService::onStart(){
 	unregistered.insert({ LED::Up, LED::Down, LED::Left, LED::Right, LED::A, LED::B, LED::Menu });
 
 	for(int i = 0; i < MaxRegisteredCount; ++i){
-		//Same as registerRandomLED, but without actual LEDs starting
-		//Used only for randomizing the starting offsets
+		//Used only for randomizing the starting offsets, no actual breathing
 		auto ledcChannel = ((ledc_channel_t) (i + 3));
 
 		uint32_t currentTime = millis();

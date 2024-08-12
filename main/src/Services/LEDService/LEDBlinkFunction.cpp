@@ -11,14 +11,6 @@ LEDBlinkFunction::~LEDBlinkFunction(){
 }
 
 bool LEDBlinkFunction::loop(){
-	if(count != 0 && elapsedCount >= count){
-		if(led.getValue() != 0){
-			led.setValue(0);
-		}
-
-		return false;
-	}
-
 	const uint64_t elapsedTime = millis() - startTime;
 
 	bool ledState = false;
@@ -32,6 +24,13 @@ bool LEDBlinkFunction::loop(){
 
 	if(ledState){
 		++elapsedCount;
+		if(count != 0 && elapsedCount > count){
+			if(led.getValue() != 0){
+				led.setValue(0);
+			}
+
+			return false;
+		}
 		led.setValue(0xFF);
 	}else{
 		led.setValue(0);

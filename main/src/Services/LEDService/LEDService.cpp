@@ -32,19 +32,21 @@ void LEDService::remove(LED led){
 	}
 }
 
-void LEDService::on(LED led){
+void LEDService::on(LED led, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
-			.instruction = On
+			.instruction = On,
+			.interrupt = interrupt
 	};
 
 	instructionQueue.post(instruction);
 }
 
-void LEDService::off(LED led){
+void LEDService::off(LED led, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
-			.instruction = Off
+			.instruction = Off,
+			.interrupt = interrupt
 	};
 
 	instructionQueue.post(instruction);
@@ -72,11 +74,12 @@ void LEDService::breathe(LED led, uint32_t count /*= 0*/, uint32_t period /*= 10
 	instructionQueue.post(instruction);
 }
 
-void LEDService::set(LED led, float percent){
+void LEDService::set(LED led, float percent, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
 			.instruction = Set,
-			.targetPercent = std::clamp(percent, 0.0f, 100.0f)
+			.targetPercent = std::clamp(percent, 0.0f, 100.0f),
+			.interrupt = interrupt
 	};
 
 	instructionQueue.post(instruction);
@@ -96,9 +99,17 @@ void LEDService::breatheTo(LED led, float targetPercent, uint32_t duration){
 void LEDService::loop(){
 	for(LEDInstructionInfo instructionInfo; instructionQueue.get(instructionInfo, 10);){
 		if(instructionInfo.instruction == On){
-			onInternal(instructionInfo.led);
+			if(ledFunctions.contains(instructionInfo.led) && !instructionInfo.interrupt){
+				ledFunctions[instructionInfo.led]->setExitValue(0xFF);
+			}else{
+				onInternal(instructionInfo.led);
+			}
 		}else if(instructionInfo.instruction == Off){
-			offInternal(instructionInfo.led);
+			if(ledFunctions.contains(instructionInfo.led) && !instructionInfo.interrupt){
+				ledFunctions[instructionInfo.led]->setExitValue(0);
+			}else{
+				offInternal(instructionInfo.led);
+			}
 		}else if(instructionInfo.instruction == Blink){
 			blinkInternal(instructionInfo.led, instructionInfo.count, instructionInfo.period);
 		}else if(instructionInfo.instruction == Breathe){
@@ -106,7 +117,11 @@ void LEDService::loop(){
 		}else if(instructionInfo.instruction == BreatheTo){
 			breatheToInternal(instructionInfo.led, instructionInfo.targetPercent, instructionInfo.period);
 		}else if(instructionInfo.instruction == Set){
-			setInternal(instructionInfo.led, instructionInfo.targetPercent);
+			if(ledFunctions.contains(instructionInfo.led) && !instructionInfo.interrupt){
+				ledFunctions[instructionInfo.led]->setExitValue(instructionInfo.targetPercent * 0xFF);
+			}else{
+				setInternal(instructionInfo.led, instructionInfo.targetPercent);
+			}
 		}
 	}
 
@@ -117,6 +132,7 @@ void LEDService::loop(){
 
 		bool ret = ledFunctions[led]->loop();
 		if(!ret){
+			setInternal(led, (float) ledFunctions[led]->getExitValue() / 255.0);
 			ledFunctions.erase(led);
 		}
 	}
