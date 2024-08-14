@@ -262,6 +262,8 @@ void MarvGame::MarvGame::spawn(){
 void MarvGame::MarvGame::duckHit(){
 //	RGB.blinkTwice(Pixel::Red);
 
+	flashAll();
+
 	life--;
 	hearts->setLives(life);
 	if(life == 0){

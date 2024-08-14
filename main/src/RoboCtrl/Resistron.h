@@ -2,8 +2,8 @@
 #define BIT_FIRMWARE_RESISTRON_H
 
 #include "RobotDriver.h"
-#include "Devices/LEDController.h"
 
+class LEDService;
 
 namespace RoboCtrl {
 
@@ -22,8 +22,7 @@ protected:
 	void onLoop(uint micros) override;
 
 private:
-	DigitalLEDController led1;
-	DigitalLEDController led2;
+	LEDService* ledService;
 
 	bool leftRightAnim = false;
 	uint32_t leftRightTime = 0;

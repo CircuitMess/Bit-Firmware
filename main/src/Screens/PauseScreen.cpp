@@ -11,17 +11,25 @@
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
 #include "Filepaths.hpp"
+#include "Services/TwinkleService.h"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
 void PauseScreen::onStart(){
+	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+		twinkle->start();
+	}
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
 
 void PauseScreen::onStop(){
+	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+		twinkle->stop();
+	}
+
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
@@ -36,8 +44,6 @@ void PauseScreen::onStop(){
 }
 
 void PauseScreen::loop(){
-	batt->loop();
-
 	Event e{};
 	if(evts.get(e, 0)){
 		if(e.facility != Facility::Input){
@@ -137,8 +143,6 @@ void PauseScreen::buildUI(){
 
 	auto img = lv_img_create(top);
 	lv_img_set_src(img, THEMED_FILE(Paused, theme));
-
-	batt = new BatteryElement(top);
 
 	auto rest = lv_obj_create(*this);
 	lv_obj_set_size(rest, 128, 96);

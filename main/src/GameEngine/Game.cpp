@@ -9,6 +9,8 @@
 #include "Services/HighScoreManager.h"
 #include "Screens/Game/AwardsScreen.h"
 #include "Services/AchievementSystem.h"
+#include "Services/LEDService/LEDService.h"
+#include "Devices/SinglePwmLED.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
 		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), gameType(gameType), base(base),
@@ -16,6 +18,9 @@ Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescri
 		loadTask([this](){ loadFunc(); }, "loadTask", 4096, 12, 0),
 		render(this, base){
 	exited = false;
+
+	buttons = GameButtonsUsed[(uint8_t) gameType];
+	ledService = (LEDService*) Services.get(Service::LED);
 }
 
 Game::~Game(){
@@ -42,6 +47,55 @@ void Game::start(){
 		ESP_LOGE("Game", "Attempting to start game that wasn't loaded.");
 		return;
 	}
+
+	auto input = (Input*) Services.get(Service::Input);
+	for(auto& i: PwmMappings){
+		ledService->remove(i.first);
+	}
+	uint8_t channel = 3;
+	if(buttons.up){
+		auto pwmInfo = PwmMappings.at(LED::Up);
+		ledService->add<SinglePwmLED>(LED::Up, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::Up)){
+			ledService->on(LED::Up);
+		}
+	}
+	if(buttons.down){
+		auto pwmInfo = PwmMappings.at(LED::Down);
+		ledService->add<SinglePwmLED>(LED::Down, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::Down)){
+			ledService->on(LED::Down);
+		}
+	}
+	if(buttons.left){
+		auto pwmInfo = PwmMappings.at(LED::Left);
+		ledService->add<SinglePwmLED>(LED::Left, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::Left)){
+			ledService->on(LED::Left);
+		}
+	}
+	if(buttons.right){
+		auto pwmInfo = PwmMappings.at(LED::Right);
+		ledService->add<SinglePwmLED>(LED::Right, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::Right)){
+			ledService->on(LED::Right);
+		}
+	}
+	if(buttons.a){
+		auto pwmInfo = PwmMappings.at(LED::A);
+		ledService->add<SinglePwmLED>(LED::A, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::A)){
+			ledService->on(LED::A);
+		}
+	}
+	if(buttons.b){
+		auto pwmInfo = PwmMappings.at(LED::B);
+		ledService->add<SinglePwmLED>(LED::B, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
+		if(!input->isPressed(Input::B)){
+			ledService->on(LED::B);
+		}
+	}
+
 
 	started = true;
 	onStart();
@@ -142,6 +196,7 @@ void Game::loop(uint micros){
 				return;
 			}
 
+			handleLEDs(*data);
 			handleInput(*data);
 		}
 		free(e.data);
@@ -195,3 +250,32 @@ void Game::setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot){
 	this->robot = robot;
 }
 
+void Game::flashAll(){
+	if(buttons.up) ledService->blink(LED::Up, FlashCount, FlashPeriod);
+	if(buttons.down) ledService->blink(LED::Down, FlashCount, FlashPeriod);
+	if(buttons.left) ledService->blink(LED::Left, FlashCount, FlashPeriod);
+	if(buttons.right) ledService->blink(LED::Right, FlashCount, FlashPeriod);
+	if(buttons.a) ledService->blink(LED::A, FlashCount, FlashPeriod);
+	if(buttons.b) ledService->blink(LED::B, FlashCount, FlashPeriod);
+}
+
+void Game::handleLEDs(const Input::Data& data){
+	if(data.btn == Input::Up && buttons.up){
+		(data.action == Input::Data::Press) ? ledService->off(LED::Up, false) : ledService->on(LED::Up, false);
+	}
+	if(data.btn == Input::Down && buttons.down){
+		(data.action == Input::Data::Press) ? ledService->off(LED::Down, false) : ledService->on(LED::Down, false);
+	}
+	if(data.btn == Input::Left && buttons.left){
+		(data.action == Input::Data::Press) ? ledService->off(LED::Left, false) : ledService->on(LED::Left, false);
+	}
+	if(data.btn == Input::Right && buttons.right){
+		(data.action == Input::Data::Press) ? ledService->off(LED::Right, false) : ledService->on(LED::Right, false);
+	}
+	if(data.btn == Input::A && buttons.a){
+		(data.action == Input::Data::Press) ? ledService->off(LED::A, false) : ledService->on(LED::A, false);
+	}
+	if(data.btn == Input::B && buttons.b){
+		(data.action == Input::Data::Press) ? ledService->off(LED::B, false) : ledService->on(LED::B, false);
+	}
+}

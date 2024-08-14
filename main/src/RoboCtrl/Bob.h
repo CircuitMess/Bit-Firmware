@@ -1,8 +1,9 @@
 #ifndef BIT_FIRMWARE_BOB_H
 #define BIT_FIRMWARE_BOB_H
 
-#include "Devices/LEDController.h"
 #include "RobotDriver.h"
+
+class LEDService;
 
 namespace RoboCtrl {
 
@@ -22,7 +23,7 @@ protected:
 	void deinit() override;
 
 private:
-	DigitalLEDController leds;
+	LEDService* ledService;
 };
 
 }

@@ -1,14 +1,26 @@
 #include "BatteryElement.h"
 #include "Util/stdafx.h"
 #include "Util/Services.h"
+#include "Settings/Settings.h"
 
 BatteryElement::BatteryElement(lv_obj_t* parent) : LVObject(parent), evts(6){
-	Events::listen(Facility::Battery, &evts);
-	lv_obj_set_size(*this, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-	img = lv_img_create(*this);
+	auto theme = ((Settings*) Services.get(Service::Settings))->get().theme;
+	BatteryIcons[0] = THEMED_FILE(Battery::Level1, theme);
+	BatteryIcons[1] = THEMED_FILE(Battery::Level2, theme);
+	BatteryIcons[2] = THEMED_FILE(Battery::Level3, theme);
+	BatteryIcons[3] = THEMED_FILE(Battery::Level4, theme);
+	BatteryIcons[4] = THEMED_FILE(Battery::Level5, theme);
+	BatteryIcons[5] = THEMED_FILE(Battery::Level6, theme);
 
+	lv_obj_set_size(*this, Width, Height);
+	lv_obj_set_style_bg_img_src(*this, THEMED_FILE(Battery::Background, theme), LV_STATE_DEFAULT);
+	lv_obj_set_style_pad_all(*this, 3, LV_STATE_DEFAULT);
+
+
+	img = lv_img_create(*this);
 	auto batt = (Battery*) Services.get(Service::Battery);
 	set(batt->getLevel());
+	Events::listen(Facility::Battery, &evts);
 }
 
 BatteryElement::~BatteryElement(){
@@ -19,20 +31,13 @@ void BatteryElement::set(Battery::Level battLevel){
 	if(battLevel == Battery::Critical){
 		battLevel = Battery::VeryLow;
 	}
-	this->level = (Level) (((int) battLevel) - 1);
+	this->level = (Level) (((int) battLevel) - 1); //-1 because Critical level is ignored
 
+	lv_obj_clear_flag(img, LV_OBJ_FLAG_HIDDEN);
+	lv_img_set_src(img, BatteryIcons[level]);
 	if(level == Empty){
 		lowBatteryAnimToggle = true;
 		lowBatMillis = millis();
-		lv_img_set_src(img, BatteryIcons[0]);
-	}else if(level == Charging){
-		chargingMillis = millis();
-		chargingIndex = 0;
-		lv_obj_clear_flag(img, LV_OBJ_FLAG_HIDDEN);
-		lv_img_set_src(img, BatteryIcons[0]);
-	}else{
-		lv_obj_clear_flag(img, LV_OBJ_FLAG_HIDDEN);
-		lv_img_set_src(img, BatteryIcons[level - 1]);
 	}
 }
 
@@ -46,13 +51,7 @@ void BatteryElement::loop(){
 		free(evt.data);
 	}
 
-	if(level == Charging){
-		if(millis() - chargingMillis > ChargingAnimTime){
-			chargingIndex = (chargingIndex + 1) % BatteryLevels;
-			chargingMillis = millis();
-			lv_img_set_src(img, BatteryIcons[chargingIndex]);
-		}
-	}else if(level == Empty){
+	if(level == Empty){
 		if(millis() - lowBatMillis > LowBatteryAnimTime){
 			lowBatMillis = millis();
 			if(lowBatteryAnimToggle){

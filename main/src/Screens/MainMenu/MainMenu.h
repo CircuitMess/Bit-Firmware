@@ -39,6 +39,7 @@ private:
 	bool loopBlocked = true;
 
 	static std::string imgFullPath(const char* game);
+	static std::string imgGrayscalePath(const char* game);
 
 	EventQueue events;
 	void loop() override;
@@ -54,6 +55,8 @@ private:
 	static std::atomic<bool> running;
 
 	ChirpSystem* audio;
+
+	static uint8_t lastCursor;
 };
 
 #endif //BIT_FIRMWARE_MAINMENU_H

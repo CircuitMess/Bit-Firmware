@@ -12,7 +12,7 @@ enum class XPBarLength : uint8_t {
 class XPBar : public LVObject {
 public:
 	/**
-	 * @param length - Short (84px) or Long (92px)
+	 * @param length - Length
 	 * @param parent - Parent object
 	 * @param fillPercent - Initial fill percentage
 	 */
@@ -27,7 +27,7 @@ private:
 
 	const XPBarLength length;
 
-	static constexpr uint16_t Widths[] = { 45, 84, 92 };
+	static constexpr uint16_t Widths[] = { 45, 74, 84 };
 	static constexpr uint16_t Height = 5;
 
 	static constexpr uint32_t AnimSpeed = 500; //[ms]

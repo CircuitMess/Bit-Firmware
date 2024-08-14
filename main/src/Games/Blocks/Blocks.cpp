@@ -171,6 +171,7 @@ void Blocks::onStop(){
 }
 
 void Blocks::gameOver(){
+	flashAll();
 	state = State::GameOver;
 	audio.play({ { 800, 100, 700 },
 				 { 0,   0,   100 },

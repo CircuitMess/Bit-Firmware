@@ -18,6 +18,9 @@
 #include "Screens/Game/GameMenuScreen.h"
 #include "Filepaths.hpp"
 #include "../Profile/ProfileScreen.h"
+#include "Services/TwinkleService.h"
+
+uint8_t MainMenu::lastCursor = 0;
 
 struct Entry {
 	const char* icon;
@@ -97,6 +100,15 @@ void MainMenu::onStart(){
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
+	lv_obj_t* obj;
+	if(lastCursor == 0){
+		obj = menuHeader->operator lv_obj_t *();
+	}else{
+		obj = lv_obj_get_child(itemCont, lastCursor-1);
+	}
+
+	lv_group_focus_obj(obj);
+
 	lv_obj_add_event_cb(*this, MainMenu::onScrollEnd, LV_EVENT_SCROLL_END, this);
 }
 
@@ -131,6 +143,13 @@ void MainMenu::onStop(){
 
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
+
+	auto obj = lv_group_get_focused(inputGroup);
+	if(obj == menuHeader->operator lv_obj_t *()){
+		lastCursor = 0;
+	}else{
+		lastCursor = lv_obj_get_index(obj) + 1;
+	}
 
 	gmEvt.reset();
 	running = false;
@@ -358,12 +377,13 @@ void MainMenu::buildUI(){
 	items.reserve(sizeof(MenuEntries) / sizeof(MenuEntries[0]));
 	for(const auto& entry : MenuEntries){
 		const std::string path = imgFullPath(entry.icon);
+		const std::string pathGrayscale = imgGrayscalePath(entry.icon);
 		bool locked = true;
 		if((entry.rob.robot == Robot::COUNT && entry.rob.token == Token::COUNT) || entry.game == Games::COUNT || games->isUnlocked(entry.game)){
 			locked = false;
 		}
 
-		auto item = new MenuItem(itemCont, path, locked);
+		auto item = new MenuItem(itemCont, path, pathGrayscale, locked);
 		lv_obj_add_flag(*item, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 		lv_group_add_obj(inputGroup, *item);
 
@@ -383,8 +403,7 @@ void MainMenu::buildUI(){
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
-	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
-	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
+	lv_obj_set_pos(*batt, 108, 0);
 
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
@@ -397,6 +416,13 @@ void MainMenu::buildUI(){
 
 std::string MainMenu::imgFullPath(const char* game){
 	std::string path("S:/GameIcons/");
+	path.append(game);
+	path.append(".bin");
+	return path;
+}
+
+std::string MainMenu::imgGrayscalePath(const char* game){
+	std::string path("S:/GameIcons/bw/");
 	path.append(game);
 	path.append(".bin");
 	return path;

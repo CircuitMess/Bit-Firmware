@@ -72,7 +72,8 @@ void ProfileScreen::handleGameInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" games
-	std::set<RobotData> comingSoon = { { Robot::COUNT, Token::Frank }, { Robot::COUNT, Token::Fred } };
+	std::set<RobotData> comingSoon = {{ Robot::COUNT, Token::Frank },
+									  { Robot::COUNT, Token::Fred }};
 	if(comingSoon.contains(rob)){
 		new UpdateRobot(this);
 		return;
@@ -91,7 +92,7 @@ void ProfileScreen::handleThemeInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" themes
-	std::unordered_set<Token> comingSoon = { };
+	std::unordered_set<Token> comingSoon = {};
 	if(comingSoon.contains(rob.token)){
 		new UpdateRobot(this);
 		return;
@@ -115,7 +116,7 @@ void ProfileScreen::handlePetInsert(const RobotManager::Event& evt){
 	auto isNew = evt.isNew;
 
 	// "Coming soon" pets
-	std::unordered_set<Token> comingSoon = { };
+	std::unordered_set<Token> comingSoon = {};
 	if(comingSoon.contains(rob.token)){
 		new UpdateRobot(this);
 		return;
@@ -154,8 +155,7 @@ void ProfileScreen::handleInput(const Input::Data& evt){
 }
 
 void ProfileScreen::setupThemes(){
-	lv_style_set_bg_color(unfocusedSection, lv_palette_main(LV_PALETTE_RED));
-	lv_style_set_bg_opa(focusedSection, LV_OPA_40);
+	lv_style_set_bg_color(unfocusedSection, lv_color_white());
 }
 
 void ProfileScreen::buildUI(){
@@ -167,7 +167,15 @@ void ProfileScreen::buildUI(){
 	lv_obj_set_pos(characterSection, 0, 4);
 	lv_group_add_obj(inputGroup, characterSection);
 	lv_obj_add_style(characterSection, unfocusedSection, LV_STATE_DEFAULT);
-	lv_obj_add_style(characterSection, focusedSection, LV_STATE_FOCUSED);
+	lv_obj_add_event_cb(characterSection, [](lv_event_t* e){
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->startAnim(Section::Character);
+	}, LV_EVENT_FOCUSED, this);
+	lv_obj_add_event_cb(characterSection, [](lv_event_t* e){
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->stopAnim(Section::Character);
+	}, LV_EVENT_DEFOCUSED, this);
+
 
 	//XP bar
 	auto xpBackground = lv_img_create(*this);
@@ -194,6 +202,7 @@ void ProfileScreen::buildUI(){
 	lv_obj_add_flag(achievementOverlay, LV_OBJ_FLAG_FLOATING);
 	lv_obj_set_align(achievementOverlay, LV_ALIGN_TOP_LEFT);
 	lv_obj_set_pos(achievementOverlay, 55, 4);
+	lv_obj_set_style_radius(achievementOverlay, 3, 0);
 	lv_obj_set_size(achievementOverlay, lv_obj_get_width(achievementSection), lv_obj_get_height(achievementSection));
 	lv_obj_add_style(achievementOverlay, unfocusedSection, LV_STATE_DEFAULT);
 
@@ -202,14 +211,16 @@ void ProfileScreen::buildUI(){
 	lv_group_add_obj(inputGroup, achievementSection);
 
 	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
-		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_40, 0);
-	}, LV_EVENT_FOCUSED, achievementOverlay);
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->startAnim(Section::Achievement);
+	}, LV_EVENT_FOCUSED, this);
 	lv_obj_add_event_cb(achievementSection, [](lv_event_t* e){
-		lv_obj_set_style_bg_opa((lv_obj_t*) e->user_data, LV_OPA_0, 0);
-	}, LV_EVENT_DEFOCUSED, achievementOverlay);
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->stopAnim(Section::Achievement);
+	}, LV_EVENT_DEFOCUSED, this);
 
 	lv_obj_move_foreground(achievementOverlay);
-	achievementSection.setOverlay(achievementOverlay);
+	achievementSection.setReturnFunc([this](){ startAnim(Section::Achievement); });
 
 	lv_obj_refr_size(achievementSection);
 	lv_obj_refresh_self_size(achievementSection);
@@ -219,8 +230,16 @@ void ProfileScreen::buildUI(){
 	lv_obj_set_align(*themeSection, LV_ALIGN_TOP_LEFT);
 	lv_obj_set_pos(*themeSection, 4, 86);
 	lv_obj_add_style(*themeSection, unfocusedSection, LV_STATE_DEFAULT);
-	lv_obj_add_style(*themeSection, focusedSection, LV_STATE_FOCUSED);
 	lv_group_add_obj(inputGroup, *themeSection);
+
+	lv_obj_add_event_cb(*themeSection, [](lv_event_t* e){
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->startAnim(Section::Theme);
+	}, LV_EVENT_FOCUSED, this);
+	lv_obj_add_event_cb(*themeSection, [](lv_event_t* e){
+		auto screen = (ProfileScreen*) e->user_data;
+		screen->stopAnim(Section::Theme);
+	}, LV_EVENT_DEFOCUSED, this);
 
 
 	//manual focus definitions
@@ -277,11 +296,65 @@ void ProfileScreen::buildUI(){
 		ProfileScreen* screen = (ProfileScreen*) event->user_data;
 		auto ach = &screen->achievementSection;
 
+//		printf("ach click, active: %d\n", ach->isActive());
+
 		if(ach->isActive()){
-			lv_obj_set_style_bg_opa(screen->achievementOverlay, LV_OPA_0, 0);
+			screen->stopAnim(Section::Achievement);
 		}else{
-			lv_obj_set_style_bg_opa(screen->achievementOverlay, LV_OPA_40, 0);
+			screen->startAnim(Section::Achievement);
 		}
 	}, LV_EVENT_CLICKED, this);
 
+}
+
+static void FocusedSectionAnimCB(void* obj, int32_t v){
+	lv_obj_set_style_bg_opa((lv_obj_t*) obj, v, 0);
+}
+
+void ProfileScreen::startAnim(ProfileScreen::Section section){
+	lv_anim_init(&focusedSectionAnim);
+	lv_anim_set_playback_time(&focusedSectionAnim, 250);
+	lv_anim_set_repeat_count(&focusedSectionAnim, LV_ANIM_REPEAT_INFINITE);
+	lv_anim_set_path_cb(&focusedSectionAnim, lv_anim_path_linear);
+	lv_anim_set_exec_cb(&focusedSectionAnim, FocusedSectionAnimCB);
+	lv_anim_set_values(&focusedSectionAnim, 60, 120);
+	lv_obj_t* var;
+	switch(section){
+		case Section::Achievement:
+			var = achievementOverlay;
+			break;
+		case Section::Theme:
+			var = *themeSection;
+			break;
+		case Section::Character:
+			var = characterSection;
+			break;
+		default:
+			var = nullptr;
+			break;
+	}
+	lv_anim_set_var(&focusedSectionAnim, var);
+
+	lv_anim_start(&focusedSectionAnim);
+}
+
+void ProfileScreen::stopAnim(Section section){
+	lv_obj_t* var;
+	switch(section){
+		case Section::Achievement:
+			var = achievementOverlay;
+			break;
+		case Section::Theme:
+			var = *themeSection;
+			break;
+		case Section::Character:
+			var = characterSection;
+			break;
+		default:
+			var = nullptr;
+			break;
+	}
+	lv_anim_del(var, FocusedSectionAnimCB);
+
+	lv_obj_set_style_bg_opa(var, LV_OPA_TRANSP, 0);
 }

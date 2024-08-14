@@ -5,6 +5,7 @@
 #include "Periph/NVSFlash.h"
 #include "Services/RobotManager.h"
 #include "Settings/Settings.h"
+#include "Services/TwinkleService.h"
 
 GameSplashScreen::GameSplashScreen(Games current) : currentGame(current){
 	switch(currentGame){
@@ -133,5 +134,29 @@ void GameSplashScreen::buildUI(){
 void GameSplashScreen::loop(){
 	if(auto ui = (UIThread*) Services.get(Service::UI)){
 		ui->startGame(currentGame);
+	}
+}
+
+void GameSplashScreen::onStart(){
+	if(auto led = (LEDService*) Services.get(Service::LED)){
+		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
+		if(buttons.up){
+			led->on(LED::Up);
+		}
+		if(buttons.down){
+			led->on(LED::Down);
+		}
+		if(buttons.left){
+			led->on(LED::Left);
+		}
+		if(buttons.right){
+			led->on(LED::Right);
+		}
+		if(buttons.a){
+			led->on(LED::A);
+		}
+		if(buttons.b){
+			led->on(LED::B);
+		}
 	}
 }
