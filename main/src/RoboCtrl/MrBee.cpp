@@ -1,15 +1,18 @@
 #include "MrBee.h"
+#include "Util/Services.h"
+#include "Services/LEDService/LEDService.h"
+#include "Devices/SingleDigitalLED.h"
 
-RoboCtrl::MrBee::MrBee() : RobotDriver(Robot::MrBee), led(CTRL_1){
+RoboCtrl::MrBee::MrBee() : RobotDriver(Robot::MrBee), ledService((LEDService*) Services.get(Service::LED)){
 
 }
 
 RoboCtrl::MrBee::~MrBee(){
-	led.end();
+	ledService->remove(LED::RobotCtrl1);
 }
 
 void RoboCtrl::MrBee::blink(){
-	led.blink(255);
+	ledService->blink(LED::RobotCtrl1, 1, 200);
 }
 
 void RoboCtrl::MrBee::hello(){
@@ -17,17 +20,18 @@ void RoboCtrl::MrBee::hello(){
 }
 
 void RoboCtrl::MrBee::init(){
-	led.begin();
+	ledService->add<SingleDigitalLED>(LED::RobotCtrl1, CTRL_1);
 }
 
 void RoboCtrl::MrBee::deinit(){
-	led.end();
+	ledService->remove(LED::RobotCtrl1);
 }
 
 void RoboCtrl::MrBee::blinkContinuousFast(){
-	led.blinkContinuous(255, -1, 100, 100);
+	ledService->blink(LED::RobotCtrl1, 0, 200);
+
 }
 
 void RoboCtrl::MrBee::ledOff(){
-	led.clear();
+	ledService->off(LED::RobotCtrl1);
 }

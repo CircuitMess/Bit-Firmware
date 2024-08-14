@@ -8,6 +8,7 @@
 #include "Services/RobotManager.h"
 #include "Settings/Settings.h"
 #include "Filepaths.hpp"
+#include "Services/TwinkleService.h"
 
 InstructionsScreen::InstructionsScreen(Games current) : evts(6), currentGame(current){
 	switch(currentGame){
@@ -145,6 +146,31 @@ void InstructionsScreen::buildUI(){
 void InstructionsScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
+
+	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+		twinkle->stop();
+	}
+	if(auto led = (LEDService*) Services.get(Service::LED)){
+		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
+		if(buttons.up){
+			led->on(LED::Up);
+		}
+		if(buttons.down){
+			led->on(LED::Down);
+		}
+		if(buttons.left){
+			led->on(LED::Left);
+		}
+		if(buttons.right){
+			led->on(LED::Right);
+		}
+		if(buttons.a){
+			led->on(LED::A);
+		}
+		if(buttons.b){
+			led->on(LED::B);
+		}
+	}
 }
 
 void InstructionsScreen::onStop(){

@@ -31,6 +31,8 @@
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
 #include "driver/rtc_io.h"
+#include "Services/LEDService/LEDService.h"
+#include "Services/TwinkleService.h"
 
 BacklightBrightness* bl;
 
@@ -116,6 +118,14 @@ void init(){
 		return;
 	}
 	Services.set(Service::Battery, battery);
+
+
+	auto led = new LEDService();
+	Services.set(Service::LED, led);
+
+	TwinkleService* twinkleService = new TwinkleService();
+	Services.set(Service::Twinkle, twinkleService);
+	twinkleService->start();
 
 	if(!initSPIFFS()) return;
 

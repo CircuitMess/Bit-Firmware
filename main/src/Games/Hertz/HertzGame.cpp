@@ -145,14 +145,15 @@ void HertzGame::addPoints(int difference){
 		});
 
 		if(indicator->getDifference() < 30){
-			robo->playBad();
+			robo->playGood();
 			audio.play({ { 80,   800,  100 },
 						 { 0,    0,    50 },
 						 { 80,   1000, 150 },
 						 { 1000, 80,   150 } });
 
 		}else if(indicator->getDifference() >= 30){
-			robo->playGood();
+			flashAll();
+			robo->playBad();
 			audio.play({ { 400, 200, 100 },
 						 { 0,   0,   100 },
 						 { 200,  70,  100 } });

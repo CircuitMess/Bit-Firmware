@@ -38,11 +38,15 @@ void CapacitronGame::Player::btnReleased(Input::Button btn){
 void CapacitronGame::Player::damage(){
 	if(state == State::Death) return;
 
+	gamePtr->flashAll();
+
 	state = State::Damaged;
 }
 
 void CapacitronGame::Player::fallDown(){
 	if(state == State::Death) return;
+
+	gamePtr->flashAll();
 
 	trampolineJump();
 	state = State::Damaged;

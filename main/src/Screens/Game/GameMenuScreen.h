@@ -31,6 +31,7 @@ private:
 	void onStart() override;
 	void onStop() override;
 	void loop() override;
+	void addUsedLEDs();
 
 	void exit();
 };

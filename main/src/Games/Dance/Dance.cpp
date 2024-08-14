@@ -234,6 +234,9 @@ void Dance::noteHit(uint8_t track){
 		});
 
 	}else{
+
+		flashAll();
+
 		robot->playBad();
 		audio.play({ { 300, 300, 50 },
 					 { 0,   0,   50 },
