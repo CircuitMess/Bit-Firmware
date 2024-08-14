@@ -1,7 +1,8 @@
 #include "MenuItem.h"
 #include "Filepaths.hpp"
+#include "Screens/GrayscaleImageElement.h"
 
-MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
+MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayedOut) : LVObject(parent){
 	lv_obj_set_size(*this, 37, 38);
 	lv_obj_set_flex_align(*this, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
@@ -11,9 +12,7 @@ MenuItem::MenuItem(lv_obj_t* parent, const char* path) : LVObject(parent){
 	lv_style_set_shadow_width(glow, 6);
 	lv_obj_add_style(*this, glow, LV_STATE_FOCUSED);
 
-	img = lv_img_create(*this);
-	lv_obj_set_size(img, 35, 36);
-	lv_img_set_src(img, path);
+	img = new GrayscaleImageElement(*this, path, pathGrayscale, 35, 36, grayedOut);
 
 	border = lv_img_create(*this);
 	lv_obj_set_size(border, 37, 38);
@@ -68,6 +67,10 @@ void MenuItem::setBorder(bool enabled){
 	}
 }
 
-void MenuItem::setIcon(const char* path){
-	lv_img_set_src(img, path);
+void MenuItem::setLocked(bool value){
+	if(img == nullptr){
+		return;
+	}
+
+	img->setGrayscale(value);
 }

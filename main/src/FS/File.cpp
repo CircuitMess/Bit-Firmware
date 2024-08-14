@@ -108,7 +108,7 @@ void File::close(){
 }
 
 File::operator bool() const{
-	return *_p;
+	return _p != nullptr;
 }
 
 const char* File::name() const{

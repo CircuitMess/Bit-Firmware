@@ -16,9 +16,9 @@ const std::unordered_map<Games, RobotData> RobotManager::GameRobot = {
 		{ Games::Buttons,    { .robot = Robot::Buttons } },
 		{ Games::Harald,     { .token = Token::Harald } },
 		{ Games::Frank,      { .token = Token::Frank } },
-		{ Games::Charlie,    { .token = Token::RoboSpider } },
+		{ Games::Charlie,    { .token = Token::Charlie } },
 		{ Games::Fred,       { .token = Token::Fred } },
-		{ Games::Planck,     { .token = Token::Plank } },
+		{ Games::Planck,     { .token = Token::Planck } },
 		{ Games::Dusty,      { .token = Token::Dusty } },
 		{ Games::Sparkly,    { .token = Token::Sparkly } }
 };

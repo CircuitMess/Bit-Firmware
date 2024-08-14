@@ -27,5 +27,4 @@ private:
 	static void animFunc(void* var, int32_t val);
 };
 
-
 #endif //BIT_FIRMWARE_MENUHEADER_H

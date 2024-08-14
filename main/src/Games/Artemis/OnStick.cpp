@@ -2,6 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/AnimRC.h"
 #include "Ray.h"
+#include <esp_random.h>
 
 struct CharInfo {
 	const char* path;
@@ -27,10 +28,10 @@ static const std::unordered_map<OnStick::Char, glm::ivec2> Offsets = {
 glm::ivec2 ArteAnimOffset = { -11, -19 };
 
 OnStick::OnStick(Char chr, int8_t layer, std::function<void(GameObjPtr)> addObject, std::function<File(const char*)> getFile, std::function<void()> hitGood, std::function<void()> hitBad) : chr(chr), layer(layer),
-addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand() % 30) / 100.0f), hitGood(hitGood), hitBad(hitBad){
+addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + esp_random() % 30) / 100.0f), hitGood(hitGood), hitBad(hitBad){
 	static constexpr uint8_t StickHeight = 20;
 
-	const uint8_t stickHeight = StickHeight/4 + rand() % (3*StickHeight/4);
+	const uint8_t stickHeight = StickHeight/4 + esp_random() % (3*StickHeight/4);
 	stickStartY = 84.0f + StickHeight - (float) stickHeight;
 
 	objStick = std::make_shared<GameObject>(
@@ -72,8 +73,8 @@ addObject(addObject), charOffset(Offsets.at(chr)), MoveSpeed((float) (30 + rand(
 
 	// stick on layer 8, char on layer 9 -> waveFront is 10, curtains 11
 
-	T = (float) (rand() % 100) / 100.0f;
-	dir = (rand() % 100) < 50 ? 1 : -1;
+	T = (float) (esp_random() % 100) / 100.0f;
+	dir = (esp_random() % 100) < 50 ? 1 : -1;
 	updatePos();
 }
 

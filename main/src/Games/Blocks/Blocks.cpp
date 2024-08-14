@@ -6,6 +6,7 @@
 #include "Util/Services.h"
 #include "UIThread.h"
 #include "Screens/Game/AwardsScreen.h"
+#include <esp_random.h>
 
 Blocks::Blocks(Sprite& canvas) : Game(canvas, Games::Blocks, "/Games/Blocks", {
 		{ Sprites[0], {}, true },
@@ -75,7 +76,7 @@ void Blocks::onLoad(){
 	linesTextRC = std::static_pointer_cast<TextRC>(linesNumLabel->getRenderComponent());
 	addObject(linesNumLabel);
 
-	nextBlock = Block(Block::Type((rand() % BlockTypesNum) + 1), getFile(Sprites[rand() % BlockColorsNum]), NextBlockPos);
+	nextBlock = Block(Block::Type((esp_random() % BlockTypesNum) + 1), getFile(Sprites[esp_random() % BlockColorsNum]), NextBlockPos);
 	for(auto& segment : nextBlock.segments){
 		addObject(segment);
 	}
@@ -181,7 +182,7 @@ void Blocks::newBlock(){
 	blocks.push_back(std::move(nextBlock));
 
 
-	nextBlock = Block(Block::Type((rand() % BlockTypesNum) + 1), getFile(Sprites[rand() % BlockColorsNum]), NextBlockPos);
+	nextBlock = Block(Block::Type((esp_random() % BlockTypesNum) + 1), getFile(Sprites[esp_random() % BlockColorsNum]), NextBlockPos);
 
 	for(auto& segment : nextBlock.segments){
 		addObject(segment);

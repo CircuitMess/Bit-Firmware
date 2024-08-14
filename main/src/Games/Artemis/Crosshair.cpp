@@ -1,5 +1,6 @@
 #include "Crosshair.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include <esp_random.h>
 
 const std::unordered_map<Input::Button, Crosshair::AimDir> Crosshair::BtnAim = {
 		{ Input::Button::Up, AimDir::Up },
@@ -15,7 +16,7 @@ Crosshair::Crosshair(std::function<void(GameObjPtr)> addObject, std::function<Fi
 	sight->getRenderComponent()->setLayer(60);
 	sight->setPos(54, 54);
 
-	sightDir = glm::normalize(glm::vec2 { rand() % 100 - 50, rand() % 100 - 50 });
+	sightDir = glm::normalize(glm::vec2 { esp_random() % 100 - 50, esp_random() % 100 - 50 });
 
 	addObject(sight);
 }
@@ -52,7 +53,7 @@ void Crosshair::loop(float dt){
 
 	auto pos = sight->getPos() + 10.0f;
 
-	const auto randVel = glm::normalize(glm::vec2(rand() % 1000 - 500, rand() % 1000 - 500)) * Randomness;
+	const auto randVel = glm::normalize(glm::vec2(esp_random() % 1000 - 500, esp_random() % 1000 - 500)) * Randomness;
 
 	const auto centerDir = ScreenCenter - pos;
 	const auto centerDist = glm::length(centerDir);
