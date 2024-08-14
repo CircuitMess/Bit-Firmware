@@ -18,8 +18,6 @@ private:
 	EventQueue evts;
 	Games currentGame;
 
-	BatteryElement* batt;
-
 	LVStyle itemStyle;
 	LVStyle focusStyle;
 

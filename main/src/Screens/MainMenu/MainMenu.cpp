@@ -402,8 +402,7 @@ void MainMenu::buildUI(){
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
-	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
-	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
+	lv_obj_set_pos(*batt, 108, 0);
 
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);
