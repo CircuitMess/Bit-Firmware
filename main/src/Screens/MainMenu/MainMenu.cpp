@@ -19,6 +19,8 @@
 #include "Filepaths.hpp"
 #include "../Profile/ProfileScreen.h"
 
+uint8_t MainMenu::lastCursor = 0;
+
 struct Entry {
 	const char* icon;
 	RobotData rob = { Robot::COUNT, Token::COUNT };
@@ -97,6 +99,15 @@ void MainMenu::onStart(){
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
+	lv_obj_t* obj;
+	if(lastCursor == 0){
+		obj = menuHeader->operator lv_obj_t *();
+	}else{
+		obj = lv_obj_get_child(itemCont, lastCursor-1);
+	}
+
+	lv_group_focus_obj(obj);
+
 	lv_obj_add_event_cb(*this, MainMenu::onScrollEnd, LV_EVENT_SCROLL_END, this);
 }
 
@@ -131,6 +142,13 @@ void MainMenu::onStop(){
 
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
+
+	auto obj = lv_group_get_focused(inputGroup);
+	if(obj == menuHeader->operator lv_obj_t *()){
+		lastCursor = 0;
+	}else{
+		lastCursor = lv_obj_get_index(obj) + 1;
+	}
 
 	gmEvt.reset();
 	running = false;
@@ -384,8 +402,7 @@ void MainMenu::buildUI(){
 	// Battery
 	batt = new BatteryElement(*this);
 	lv_obj_add_flag(*batt, LV_OBJ_FLAG_FLOATING);
-	lv_obj_add_flag(*batt, LV_OBJ_FLAG_HIDDEN);
-	lv_obj_align(*batt, LV_ALIGN_TOP_RIGHT, -2, 8);
+	lv_obj_set_pos(*batt, 108, 0);
 
 	// Padding for intro scroll
 	lv_obj_set_layout(*this, LV_LAYOUT_FLEX);

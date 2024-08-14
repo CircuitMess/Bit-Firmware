@@ -30,6 +30,7 @@
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "driver/rtc_io.h"
 
 BacklightBrightness* bl;
 
@@ -41,6 +42,10 @@ void shutdown(){
 	esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO);
 	esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO);
 	esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
+	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
+	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
+	rtc_gpio_isolate((gpio_num_t)PIN_BL);
 	esp_deep_sleep_start();
 }
 
