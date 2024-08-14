@@ -44,6 +44,11 @@ Sparkly::Sparkly::Sparkly(Sprite& canvas) : Game(canvas, Games::Sparkly, "/Games
 void Sparkly::Sparkly::onLoad(){
 	Game::onLoad();
 
+	skybox = getFile("/Landscape1.raw");
+	if(!skybox){
+		skybox = getFile("/Landscape2.raw");
+	}
+
 	for(glm::vec2 board : Billboards){
 		GameObjPtr obj = std::make_shared<GameObject>(
 				std::make_unique<StaticRC>(getFile("/Bush1.raw"), PixelDim{ 32, 28 }),
@@ -111,19 +116,27 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 			const glm::vec3 ray = glm::vec3(worldPos);
 
 			const float t = - camPos.z / ray.z;
-			if(t < 0) continue; // Behind camera
-			if(t > 10) continue; // Front limit, adjust empirically // TODO this would be the case for skybox rendering
+			if(t < 0){
+				canvas.drawPixel(x, y, sampleSkybox(x, y));
+				continue; // Behind camera
+			}
+
+			if(t > 20){
+				canvas.drawPixel(x, y, sampleSkybox(x, y));
+				continue; // Front limit, adjust empirically
+			}
 
 			// x/y coords on the z=0 plane (world space)
 			float planeX = t * ray.x + camPos.x;
 			float planeY = t * ray.y + camPos.y;
 
-			if(planeX >= 2 || planeX < -2 || planeY >= 2 || planeY < -2){
-				continue; // TODO this would be the case for rendering of the ground next to the track which will always be the full blue square forever
+			if(planeX >= 10 || planeX < -10 || planeY >= 10 || planeY < -10){
+				canvas.drawPixel(x, y, sampleSkybox(x, y));
+				continue;
 			}
 
-			planeX = planeX + 2.0f;
-			planeY = planeY + 2.0f;
+			planeX = planeX + 10.0f;
+			planeY = planeY + 10.0f;
 			const int planeXfloor = planeX; // opt: var should be float, value should be floored
 			const int planeYfloor = planeY; // opt: var should be float, value should be floored
 
@@ -157,6 +170,38 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 	}
 }
 
+uint16_t Sparkly::Sparkly::sampleSkybox(int x, int y){
+	static constexpr const float OverPI = 1.0f / glm::pi<float>();
+	static constexpr const uint16_t Width = 256;
+	static constexpr const uint16_t Height = 64;
+
+	if(!skybox){
+		return 0;
+	}
+
+	const glm::vec3 right = cameraTransform.getRight(); // Right vector in world-space according to camera view
+	const glm::vec3 fw2 = glm::normalize(glm::cross(Up, right)); // Forward vector disregarding up/down rotation
+	const float dot = glm::dot(fw2, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	const float angle = glm::acos(dot);
+	const float anglePercent = angle * OverPI;
+
+	int xSkybox = (fw2.x >= 0.0f ? 1.0f : -1.0f) * anglePercent * Width + x * 0.5f;
+	if(xSkybox < 0){
+		xSkybox += Width;
+	}
+
+	int ySkybox = y * 0.5f;
+	if(glm::dot(cameraTransform.getUp(), Up) < 0.0f){
+		ySkybox = Height - ySkybox;
+	}
+
+	uint16_t color = 0;
+	skybox.seek(2 * (ySkybox * Width + xSkybox));
+	skybox.read((uint8_t*) &color, 2);
+
+	return color;
+}
+
 void Sparkly::Sparkly::movement(float dt){
 	cameraTransform.rotate(cameraTransform.getRight(), spdUD * dt);
 	cameraTransform.rotate(Up, spdZ * dt);
@@ -169,7 +214,6 @@ void Sparkly::Sparkly::movement(float dt){
 
 void Sparkly::Sparkly::positionBillboards(){
 	const glm::vec3 right = cameraTransform.getRight(); // Right vector in world-space according to camera view
-	const glm::vec3 fw2 = glm::cross(Up, right); // Forward vector disregarding up/down rotation
 
 	std::vector<std::pair<float, size_t>> billboardSortedIndexes;
 	billboardSortedIndexes.reserve(billboardGameObjs.size());
@@ -182,7 +226,7 @@ void Sparkly::Sparkly::positionBillboards(){
 		const float t = glm::dot(B, cameraTransform.getForward());
 		billboardSortedIndexes.emplace_back(t, i);
 		if(t < 0) continue; // Behind camera
-		if(t > 10) continue; // Front limit, adjust empirically
+		if(t > 20) continue; // Front limit, adjust empirically
 
 		const glm::vec4 originH = glm::vec4(origin, 1.0f);
 		const auto screenPos = vpMat * originH;
@@ -192,9 +236,9 @@ void Sparkly::Sparkly::positionBillboards(){
 		const auto screenPosB = vpMat * posB;
 		const float scale = glm::abs(screenPos.x / screenPos.w - screenPosB.x / screenPosB.w) * 1.0f;
 
-		// TODO the projection is somehow wrong, the billboards get smaller slower than the floor, which results in wrong perspective of change when moving
+		// TODO figure out what to do with this BS because it makes the billboards float at certain angles
 		screenCoords.x -= (float) 32.0f * 0.5f * scale;
-		screenCoords.y += (float) 28.0f * 0.5f * scale;
+		screenCoords.y += (float) 28.0f * scale;
 
 		screenCoords.y = -screenCoords.y;
 
