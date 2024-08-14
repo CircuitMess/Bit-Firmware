@@ -3,11 +3,12 @@
 
 #include "LV_Interface/LVSelectable.h"
 #include "LV_Interface/LVStyle.h"
+#include <functional>
 
-class AchievementView : public LVSelectable{
+class AchievementView : public LVSelectable {
 public:
 	explicit AchievementView(lv_obj_t* parent);
-	void setOverlay(lv_obj_t* overlay);
+	void setReturnFunc(std::function<void()> returnFunc);
 
 protected:
 	void onSelect() override;
@@ -18,9 +19,7 @@ private:
 
 	LVStyle defaultStyle;
 
-	lv_anim_t focusBlinkAnim;
-
-	lv_obj_t* focusOverlay = nullptr;
+	std::function<void()> returnFunc;
 
 	void initStyles();
 	void buildUI();

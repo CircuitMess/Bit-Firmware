@@ -1,9 +1,7 @@
-#include <algorithm>
-#include <cstdio>
 #include "AchievementView.h"
+#include <cstdio>
 #include "Services/AchievementSystem.h"
 #include "Filepaths.hpp"
-#include "Services/AchievementTextData.hpp"
 #include "../GrayscaleImageElement.h"
 #include "Util/Services.h"
 
@@ -25,7 +23,7 @@ void AchievementView::buildUI(){
 
 	lv_obj_set_flex_align(obj, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
-	lv_obj_set_style_pad_gap(obj, 1, 0);
+	lv_obj_set_style_pad_gap(obj, 2, 0);
 
 	auto onKey = [](lv_event_t* e){
 		auto ach = (AchievementView*) e->user_data;
@@ -106,10 +104,10 @@ void AchievementView::onSelect(){
 void AchievementView::onDeselect(){
 	lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_style_bg_img_src(lv_group_get_focused(inputGroup), "S:/Ach/bg.bin", LV_STATE_FOCUSED);
-	if(!focusOverlay) return;
-	lv_obj_set_style_bg_opa(focusOverlay, LV_OPA_40, 0);
+	if(!returnFunc) return;
+	returnFunc();
 }
 
-void AchievementView::setOverlay(lv_obj_t* overlay){
-	focusOverlay = overlay;
+void AchievementView::setReturnFunc(std::function<void()> returnFunc){
+	this->returnFunc = returnFunc;
 }

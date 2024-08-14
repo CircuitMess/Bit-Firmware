@@ -24,6 +24,7 @@
  * Maybe possible with a color filter style change?
  */
 class ProfileScreen : public LVScreen {
+	friend AchievementView;
 public:
 	ProfileScreen();
 	virtual ~ProfileScreen() override;
@@ -46,7 +47,13 @@ private:
 	ChirpSystem* audio;
 
 	LVStyle unfocusedSection;
-	LVStyle focusedSection;
+
+	lv_anim_t focusedSectionAnim;
+	enum class Section : uint8_t {
+		Achievement, Theme, Character
+	};
+	void startAnim(Section section);
+	void stopAnim(Section section);
 
 	AchievementView achievementSection = AchievementView(*this);
 	ThemePicker* themeSection = new ThemePicker(*this);
