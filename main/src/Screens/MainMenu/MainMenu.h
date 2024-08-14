@@ -55,6 +55,8 @@ private:
 	static std::atomic<bool> running;
 
 	ChirpSystem* audio;
+
+	static uint8_t lastCursor;
 };
 
 #endif //BIT_FIRMWARE_MAINMENU_H

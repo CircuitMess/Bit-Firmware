@@ -12,7 +12,7 @@ MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string&
 	lv_style_set_shadow_width(glow, 6);
 	lv_obj_add_style(*this, glow, LV_STATE_FOCUSED);
 
-	img = new GrayscaleImageElement(*this, path, pathGrayscale, 35, 36, grayedOut);
+	img = new GrayscaleImageElement(*this, path, pathGrayscale, grayedOut);
 
 	border = lv_img_create(*this);
 	lv_obj_set_size(border, 37, 38);

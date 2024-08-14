@@ -1,6 +1,11 @@
 #include <algorithm>
 #include <cstdio>
 #include "AchievementView.h"
+#include "Services/AchievementSystem.h"
+#include "Filepaths.hpp"
+#include "Services/AchievementTextData.hpp"
+#include "../GrayscaleImageElement.h"
+#include "Util/Services.h"
 
 AchievementView::AchievementView(lv_obj_t* parent) : LVSelectable(parent){
 	initStyles();
@@ -18,7 +23,7 @@ void AchievementView::buildUI(){
 	lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
 	lv_obj_set_size(obj, 71, 123);
 
-	lv_obj_set_flex_align(obj, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+	lv_obj_set_flex_align(obj, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_ROW_WRAP);
 	lv_obj_set_style_pad_gap(obj, 1, 0);
 
@@ -28,7 +33,7 @@ void AchievementView::buildUI(){
 		auto key = lv_event_get_key(e);
 
 		const auto index = lv_obj_get_index(e->target); // only applies to odd number of menu items
-		const auto itemCount = AchievementCount;
+		const auto itemCount = (uint32_t) Achievement::COUNT;
 
 		//Maybe simplify logic in these calculations, seems overkill but math should work for any grid width
 		if(key == LV_KEY_UP){
@@ -65,57 +70,42 @@ void AchievementView::buildUI(){
 	};
 
 
-	// TODO once all achievements are added, do this for every achievement instead of just random placeholders
-	for(size_t i = 0; i < AchievementCount; ++i){
+	auto achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	std::vector<AchievementData> unlockedData;
+	achievementSystem->getAll(unlockedData);
+
+	for(size_t i = 0; i < (uint32_t) Achievement::COUNT; ++i){
 		auto base = lv_obj_create(obj);
-		lv_obj_set_size(base, 17, 16);
+		lv_obj_set_size(base, 22, 22);
 		lv_obj_add_flag(base, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 		lv_obj_clear_flag(base, LV_OBJ_FLAG_SCROLLABLE);
 		lv_group_add_obj(inputGroup, base);
 		lv_obj_add_style(base, defaultStyle, 0);
-		lv_obj_set_style_bg_img_src(base, "S:/Profile/ach-placeholder.bin", 0);
+		lv_obj_set_style_bg_img_src(base, "S:/Ach/bg.bin", LV_STATE_DEFAULT);
+
+		auto img = new GrayscaleImageElement(base, AchivementFile((Achievement) i),
+											 AchivementFileBW((Achievement) i),
+											 !unlockedData[i].unlocked());
+		lv_obj_center(*img);
 
 		lv_obj_add_event_cb(base, onKey, LV_EVENT_KEY, this);
 		lv_obj_add_event_cb(base, [](lv_event_t* e){
-			lv_obj_set_style_border_opa(lv_event_get_target(e), LV_OPA_COVER, LV_STATE_FOCUSED);
+			lv_obj_set_style_bg_img_src(lv_event_get_target(e), "S:/Ach/bgSelected.bin", LV_STATE_FOCUSED);
 		}, LV_EVENT_FOCUSED, nullptr);
 		lv_obj_add_event_cb(base, [](lv_event_t* e){
-			lv_obj_set_style_border_opa(lv_event_get_target(e), LV_OPA_TRANSP, LV_STATE_FOCUSED);
+			lv_obj_set_style_bg_img_src(lv_event_get_target(e), "S:/Ach/bg.bin", LV_STATE_FOCUSED);
 		}, LV_EVENT_DEFOCUSED, nullptr);
 	}
 }
 
-void AchievementView::startAnim(){
-	lv_anim_init(&focusBlinkAnim);
-	lv_anim_set_exec_cb(&focusBlinkAnim, animFunc);
-	lv_anim_set_var(&focusBlinkAnim, this);
-	lv_anim_set_values(&focusBlinkAnim, LV_OPA_100, LV_OPA_0);
-	lv_anim_set_time(&focusBlinkAnim, 350);
-	lv_anim_set_playback_time(&focusBlinkAnim, 100);
-	lv_anim_set_repeat_count(&focusBlinkAnim, LV_ANIM_REPEAT_INFINITE);
-	lv_anim_set_path_cb(&focusBlinkAnim, lv_anim_path_step);
-	lv_anim_set_early_apply(&focusBlinkAnim, true);
-	lv_anim_start(&focusBlinkAnim);
-}
-
-void AchievementView::stopAnim(){
-	lv_anim_del(this, animFunc);
-	lv_obj_set_style_border_opa(lv_group_get_focused(inputGroup), LV_OPA_TRANSP, LV_STATE_FOCUSED);
-}
-
-void AchievementView::animFunc(void* var, int32_t val){
-	auto ach = (AchievementView*) var;
-	lv_obj_set_style_border_opa(lv_group_get_focused(ach->inputGroup), val, LV_STATE_FOCUSED);
-}
-
 void AchievementView::onSelect(){
 	lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-	startAnim();
+	lv_obj_set_style_bg_img_src(lv_group_get_focused(inputGroup), "S:/Ach/bgSelected.bin", LV_STATE_FOCUSED);
 }
 
 void AchievementView::onDeselect(){
 	lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-	stopAnim();
+	lv_obj_set_style_bg_img_src(lv_group_get_focused(inputGroup), "S:/Ach/bg.bin", LV_STATE_FOCUSED);
 	if(!focusOverlay) return;
 	lv_obj_set_style_bg_opa(focusOverlay, LV_OPA_40, 0);
 }

@@ -44,8 +44,6 @@ void PauseScreen::onStop(){
 }
 
 void PauseScreen::loop(){
-	batt->loop();
-
 	Event e{};
 	if(evts.get(e, 0)){
 		if(e.facility != Facility::Input){
@@ -145,8 +143,6 @@ void PauseScreen::buildUI(){
 
 	auto img = lv_img_create(top);
 	lv_img_set_src(img, THEMED_FILE(Paused, theme));
-
-	batt = new BatteryElement(top);
 
 	auto rest = lv_obj_create(*this);
 	lv_obj_set_size(rest, 128, 96);
