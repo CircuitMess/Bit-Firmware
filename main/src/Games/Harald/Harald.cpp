@@ -2,6 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "Services/HighScoreManager.h"
 #include "Util/Services.h"
+#include "Util/stdafx.h"
 
 Harald::Harald::Harald(Sprite& canvas) : Game(canvas, Games::Harald, "/Games/Harald", {
 		{ "/bg.raw", {}, true },
@@ -147,6 +148,18 @@ void Harald::Harald::onLoop(float deltaTime){
 	}
 
 	if(!foundPair){
+		//Lose condition
+		audio.play({{ 500, 500, 400 },
+					{ 0,   0,   100 },
+					{ 300, 300, 400 },
+					{ 500, 300, 150 },
+					{ 0,   0,   100 },
+					{ 400, 200, 150 },
+					{ 100, 100, 400 },
+				   });
+
+		delayMillis(2000);
+
 		exit();
 		return;
 	}
@@ -299,6 +312,7 @@ void Harald::Harald::handleInput(const Input::Data& data){
 			StaticRC* rc = (StaticRC*) elements[x][y].gameObj->getRenderComponent().get();
 			rc->setFile(getFile(Icons[idMap[x][y]]));
 
+			//Win condition
 			if(idMap[x][y] >= 10){
 				exit();
 				return;
@@ -306,10 +320,19 @@ void Harald::Harald::handleInput(const Input::Data& data){
 		}
 	}
 
+	//No progress
 	if(numOfSame == 4 * 4){
+		audio.play({{ 100, 100, 100 },
+					{ 0,   0,   75 },
+					{ 100, 100, 100 },
+				   });
 		return;
 	}
 
+	audio.play({{ 300, 500, 150 },
+				{ 0,   0,   50 },
+				{ 100, 80, 75 },
+			   });
 	std::vector<uint8_t> validX;
 
 	for(int x = 0; x < 4; ++x){
