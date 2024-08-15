@@ -4,6 +4,7 @@
 #include "GameEngine/Collision/PolygonCC.h"
 #include "Util/stdafx.h"
 #include "esp_random.h"
+#include "Util/Services.h"
 
 Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Planck", {
 		{"/bat.raw", {}, true},
@@ -27,6 +28,29 @@ Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Plan
 		RES_HEART,
 		RES_GOBLET
 }){
+
+}
+
+void Planck::Planck::onStart(){
+	const auto input = (Input*) Services.get(Service::Input);
+	direction = 0;
+	poweredAcceleration = 0;
+
+	if(input->isPressed(Input::Button::Right) && !input->isPressed(Input::Button::Left)){
+		direction = 1.0f;
+	}
+
+	if(input->isPressed(Input::Button::Left) && !input->isPressed(Input::Button::Right)){
+		direction = -1.0f;
+	}
+
+	if(input->isPressed(Input::Button::A) && !input->isPressed(Input::Button::B)){
+		poweredAcceleration = 1.0f;
+	}
+
+	if(input->isPressed(Input::Button::B) && !input->isPressed(Input::Button::A)){
+		poweredAcceleration = -1.0f;
+	}
 
 }
 
@@ -192,6 +216,21 @@ void Planck::Planck::onLoop(float deltaTime){
 		}
 	}
 
+	if(invincible){
+		invincibilityTime += deltaTime;
+		if((int) (invincibilityTime / InvincibilityBlinkDuration) % 2 == 0){
+			car->getRenderComponent()->setVisible(false);
+		}else{
+			car->getRenderComponent()->setVisible(true);
+		}
+
+		if(invincibilityTime >= InvincibilityDuration){
+			invincibilityTime = 0;
+			invincible = false;
+			car->getRenderComponent()->setVisible(true);
+		}
+	}
+
 	if(lives == 0){
 		exit();
 		return;
@@ -330,8 +369,12 @@ bool Planck::Planck::onCollision(){
 		return false;
 	}
 
-	--lives;
-	hearts->setLives(lives);
+	if(!invincible){
+		--lives;
+		hearts->setLives(lives);
+
+		invincible = true;
+	}
 
 	return true;
 }

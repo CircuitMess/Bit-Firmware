@@ -12,6 +12,7 @@ public:
 
 protected:
 	void onLoad() override;
+	void onStart() override;
 	void onLoop(float deltaTime) override;
 	void handleInput(const Input::Data& data) override;
 	inline uint32_t getXP() const override { return score * 5; }
@@ -28,6 +29,11 @@ private:
 	inline static constexpr const float PassiveDeceleration = -9.0f;
 	inline static constexpr const float GasBrakeAcceleration = 100.0f;
 	inline static constexpr const float BatteryDischargeRate = 0.25f;
+
+	bool invincible = false;
+	float invincibilityTime = 0;
+	static constexpr float InvincibilityBlinkDuration = 0.25f;
+	static constexpr float InvincibilityDuration = 1.5f;
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
