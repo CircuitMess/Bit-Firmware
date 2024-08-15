@@ -21,8 +21,13 @@ private:
 	inline static constexpr const uint8_t VerticalTiles = 5;
 	inline static constexpr const uint8_t HorizontalTiles = 3;
 	inline static constexpr const float HorizontalSpeed = 65.0f;
+	inline static constexpr const float StraightlineSpeedLimit = 150;
 	inline static constexpr const uint32_t BoostDuration = 1000;
+	inline static constexpr const float BoostAccelerationRate = 75;
 	inline static constexpr const uint32_t AirDuration = 500;
+	inline static constexpr const float PassiveDeceleration = -9.0f;
+	inline static constexpr const float GasBrakeAcceleration = 100.0f;
+	inline static constexpr const float BatteryDischargeRate = 0.25f;
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
@@ -55,9 +60,10 @@ private:
 	std::array<bool, HorizontalTiles> holesGenerated = { false };
 	uint8_t rowToGenerate = 0;
 	float direction = 0.0f;
-	float acceleration = 0.0f;
-	float speed = 1.0f * HorizontalSpeed;
-	glm::vec2 speedLimits = { 0.25f * HorizontalSpeed, 1.25f * HorizontalSpeed };
+	float poweredAcceleration = 0.0f;
+	float boostAcceleration = 0.0f;
+	float speed = 0;
+	glm::vec2 speedLimits = { 0, StraightlineSpeedLimit };
 	uint32_t lastBoost = 0;
 	uint32_t lastAir = 0;
 	std::set<GameObjPtr> pickups;

@@ -122,16 +122,16 @@ void Planck::Planck::onLoad(){
 void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
-	if(acceleration >= 1.0f && speed < speedLimits.y){
-		setBattery(battery - 0.25f * deltaTime);
+	if(poweredAcceleration >= 1.0f){
+		setBattery(battery - BatteryDischargeRate * deltaTime);
 	}
 
-	if(battery <= 0.0f && acceleration >= 1.0f){
-		acceleration -= 1.0f;
+	if(battery <= 0.0f && poweredAcceleration >= 1.0f){
+		poweredAcceleration -= 1.0f;
 	}
 
 	if(lastBoost != 0 && millis() - lastBoost >= BoostDuration){
-		acceleration -= 0.75f;
+		boostAcceleration = 0;
 		lastBoost = 0;
 	}
 
@@ -139,7 +139,8 @@ void Planck::Planck::onLoop(float deltaTime){
 		lastAir = 0;
 	}
 
-	speed += acceleration * 100.0f * deltaTime;
+	const auto a = poweredAcceleration * GasBrakeAcceleration + PassiveDeceleration + boostAcceleration;
+	speed += a * deltaTime;
 	speed = glm::clamp(speed, speedLimits.x, speedLimits.y);
 
 	const glm::vec2 deltaPos = glm::vec2{ 0.0f, speed * deltaTime };
@@ -208,12 +209,12 @@ void Planck::Planck::handleInput(const Input::Data& data){
 		direction -= 1.0f;
 	}
 
-	if((data.btn == Input::Button::Up && data.action == Input::Data::Press && battery > 0.0f) || (data.btn == Input::Button::Down && data.action == Input::Data::Release)){
-		acceleration += 1.0f;
+	if((data.btn == Input::Button::A && data.action == Input::Data::Press && battery > 0.0f) || (data.btn == Input::Button::B && data.action == Input::Data::Release)){
+		poweredAcceleration += 1.0f;
 	}
 
-	if((data.btn == Input::Button::Down && data.action == Input::Data::Press) || (data.btn == Input::Button::Up && data.action == Input::Data::Release && battery > 0.0f)){
-		acceleration -= 1.0f;
+	if((data.btn == Input::Button::B && data.action == Input::Data::Press) || (data.btn == Input::Button::A && data.action == Input::Data::Release && battery > 0.0f)){
+		poweredAcceleration -= 1.0f;
 	}
 
 	direction = std::clamp(direction, -1.0f, 1.0f);
@@ -340,9 +341,7 @@ void Planck::Planck::onBoost(){
 		return;
 	}
 
-	if(lastBoost == 0){
-		acceleration += 0.75f;
-	}
+	boostAcceleration = BoostAccelerationRate;
 
 	lastBoost = millis();
 }
