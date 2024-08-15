@@ -18,8 +18,24 @@ protected:
 	inline uint32_t getScore() const override { return score; }
 
 private:
+
+	enum class State : uint8_t {
+		Game, ExitAnim
+	} state = State::Game;
+
+	void gameLose();
+	void gameWin();
+	void startExitAnim();
+
+	static constexpr float gravity = 125.0f;
+	static constexpr uint32_t MaxSpeedX = 50;
+	static constexpr uint32_t MinSpeedX = 20;
+
+
 	struct GameElement {
 		uint8_t id = 0; // 0 - 10
+		float speedX = 0;
+		float speedY = 0;
 		GameObjPtr gameObj;
 	};
 

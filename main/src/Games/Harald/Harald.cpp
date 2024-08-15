@@ -3,6 +3,8 @@
 #include "Services/HighScoreManager.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include "esp_random.h"
+#include "GameEngine/Collision/RectCC.h"
 
 Harald::Harald::Harald(Sprite& canvas) : Game(canvas, Games::Harald, "/Games/Harald", {
 		{ "/bg.raw", {}, true },
@@ -52,7 +54,7 @@ void Harald::Harald::onLoad(){
 			elements[x][y].id = 0;
 			elements[x][y].gameObj = std::make_shared<GameObject>(
 					std::make_unique<StaticRC>(getFile("/Tile01.raw"), PixelDim{ 25, 25 }),
-					nullptr
+					std::make_unique<RectCC>(PixelDim{ 25, 25 })
 			);
 
 			elements[x][y].gameObj->getRenderComponent()->setLayer(0);
@@ -108,6 +110,8 @@ void Harald::Harald::onLoad(){
 void Harald::Harald::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
+	if(state == State::Game){
+
 	bool foundPair = false;
 
 	for(int x = 0; x < 4; ++x){
@@ -147,21 +151,34 @@ void Harald::Harald::onLoop(float deltaTime){
 		}
 	}
 
-	if(!foundPair){
-		//Lose condition
-		audio.play({{ 500, 500, 400 },
-					{ 0,   0,   100 },
-					{ 300, 300, 400 },
-					{ 500, 300, 150 },
-					{ 0,   0,   100 },
-					{ 400, 200, 150 },
-					{ 100, 100, 400 },
-				   });
+		if(!foundPair){
+			//Lose condition
+			gameLose();
+		}
+	}else if(state == State::ExitAnim){
+		//apply gravity and x movement for every block that has id != 0
+		bool noneOnScreen = true;
 
-		delayMillis(2000);
+		for(int x = 0; x < 4; ++x){
+			for(int y = 0; y < 4; ++y){
 
-		exit();
-		return;
+
+				auto pos = elements[x][y].gameObj->getPos();
+				elements[x][y].speedY += gravity * deltaTime;
+				pos += glm::vec2{ elements[x][y].speedX * deltaTime, elements[x][y].speedY * deltaTime };
+				elements[x][y].gameObj->setPos(pos);
+
+				if(noneOnScreen){
+					if(pos.x > -30 && pos.x < 130){
+						noneOnScreen = false;
+					}
+				}
+			}
+		}
+
+		if(noneOnScreen){
+			exit();
+		}
 	}
 }
 
@@ -314,7 +331,7 @@ void Harald::Harald::handleInput(const Input::Data& data){
 
 			//Win condition
 			if(idMap[x][y] >= 10){
-				exit();
+				gameWin();
 				return;
 			}
 		}
@@ -366,4 +383,50 @@ void Harald::Harald::handleInput(const Input::Data& data){
 	elements[newX][newY].id = (1.0f * rand()) / INT_MAX > 0.65f ? 2 : 1;
 	StaticRC* rc = (StaticRC*) elements[newX][newY].gameObj->getRenderComponent().get();
 	rc->setFile(getFile(Icons[elements[newX][newY].id]));
+}
+
+void Harald::Harald::gameLose(){
+	audio.play({{ 500, 500, 400 },
+				{ 0,   0,   100 },
+				{ 300, 300, 400 },
+				{ 500, 300, 150 },
+				{ 0,   0,   100 },
+				{ 400, 200, 150 },
+				{ 100, 100, 400 },
+			   });
+
+	startExitAnim();
+
+}
+
+void Harald::Harald::gameWin(){
+	audio.play({{ 400, 600, 400 },
+				{ 0,   0,   75 },
+				{ 500, 700, 300 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+			   });
+	startExitAnim();
+}
+
+void Harald::Harald::startExitAnim(){
+	state = State::ExitAnim;
+
+	for(int x = 0; x < 4; ++x){
+		for(int y = 0; y < 4; ++y){
+			elements[x][y].speedX = (esp_random() % (MaxSpeedX - MinSpeedX)) + MinSpeedX;
+
+			if(esp_random() % 2 == 0){
+				elements[x][y].speedX *= -1;
+			}
+
+			collision.wallBot(*elements[x][y].gameObj, [this, x, y](){
+				elements[x][y].speedY *= -1;
+			});
+		}
+	}
 }
