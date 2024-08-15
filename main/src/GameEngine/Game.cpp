@@ -174,8 +174,8 @@ void Game::exit(){
 	const uint32_t xp = getXP();
 	const Games type = getType();
 
-	if(hsm->isHighScore(type, score) || xp != 0/* || got new achievement*/){
-		ui->startScreen([type, score, xp](){ return std::make_unique<AwardsScreen>(type, score, xp); });
+	if(hsm->isHighScore(type, score) || xp != 0 || !achievements.empty()){
+		ui->startScreen([type, score, xp, &achievements](){ return std::make_unique<AwardsScreen>(type, score, xp, achievements); });
 		return;
 	}
 
