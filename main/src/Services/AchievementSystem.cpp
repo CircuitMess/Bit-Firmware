@@ -63,6 +63,8 @@ static constexpr const AchievementData DefaultAchievementData[(uint32_t) Achieve
 		{ Achievement::Stacky_super,      200,  0 }
 };
 
+static const char* TAG = "AchievementSystem";
+
 AchievementSystem::AchievementSystem() : achievementProgress((size_t) Achievement::COUNT), previousState((size_t) Achievement::COUNT){
 	load();
 }
@@ -94,6 +96,7 @@ void AchievementSystem::startSession(){
 
 void AchievementSystem::endSession(std::vector<AchievementData>& unlockedList){
 	if(!inSession){
+		ESP_LOGW(TAG, "endSession called but not in session!");
 		return;
 	}
 
@@ -102,7 +105,7 @@ void AchievementSystem::endSession(std::vector<AchievementData>& unlockedList){
 	inSession = false;
 
 	for(size_t i = 0; i < (size_t) Achievement::COUNT; ++i){
-		if(!previousState[i] && achievementProgress[i]){
+		if(!previousState[i].unlocked() && achievementProgress[i].unlocked()){
 			unlockedList.emplace_back(achievementProgress[i]);
 		}
 	}
