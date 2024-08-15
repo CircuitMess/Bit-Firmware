@@ -27,9 +27,12 @@ private:
 	void gameWin();
 	void startExitAnim();
 
+	static constexpr int32_t ExitAnimYPush = 50;
 	static constexpr float gravity = 125.0f;
 	static constexpr uint32_t MaxSpeedX = 50;
 	static constexpr uint32_t MinSpeedX = 20;
+	static constexpr uint32_t ExitAnimPause = 500;
+	uint32_t exitAnimStartTime = 0;
 
 
 	struct GameElement {

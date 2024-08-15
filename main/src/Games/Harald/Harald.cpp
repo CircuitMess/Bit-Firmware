@@ -156,6 +156,9 @@ void Harald::Harald::onLoop(float deltaTime){
 			gameLose();
 		}
 	}else if(state == State::ExitAnim){
+
+		if(millis() - exitAnimStartTime <= ExitAnimPause) return;
+
 		//apply gravity and x movement for every block that has id != 0
 		bool noneOnScreen = true;
 
@@ -424,9 +427,13 @@ void Harald::Harald::startExitAnim(){
 				elements[x][y].speedX *= -1;
 			}
 
+			elements[x][y].speedY = -ExitAnimYPush;
+
 			collision.wallBot(*elements[x][y].gameObj, [this, x, y](){
 				elements[x][y].speedY *= -1;
 			});
 		}
 	}
+
+	exitAnimStartTime = millis();
 }
