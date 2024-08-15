@@ -3,6 +3,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include "GameEngine/Collision/PolygonCC.h"
 #include "Util/stdafx.h"
+#include "esp_random.h"
 
 Planck::Planck::Planck(Sprite& canvas): Game(canvas, Games::Planck, "/Games/Planck", {
 		{"/bat.raw", {}, true},
@@ -37,7 +38,7 @@ void Planck::Planck::onLoad(){
 			nullptr
 	);
 	batteryBar->setPos(2.0f, 2.0f);
-	batteryBar->getRenderComponent()->setLayer(1);
+	batteryBar->getRenderComponent()->setLayer(5);
 	addObject(batteryBar);
 
 	batteryLine = std::make_shared<GameObject>(
@@ -45,7 +46,7 @@ void Planck::Planck::onLoad(){
 			nullptr
 	);
 	batteryLine->setPos(11.0f, 4.0f);
-	batteryLine->getRenderComponent()->setLayer(2);
+	batteryLine->getRenderComponent()->setLayer(6);
 	addObject(batteryLine);
 
 	setBattery(0.73f);
@@ -64,7 +65,7 @@ void Planck::Planck::onLoad(){
 			std::make_unique<RectCC>(PixelDim{ 26, 30 })
 	);
 	car->setPos(51.0f, 80.0f);
-	car->getRenderComponent()->setLayer(1);
+	car->getRenderComponent()->setLayer(2);
 	addObject(car);
 
 	const float bottomY = 118.0f;
@@ -89,17 +90,17 @@ void Planck::Planck::onLoad(){
 
 	for(int i = 0; i < VerticalTiles; ++i){
 		if(i == VerticalTiles - 1){
-			const uint8_t notObstacle = rand() % HorizontalTiles;
+			const uint8_t notObstacle = esp_random() % HorizontalTiles;
 
-			road[i * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(rand() % 6));
+			road[i * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(esp_random() % 6));
 			road[i * HorizontalTiles]->setPos(10.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles]);
 
-			road[i * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(rand() % 6));
+			road[i * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(esp_random() % 6));
 			road[i * HorizontalTiles + 1]->setPos(46.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 1]);
 
-			road[i * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(rand() % 6));
+			road[i * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(esp_random() % 6));
 			road[i * HorizontalTiles + 2]->setPos(82.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 2]);
 		}else{
@@ -236,9 +237,9 @@ void Planck::Planck::generateRoad(){
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
-		const uint8_t pickupLocation = rand() % HorizontalTiles;
+		const uint8_t pickupLocation = esp_random() % HorizontalTiles;
 
-		const float random = (1.0f * rand()) / INT_MAX;
+		const float random = (1.0f * esp_random()) / INT_MAX;
 		if(random <= 0.1f){
 			GameObjPtr healthPickup = std::make_shared<GameObject>(
 					std::make_unique<StaticRC>(getFile("/life.raw"), PixelDim{ 9, 7 }),
@@ -274,7 +275,7 @@ void Planck::Planck::generateRoad(){
 		}else if(random <= 0.7f){
 			GameObjPtr coinPickup;
 
-			if(rand() % 2 == 0){
+			if(esp_random() % 2 == 0){
 				coinPickup = std::make_shared<GameObject>(
 						std::make_unique<StaticRC>(getFile("/pickup1.raw"), PixelDim{ 16, 11 }),
 						std::make_unique<RectCC>(glm::vec2{16, 11})
@@ -303,17 +304,17 @@ void Planck::Planck::generateRoad(){
 
 		++sinceGenerated;
 	}else{
-		const uint8_t notObstacle = rand() % HorizontalTiles;
+		const uint8_t notObstacle = esp_random() % HorizontalTiles;
 
-		road[rowToGenerate * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(rand() % 6));
+		road[rowToGenerate * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(esp_random() % 6));
 		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles]);
 
-		road[rowToGenerate * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(rand() % 6));
+		road[rowToGenerate * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(esp_random() % 6));
 		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 1]);
 
-		road[rowToGenerate * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(rand() % 6));
+		road[rowToGenerate * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(esp_random() % 6));
 		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
 		addObject(road[rowToGenerate * HorizontalTiles + 2]);
 
