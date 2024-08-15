@@ -21,6 +21,13 @@ Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescri
 
 	buttons = GameButtonsUsed[(uint8_t) gameType];
 	ledService = (LEDService*) Services.get(Service::LED);
+
+	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
+	if(achievementSystem == nullptr){
+		return;
+	}
+
+	achievementSystem->startSession();
 }
 
 Game::~Game(){
@@ -219,22 +226,11 @@ void Game::loop(uint micros){
 }
 
 void Game::onStart(){
-	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
-	if(achievementSystem == nullptr){
-		return;
-	}
 
-	achievementSystem->startSession();
 }
 
 void Game::onStop(){
-	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
-	if(achievementSystem == nullptr){
-		return;
-	}
 
-	std::vector<AchievementData> achievements;
-	achievementSystem->endSession(achievements);
 }
 
 void Game::onLoad(){}
