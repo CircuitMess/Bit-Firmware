@@ -48,6 +48,7 @@ private:
 	struct TileMove {
 		glm::vec<2, uint8_t> source;
 		glm::vec<2, uint8_t> target;
+		bool combo;
 	};
 
 	std::vector<TileMove> tileMoves;
@@ -58,11 +59,20 @@ private:
 	float tileMoveT = 0;
 	static constexpr float TileMoveSpeed = 2.0f;
 
+	struct Puf {
+		GameObjPtr go;
+		float time = 0;
+	};
+	std::vector<Puf> pufs;
+
 	void findMoves(Input::Button dir);
 	void applyMove();
 	void spawnNew();
 
 	void tileMoveAnim(float dt);
+
+	static constexpr float PufDuration = 0.42f;
+	void checkPufs(float dt);
 
 };
 } // Harald

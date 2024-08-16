@@ -1,11 +1,13 @@
 #include "Harald.h"
 #include "GameEngine/Rendering/StaticRC.h"
+#include "GameEngine/Rendering/AnimRC.h"
 #include "Services/HighScoreManager.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 
 Harald::Harald::Harald(Sprite& canvas) : Game(canvas, Games::Harald, "/Games/Harald", {
 		{ "/bg.raw", {}, true },
+		{ "/Puf.gif", {}, false },
 		{ Icons[0], {}, true },
 		{ Icons[1], {}, true },
 		{ Icons[2], {}, true },
@@ -109,6 +111,7 @@ void Harald::Harald::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
 	tileMoveAnim(deltaTime);
+	checkPufs(deltaTime);
 
 	bool foundPair = false;
 
@@ -201,7 +204,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 							foundMoves.emplace_back(TileMove {
 									.source = { x, y },
-									.target = { x, target }
+									.target = { x, target },
+									.combo = false
 							});
 
 							--target;
@@ -221,7 +225,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 						foundMoves.emplace_back(TileMove {
 								.source = { x, y },
-								.target = { x, target }
+								.target = { x, target },
+								.combo = true
 						});
 
 						break;
@@ -245,7 +250,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 							foundMoves.emplace_back(TileMove {
 									.source = { x, y },
-									.target = { x, target }
+									.target = { x, target },
+									.combo = false
 							});
 
 							++target;
@@ -265,7 +271,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 						foundMoves.emplace_back(TileMove {
 								.source = { x, y },
-								.target = { x, target }
+								.target = { x, target },
+								.combo = true
 						});
 
 						break;
@@ -289,7 +296,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 							foundMoves.emplace_back(TileMove {
 									.source = { x, y },
-									.target = { target, y }
+									.target = { target, y },
+									.combo = false
 							});
 
 							--target;
@@ -309,7 +317,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 						foundMoves.emplace_back(TileMove {
 								.source = { x, y },
-								.target = { target, y }
+								.target = { target, y },
+								.combo = true
 						});
 
 						break;
@@ -333,7 +342,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 							foundMoves.emplace_back(TileMove {
 									.source = { x, y },
-									.target = { target, y }
+									.target = { target, y },
+									.combo = false
 							});
 
 							++target;
@@ -353,7 +363,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
 						foundMoves.emplace_back(TileMove {
 								.source = { x, y },
-								.target = { target, y }
+								.target = { target, y },
+								.combo = true
 						});
 
 						break;
@@ -400,6 +411,19 @@ void Harald::Harald::applyMove(){
 	for(const auto& move : tileMoves){
 		const auto sourceId = moveResult.field[move.source.x][move.source.y];
 		const auto targetId = moveResult.field[move.target.x][move.target.y];
+		const auto oldId = elements[move.target.x][move.target.y].id;
+
+		if(move.combo){
+			GameObjPtr pufObj = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/Puf.gif")), nullptr);
+			pufObj->setPos(elements[move.target.x][move.target.y].gameObj->getPos() + glm::vec2 { -3, -6 });
+			auto pufRc = (AnimRC*) pufObj->getRenderComponent().get();
+			pufRc->setLayer(5);
+			pufRc->setLoopMode(GIF::Single);
+			pufRc->start();
+			addObject(pufObj);
+
+			pufs.emplace_back(Puf { pufObj, 0 });
+		}
 
 		// Change target tile
 		elements[move.target.x][move.target.y].id = targetId;
@@ -487,5 +511,23 @@ void Harald::Harald::tileMoveAnim(float dt){
 		applyMove();
 		tileMoveT = 0;
 		tileMoves.clear();
+	}
+}
+
+void Harald::Harald::checkPufs(float dt){
+	if(pufs.empty()) return;
+
+	std::vector<Puf> forRemoval;
+
+	for(auto& puf : pufs){
+		puf.time += dt;
+		if(puf.time >= PufDuration){
+			forRemoval.push_back(puf);
+		}
+	}
+
+	for(const auto& puf : forRemoval){
+		removeObject(puf.go);
+		std::erase_if(pufs, [puf](const Puf& other){ return puf.go == other.go; });
 	}
 }
