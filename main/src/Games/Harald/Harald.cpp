@@ -108,6 +108,8 @@ void Harald::Harald::onLoad(){
 void Harald::Harald::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
+	tileMoveAnim(deltaTime);
+
 	bool foundPair = false;
 
 	for(int x = 0; x < 4; ++x){
@@ -166,28 +168,42 @@ void Harald::Harald::onLoop(float deltaTime){
 }
 
 void Harald::Harald::handleInput(const Input::Data& data){
-	Game::handleInput(data);
-
 	if(data.action != Input::Data::Action::Press){
 		return;
 	}
 
-	std::array<std::array<uint8_t, 4>, 4> idMap = {};
+	if(!tileMoves.empty()) return;
 
+	findMoves(data.btn);
+}
+
+void Harald::Harald::findMoves(Input::Button dir){
+
+	IdField resultingIds = {};
 	for(int x = 0; x < 4; ++x){
 		for(int y = 0; y < 4; ++y){
-			idMap[x][y] = elements[x][y].id;
+			resultingIds[x][y] = elements[x][y].id;
 		}
 	}
 
-	if(data.btn == Input::Button::Up){
+	std::vector<TileMove> foundMoves;
+	uint32_t score = this->score;
+
+	if(dir == Input::Button::Up){
 		for(int x = 0; x < 4; ++x){
 			for(int target = 0; target < 4; ++target){
-				if(idMap[x][target] == 0){
+				if(resultingIds[x][target] == 0){
 					for(int y = target + 1; y < 4; ++y){
-						if(idMap[x][y] != 0){
-							idMap[x][target] = idMap[x][y];
-							idMap[x][y] = 0;
+						if(resultingIds[x][y] != 0){
+							resultingIds[x][target] = resultingIds[x][y];
+							resultingIds[x][y] = 0;
+
+							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+							foundMoves.emplace_back(TileMove {
+									.source = { x, y },
+									.target = { x, target }
+							});
+
 							--target;
 							break;
 						}
@@ -197,26 +213,41 @@ void Harald::Harald::handleInput(const Input::Data& data){
 				}
 
 				for(int y = target + 1; y < 4; ++y){
-					if(idMap[x][y] == idMap[x][target]){
-						idMap[x][y] = 0;
-						score += std::pow(2, ++idMap[x][target]);
+					if(resultingIds[x][y] == resultingIds[x][target]){
+						resultingIds[x][y] = 0;
+						resultingIds[x][target]++;
+						score += std::pow(2, resultingIds[x][target]);
+
+						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+						foundMoves.emplace_back(TileMove {
+								.source = { x, y },
+								.target = { x, target }
+						});
+
 						break;
 					}
 
-					if(idMap[x][y] != 0){
+					if(resultingIds[x][y] != 0){
 						break;
 					}
 				}
 			}
 		}
-	}else if(data.btn == Input::Button::Down){
+	}else if(dir == Input::Button::Down){
 		for(int x = 0; x < 4; ++x){
 			for(int target = 3; target >= 0; --target){
-				if(idMap[x][target] == 0){
+				if(resultingIds[x][target] == 0){
 					for(int y = target -1; y >= 0; --y){
-						if(idMap[x][y] != 0){
-							idMap[x][target] = idMap[x][y];
-							idMap[x][y] = 0;
+						if(resultingIds[x][y] != 0){
+							resultingIds[x][target] = resultingIds[x][y];
+							resultingIds[x][y] = 0;
+
+							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+							foundMoves.emplace_back(TileMove {
+									.source = { x, y },
+									.target = { x, target }
+							});
+
 							++target;
 							break;
 						}
@@ -226,26 +257,41 @@ void Harald::Harald::handleInput(const Input::Data& data){
 				}
 
 				for(int y = target - 1; y >= 0; --y){
-					if(idMap[x][y] == idMap[x][target]){
-						idMap[x][y] = 0;
-						score += std::pow(2, ++idMap[x][target]);
+					if(resultingIds[x][y] == resultingIds[x][target]){
+						resultingIds[x][y] = 0;
+						resultingIds[x][target]++;
+						score += std::pow(2, resultingIds[x][target]);
+
+						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+						foundMoves.emplace_back(TileMove {
+								.source = { x, y },
+								.target = { x, target }
+						});
+
 						break;
 					}
 
-					if(idMap[x][y] != 0){
+					if(resultingIds[x][y] != 0){
 						break;
 					}
 				}
 			}
 		}
-	}else if(data.btn == Input::Button::Left){
+	}else if(dir == Input::Button::Left){
 		for(int y = 0; y < 4; ++y){
 			for(int target = 0; target < 4; ++target){
-				if(idMap[target][y] == 0){
+				if(resultingIds[target][y] == 0){
 					for(int x = target + 1; x < 4; ++x){
-						if(idMap[x][y] != 0){
-							idMap[target][y] = idMap[x][y];
-							idMap[x][y] = 0;
+						if(resultingIds[x][y] != 0){
+							resultingIds[target][y] = resultingIds[x][y];
+							resultingIds[x][y] = 0;
+
+							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+							foundMoves.emplace_back(TileMove {
+									.source = { x, y },
+									.target = { target, y }
+							});
+
 							--target;
 							break;
 						}
@@ -255,26 +301,41 @@ void Harald::Harald::handleInput(const Input::Data& data){
 				}
 
 				for(int x = target + 1; x < 4; ++x){
-					if(idMap[x][y] == idMap[target][y]){
-						idMap[x][y] = 0;
-						score += std::pow(2, ++idMap[target][y]);
+					if(resultingIds[x][y] == resultingIds[target][y]){
+						resultingIds[x][y] = 0;
+						resultingIds[target][y]++;
+						score += std::pow(2, resultingIds[target][y]);
+
+						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+						foundMoves.emplace_back(TileMove {
+								.source = { x, y },
+								.target = { target, y }
+						});
+
 						break;
 					}
 
-					if(idMap[x][y] != 0){
+					if(resultingIds[x][y] != 0){
 						break;
 					}
 				}
 			}
 		}
-	}else if(data.btn == Input::Button::Right){
+	}else if(dir == Input::Button::Right){
 		for(int y = 0; y < 4; ++y){
 			for(int target = 3; target >= 0; --target){
-				if(idMap[target][y] == 0){
+				if(resultingIds[target][y] == 0){
 					for(int x = target -1; x >= 0; --x){
-						if(idMap[x][y] != 0){
-							idMap[target][y] = idMap[x][y];
-							idMap[x][y] = 0;
+						if(resultingIds[x][y] != 0){
+							resultingIds[target][y] = resultingIds[x][y];
+							resultingIds[x][y] = 0;
+
+							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+							foundMoves.emplace_back(TileMove {
+									.source = { x, y },
+									.target = { target, y }
+							});
+
 							++target;
 							break;
 						}
@@ -284,13 +345,21 @@ void Harald::Harald::handleInput(const Input::Data& data){
 				}
 
 				for(int x = target - 1; x >= 0; --x){
-					if(idMap[x][y] == idMap[target][y]){
-						idMap[x][y] = 0;
-						score += std::pow(2, ++idMap[target][y]);
+					if(resultingIds[x][y] == resultingIds[target][y]){
+						resultingIds[x][y] = 0;
+						resultingIds[target][y]++;
+						score += std::pow(2, resultingIds[target][y]);
+
+						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
+						foundMoves.emplace_back(TileMove {
+								.source = { x, y },
+								.target = { target, y }
+						});
+
 						break;
 					}
 
-					if(idMap[x][y] != 0){
+					if(resultingIds[x][y] != 0){
 						break;
 					}
 				}
@@ -298,24 +367,12 @@ void Harald::Harald::handleInput(const Input::Data& data){
 		}
 	}
 
-	scoreElement->setScore(score);
-
 	size_t numOfSame = 0;
 	for(int x = 0; x < 4; ++x){
 		for(int y = 0; y < 4; ++y){
-			if(elements[x][y].id == idMap[x][y]){
+			if(elements[x][y].id == moveResult.field[x][y]){
 				++numOfSame;
 				continue;
-			}
-
-			elements[x][y].id = idMap[x][y];
-			StaticRC* rc = (StaticRC*) elements[x][y].gameObj->getRenderComponent().get();
-			rc->setFile(getFile(Icons[idMap[x][y]]));
-
-			//Win condition
-			if(idMap[x][y] >= 10){
-				exit();
-				return;
 			}
 		}
 	}
@@ -329,6 +386,44 @@ void Harald::Harald::handleInput(const Input::Data& data){
 		return;
 	}
 
+	tileMoves = foundMoves;
+	moveResult = {
+			.field = resultingIds,
+			.score = score
+	};
+}
+
+void Harald::Harald::applyMove(){
+	score = moveResult.score;
+	scoreElement->setScore(score);
+
+	for(const auto& move : tileMoves){
+		const auto sourceId = moveResult.field[move.source.x][move.source.y];
+		const auto targetId = moveResult.field[move.target.x][move.target.y];
+
+		// Change target tile
+		elements[move.target.x][move.target.y].id = targetId;
+		StaticRC* rc = (StaticRC*) elements[move.target.x][move.target.y].gameObj->getRenderComponent().get();
+		rc->setFile(getFile(Icons[targetId]));
+
+		// Change source tile
+		elements[move.source.x][move.source.y].id = 0;
+		elements[move.source.x][move.source.y].gameObj->setPos(glm::vec2{14, 23} + glm::vec2{move.source.x * 25, move.source.y * 25});
+		rc = (StaticRC*) elements[move.source.x][move.source.y].gameObj->getRenderComponent().get();
+		rc->setFile(getFile(Icons[sourceId]));
+		rc->setLayer(0);
+
+		//Win condition
+		if(targetId >= 10){
+			exit();
+			return;
+		}
+	}
+
+	spawnNew();
+}
+
+void Harald::Harald::spawnNew(){
 	audio.play({{ 300, 500, 150 },
 				{ 0,   0,   50 },
 				{ 100, 80, 75 },
@@ -366,4 +461,31 @@ void Harald::Harald::handleInput(const Input::Data& data){
 	elements[newX][newY].id = (1.0f * rand()) / INT_MAX > 0.65f ? 2 : 1;
 	StaticRC* rc = (StaticRC*) elements[newX][newY].gameObj->getRenderComponent().get();
 	rc->setFile(getFile(Icons[elements[newX][newY].id]));
+}
+
+void Harald::Harald::tileMoveAnim(float dt){
+	if(tileMoves.empty()) return;
+
+	tileMoveT = std::min(1.0f, tileMoveT + dt * TileMoveSpeed);
+
+	float t = 1.0f - std::pow(1.0f - tileMoveT, 3.0f);
+
+	for(const auto& move : tileMoves){
+		GameObjPtr movingTile = elements[move.source.x][move.source.y].gameObj;
+		const auto sourcePos = glm::vec2{14, 23} + glm::vec2{move.source.x * 25, move.source.y * 25};
+		const auto targetPos = elements[move.target.x][move.target.y].gameObj->getPos();
+
+		const auto gotoPos = glm::vec<2, float>{
+				std::round((float) sourcePos.x + (float) (targetPos.x - sourcePos.x) * t),
+				std::round((float) sourcePos.y + (float) (targetPos.y - sourcePos.y) * t)
+		};
+
+		movingTile->setPos(gotoPos);
+	}
+
+	if(tileMoveT >= 1.0f){
+		applyMove();
+		tileMoveT = 0;
+		tileMoves.clear();
+	}
 }

@@ -23,7 +23,10 @@ private:
 		GameObjPtr gameObj;
 	};
 
-	std::array<std::array<GameElement, 4>, 4> elements;
+	using Field = std::array<std::array<GameElement, 4>, 4>;
+	using IdField = std::array<std::array<uint8_t, 4>, 4>;
+
+	Field elements;
 	uint32_t score = 0;
 	std::unique_ptr<Score> scoreElement;
 	std::unique_ptr<Score> bestScoreElement;
@@ -41,6 +44,26 @@ private:
 			"/Tile10.raw",
 			"/Tile11.raw",
 	};
+
+	struct TileMove {
+		glm::vec<2, uint8_t> source;
+		glm::vec<2, uint8_t> target;
+	};
+
+	std::vector<TileMove> tileMoves;
+	struct {
+		IdField field;
+		uint32_t score;
+	} moveResult;
+	float tileMoveT = 0;
+	static constexpr float TileMoveSpeed = 2.0f;
+
+	void findMoves(Input::Button dir);
+	void applyMove();
+	void spawnNew();
+
+	void tileMoveAnim(float dt);
+
 };
 } // Harald
 
