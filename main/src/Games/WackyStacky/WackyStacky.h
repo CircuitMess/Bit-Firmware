@@ -26,7 +26,6 @@ private:
 	GameObjPtr floor;
 	GameObjPtr hookedRobot;
 	EventQueue queue;
-	float swingDir = 1.0f;
 	uint8_t lives = 3;
 	uint64_t lastDrop = 0;
 	uint8_t currentRobot = 0;
@@ -35,6 +34,8 @@ private:
 	glm::vec2 towerSwingLimits;
 
 	float swingT = 0.0f;
+	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f };
+	inline static constexpr const float SwingSpeed = 1.5f;
 
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
@@ -45,9 +46,6 @@ private:
 	inline static constexpr const uint8_t ActiveCloudCount = 6;
 
 	std::array<GameObjPtr, ActiveCloudCount> clouds;
-
-	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f};
-	inline static constexpr const float SwingSpeed = 1.5f;
 
 	inline static constexpr const float TowerSwingSpeed = 3.50f;
 
@@ -85,8 +83,9 @@ private:
 	};
 
 private:
-	void hookRotation(float dt);
-	void rotateHook(float deg);
+	void swingAnim(float dt);
+	void applyHookRot(float deg);
+
 	void attachRobot(uint8_t robot);
 	void miss();
 	void onCollision();

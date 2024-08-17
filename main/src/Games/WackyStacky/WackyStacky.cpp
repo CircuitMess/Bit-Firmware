@@ -133,13 +133,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 		}
 	}
 
-	if(hook->getRot() <= SwingLimits.x){
-		swingDir = 1.0f;
-	}else if(hook->getRot() >= SwingLimits.y){
-		swingDir = -1.0f;
-	}
-
-	hookRotation(deltaTime);
+	swingAnim(deltaTime);
 
 	if(lastDrop != 0){
 		if(hookedRobot){
@@ -210,16 +204,16 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	}
 }
 
-void WackyStacky::WackyStacky::hookRotation(float dt){
+void WackyStacky::WackyStacky::swingAnim(float dt){
 	swingT += dt * SwingSpeed;
 	if(swingT >= M_PI*2.0f){
 		swingT -= M_PI*2.0f;
 	}
 
-	rotateHook(map(std::cos(swingT), -1, 1, SwingLimits.x, SwingLimits.y));
+	applyHookRot(map(std::cos(swingT), -1, 1, SwingLimits.x, SwingLimits.y));
 }
 
-void WackyStacky::WackyStacky::rotateHook(float deg){
+void WackyStacky::WackyStacky::applyHookRot(float deg){
 	if(!hook){
 		return;
 	}
