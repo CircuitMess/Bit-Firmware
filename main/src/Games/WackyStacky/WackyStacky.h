@@ -42,6 +42,10 @@ private:
 		glm::vec2 pos;
 		float rot;
 	} dropStart;
+	glm::vec2 dropSpeed;
+	glm::vec2 dropPos;
+	bool falling = false;
+	float fallDir = 0;
 
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
@@ -98,6 +102,7 @@ private:
 
 	void attachRobot(uint8_t robot);
 	void miss();
+	void robotFallen();
 
 	inline static constexpr std::string getRobotPath(uint8_t robot) {
 		if(robot > 6){
