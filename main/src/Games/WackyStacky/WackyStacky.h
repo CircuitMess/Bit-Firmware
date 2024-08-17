@@ -30,7 +30,6 @@ private:
 	uint8_t currentRobot = 0;
 	float moveDelta = 0;
 	uint16_t score = 0;
-	glm::vec2 towerSwingLimits;
 
 	float swingT = 0.0f;
 	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f };
@@ -47,9 +46,20 @@ private:
 	bool falling = false;
 	float fallDir = 0;
 
+	float towSwingT = 0.0f;
+	inline static constexpr const float TowerSwingSpeed = 1.0f;
+
+
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
-	std::array<GameObjPtr, VisibleRobotCount> visibleRobots;
+	struct Robot {
+		GameObjPtr go;
+		glm::vec2 pos;
+		glm::vec2 posDiff;
+
+		operator bool() const{ return go.operator bool(); }
+	};
+	std::array<Robot, VisibleRobotCount> visibleRobots;
 
 	inline static constexpr const uint8_t CloudCount = 4;
 
@@ -57,22 +67,11 @@ private:
 
 	std::array<GameObjPtr, ActiveCloudCount> clouds;
 
-	inline static constexpr const float TowerSwingSpeed = 3.50f;
-
-	inline static constexpr const uint8_t TowerSwingCoordsCount = 4;
-
 	inline static constexpr PixelDim CloudDims[] {
 			{ 39, 15 },
 			{ 40, 22 },
 			{ 24, 9 },
 			{ 40, 10 }
-	};
-
-	inline static constexpr glm::vec2 TowerSwingCoords[] {
-			{ 20.0f, 100.0f },
-			{ 40.0f, 86.0f },
-			{ 60.0f, 116.0f },
-			{ 80.0f, 92.0f }
 	};
 
 	inline static constexpr const char* CloudPaths[] = {
@@ -96,11 +95,14 @@ private:
 	void swingAnim(float dt);
 	void applyHookRot(float deg);
 
+	void towerSwingAnim(float dt);
+
 	void drop();
 	void dropAnim(float dt);
 	void dropped();
 
-	void attachRobot(uint8_t robot);
+	void spawnRobot();
+	void updateRobotPos();
 	void miss();
 	void robotFallen();
 
