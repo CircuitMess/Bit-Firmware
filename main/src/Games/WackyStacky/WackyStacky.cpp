@@ -267,7 +267,7 @@ void WackyStacky::WackyStacky::dropAnim(float dt){
 	if(falling){
 		newRot = map(std::min(std::pow(dropT, 2.0f), 1.0f), 0, 1, 0, 20) * fallDir;
 	}else{
-		newRot = dropStart.rot - map(std::min(std::pow(dropT, 2.0f), 1.0f), 0, 1, 0, std::abs(dropStart.rot)) * (dropStart.rot > 0 ? 1.0f : -1.0f);
+		newRot = dropStart.rot - map(std::min(std::pow(dropT * 1.5f, 2.0f), 1.0f), 0, 1, 0, std::abs(dropStart.rot)) * (dropStart.rot > 0 ? 1.0f : -1.0f);
 	}
 
 	hookedRobot->setPos(newPos);
