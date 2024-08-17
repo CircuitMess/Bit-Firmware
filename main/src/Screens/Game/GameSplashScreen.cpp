@@ -6,6 +6,8 @@
 #include "Services/RobotManager.h"
 #include "Settings/Settings.h"
 #include "Services/TwinkleService.h"
+#include "Util/stdafx.h"
+#include "Screens/Game/GameMenuScreen.h"
 
 GameSplashScreen::GameSplashScreen(Games current) : currentGame(current){
 	switch(currentGame){
@@ -132,12 +134,16 @@ void GameSplashScreen::buildUI(){
 }
 
 void GameSplashScreen::loop(){
+	if(millis() - startTime < HoldTime) return;
+
 	if(auto ui = (UIThread*) Services.get(Service::UI)){
-		ui->startGame(currentGame);
+		ui->startScreen([this](){ return std::make_unique<GameMenuScreen>(currentGame); });
 	}
 }
 
 void GameSplashScreen::onStart(){
+	startTime = millis();
+
 	if(auto led = (LEDService*) Services.get(Service::LED)){
 		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
 		if(buttons.up){

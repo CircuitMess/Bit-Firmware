@@ -95,8 +95,6 @@ void WackyStacky::WackyStacky::onLoad(){
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
-	printf("Limits: %f, %f\n", towerSwingLimits.x, towerSwingLimits.y);
-
 	for(Event e; queue.get(e, 0); ){
         if(e.facility != Facility::Input){
             continue;

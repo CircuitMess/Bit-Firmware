@@ -22,6 +22,9 @@ private:
 	void buildUI();
 	void loop() override;
 	void onStart() override;
+
+	uint32_t startTime;
+	static constexpr uint32_t HoldTime = 2000;
 };
 
 #endif //BIT_FIRMWARE_GAMESPLASHSCREEN_H
