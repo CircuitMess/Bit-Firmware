@@ -105,7 +105,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
             continue;
         }
 
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping){
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0){
 			drop();
 		}
 
@@ -172,8 +172,11 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	towerSwingAnim(deltaTime);
 
 	if(lives == 0){
-		exit();
-		return;
+		deadTimer += deltaTime;
+
+		if(deadTimer >= 2.0f && !hookedRobot){
+			exit();
+		}
 	}
 }
 
@@ -338,7 +341,19 @@ void WackyStacky::WackyStacky::spawnRobot(){
 void WackyStacky::WackyStacky::miss(){
 	--lives;
 	hearts->setLives(lives);
-	audio.play({ { 200, 50, 100 } });
+
+	if(lives == 0){
+		audio.play({
+						   { 400, 200, 200 },
+						   { 0, 0, 150 },
+						   { 300, 150, 200 },
+						   { 0, 0, 150 },
+						   { 200, 100, 200 },
+						   { 100, 100, 100 }
+				   });
+	}else{
+		audio.play({ { 200, 50, 100 } });
+	}
 
 	collision.removePair(*floor, *hookedRobot);
 	for(size_t i = 0; i < VisibleRobotCount; ++i){
@@ -354,7 +369,10 @@ void WackyStacky::WackyStacky::robotFallen(){
 	moveDelta = 0.0f;
 	removeObject(hookedRobot);
 	hookedRobot.reset();
-	spawnRobot();
+
+	if(lives != 0){
+		spawnRobot();
+	}
 }
 
 void WackyStacky::WackyStacky::dropped(){
