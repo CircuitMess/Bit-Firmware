@@ -108,6 +108,8 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
         if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && moveDelta == 0.0f){
             lastDrop = millis();
 		}
+
+		free(e.data);
     }
 
 	if(score >= 10 && visibleRobots.back()){
