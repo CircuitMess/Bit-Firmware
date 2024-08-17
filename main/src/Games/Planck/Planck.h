@@ -25,10 +25,12 @@ private:
 	inline static constexpr const float StraightlineSpeedLimit = 150;
 	inline static constexpr const uint32_t BoostDuration = 1000;
 	inline static constexpr const float BoostAccelerationRate = 75;
-	inline static constexpr const uint32_t AirDuration = 500;
+	inline static constexpr const uint32_t AirDuration = 1000;
 	inline static constexpr const float PassiveDeceleration = -9.0f;
 	inline static constexpr const float GasBrakeAcceleration = 100.0f;
 	inline static constexpr const float BatteryDischargeRate = 0.25f;
+
+	inline static constexpr const float JumpMaxZoom = 1.3f;
 
 	bool invincible = false;
 	float invincibilityTime = 0;
@@ -37,11 +39,11 @@ private:
 
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
-			"/hole.raw",
 			"/rail.raw",
 			"/ramp.raw",
 			"/trash.raw",
-			"/boost.raw"
+			"/boost.raw",
+			"/hole.raw",
 	};
 
 	inline static constexpr const char* Pickups[] = {
@@ -54,6 +56,7 @@ private:
 	uint32_t lives = 3;
 	float battery = 1.0f;
 	GameObjPtr car;
+	std::shared_ptr<SpriteRC> carRC;
 	GameObjPtr batteryBar;
 	GameObjPtr batteryLine;
 	std::unique_ptr<Hearts> hearts;
@@ -76,13 +79,16 @@ private:
 
 	enum TileType {
 		Cones,
-		Hole,
 		Rail,
 		Ramp,
 		Trash,
 		Boost,
+		Hole,
 		Road
 	};
+
+	//hole needs to be generated after each ramp
+	bool holePending[HorizontalTiles] = { 0 };
 
 private:
 	void generateRoad();

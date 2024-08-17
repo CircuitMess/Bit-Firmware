@@ -85,9 +85,13 @@ void Planck::Planck::onLoad(){
 	addObject(scoreDisplay->getGO());
 
 	car = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/car.raw"), PixelDim{ 26, 30 }),
+			std::make_unique<SpriteRC>(PixelDim{ 26, 30 }),
 			std::make_unique<RectCC>(PixelDim{ 26, 30 })
 	);
+
+	carRC = std::static_pointer_cast<SpriteRC>(car->getRenderComponent());
+	carRC->getSprite()->clear(TFT_TRANSPARENT);
+	Display::drawFile(*carRC->getSprite(), getFile("/car.raw"), 0, 0, 26, 30);
 	car->setPos(51.0f, 80.0f);
 	car->getRenderComponent()->setLayer(2);
 	addObject(car);
@@ -116,15 +120,15 @@ void Planck::Planck::onLoad(){
 		if(i == VerticalTiles - 1){
 			const uint8_t notObstacle = esp_random() % HorizontalTiles;
 
-			road[i * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(esp_random() % 6));
+			road[i * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(esp_random() % 5));
 			road[i * HorizontalTiles]->setPos(10.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles]);
 
-			road[i * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(esp_random() % 6));
+			road[i * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(esp_random() % 5));
 			road[i * HorizontalTiles + 1]->setPos(46.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 1]);
 
-			road[i * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(esp_random() % 6));
+			road[i * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(esp_random() % 5));
 			road[i * HorizontalTiles + 2]->setPos(82.0f, 96.0f - i * 36.0f);
 			addObject(road[i * HorizontalTiles + 2]);
 		}else{
@@ -145,8 +149,42 @@ void Planck::Planck::onLoad(){
 
 void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
+	const auto input = (Input*) Services.get(Service::Input);
 
-	if(poweredAcceleration >= 1.0f){
+	if(lastBoost != 0 && millis() - lastBoost >= BoostDuration){
+		boostAcceleration = 0;
+		lastBoost = 0;
+	}
+
+	if(lastAir != 0){
+		if(millis() - lastAir >= AirDuration){
+			lastAir = 0;
+			carRC->setScale(1.0);
+
+			if(input->isPressed(Input::Button::Right) && !input->isPressed(Input::Button::Left)){
+				direction = 1.0f;
+			}
+
+			if(input->isPressed(Input::Button::Left) && !input->isPressed(Input::Button::Right)){
+				direction = -1.0f;
+			}
+
+			if(input->isPressed(Input::Button::A) && !input->isPressed(Input::Button::B)){
+				poweredAcceleration = 1.0f;
+			}
+
+			if(input->isPressed(Input::Button::B) && !input->isPressed(Input::Button::A)){
+				poweredAcceleration = -1.0f;
+			}
+		}else{
+			const auto x = millis() - lastAir;
+			const auto carZoom = -(JumpMaxZoom-1.0)/2.0 * cos(2.0 * M_PI / (float) AirDuration * x) + 1 + (JumpMaxZoom-1.0)/2.0;
+
+			carRC->setScale(carZoom);
+		}
+	}
+
+	if(input->isPressed(Input::Button::A) && lastAir == 0 ){
 		setBattery(battery - BatteryDischargeRate * deltaTime);
 	}
 
@@ -154,16 +192,10 @@ void Planck::Planck::onLoop(float deltaTime){
 		poweredAcceleration -= 1.0f;
 	}
 
-	if(lastBoost != 0 && millis() - lastBoost >= BoostDuration){
-		boostAcceleration = 0;
-		lastBoost = 0;
+	auto a = poweredAcceleration * GasBrakeAcceleration + boostAcceleration;
+	if(lastAir == 0){
+		a += PassiveDeceleration; //no passive deceleration mid-air
 	}
-
-	if(lastAir != 0 && millis() - lastAir >= AirDuration){
-		lastAir = 0;
-	}
-
-	const auto a = poweredAcceleration * GasBrakeAcceleration + PassiveDeceleration + boostAcceleration;
 	speed += a * deltaTime;
 	speed = glm::clamp(speed, speedLimits.x, speedLimits.y);
 
@@ -231,7 +263,7 @@ void Planck::Planck::onLoop(float deltaTime){
 		}
 	}
 
-	if(lives == 0){
+	if(lives == 0 || (speed == 0 && battery == 0)){
 		exit();
 		return;
 	}
@@ -239,6 +271,8 @@ void Planck::Planck::onLoop(float deltaTime){
 
 void Planck::Planck::handleInput(const Input::Data& data){
 	Game::handleInput(data);
+
+	if(lastAir != 0) return; //no handling mid-air
 
 	if((data.btn == Input::Button::Right && data.action == Input::Data::Press) || (data.btn == Input::Button::Left && data.action == Input::Data::Release)){
 		direction += 1.0f;
@@ -264,101 +298,141 @@ void Planck::Planck::generateRoad(){
 	removeObject(road[rowToGenerate * HorizontalTiles + 1]);
 	removeObject(road[rowToGenerate * HorizontalTiles + 2]);
 
+
+	bool newHolePending[3] = {0};
+
+	uint8_t nonHoleLocations = 0;
+	for(uint8_t i = 0; i < HorizontalTiles; i++){
+		if(!holePending[i]){
+			nonHoleLocations++;
+		}
+	}
+
+
 	if(sinceGenerated < 2){
-		road[rowToGenerate * HorizontalTiles] = createTile(TileType::Road);
-		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles]);
-
-		road[rowToGenerate * HorizontalTiles + 1] = createTile(TileType::Road);
-		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles + 1]);
-
-		road[rowToGenerate * HorizontalTiles + 2] = createTile(TileType::Road);
-		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles + 2]);
-
-		const uint8_t pickupLocation = esp_random() % HorizontalTiles;
-
-		const float random = (1.0f * esp_random()) / INT_MAX;
-		if(random <= 0.1f){
-			GameObjPtr healthPickup = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile("/life.raw"), PixelDim{ 9, 7 }),
-					std::make_unique<RectCC>(glm::vec2{9, 7})
-			);
-
-			healthPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{4.5f, 3.5f});
-			addObject(healthPickup);
-			pickups.insert(healthPickup);
-			healthPickup->getRenderComponent()->setLayer(1);
-
-			collision.addPair(*car, *healthPickup, [this, healthPickup](){
-				onHealthUp();
-				pickups.erase(healthPickup);
-				removeObject(healthPickup);
-			});
-		}else if(random <= 0.2f){
-			GameObjPtr batteryPickup = std::make_shared<GameObject>(
-					std::make_unique<StaticRC>(getFile("/bat.raw"), PixelDim{ 15, 17 }),
-					std::make_unique<RectCC>(glm::vec2{15, 17})
-			);
-
-			batteryPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{7.5f, 8.5f});
-			addObject(batteryPickup);
-			pickups.insert(batteryPickup);
-			batteryPickup->getRenderComponent()->setLayer(1);
-
-			collision.addPair(*car, *batteryPickup, [this, batteryPickup](){
-				onBatteryUp();
-				pickups.erase(batteryPickup);
-				removeObject(batteryPickup);
-			});
-		}else if(random <= 0.7f){
-			GameObjPtr coinPickup;
-
-			if(esp_random() % 2 == 0){
-				coinPickup = std::make_shared<GameObject>(
-						std::make_unique<StaticRC>(getFile("/pickup1.raw"), PixelDim{ 16, 11 }),
-						std::make_unique<RectCC>(glm::vec2{16, 11})
-				);
-
-				coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{8.0f, 5.5f});
+		for(uint8_t i = 0; i < HorizontalTiles; i++){
+			if(holePending[i]){
+				road[rowToGenerate * HorizontalTiles + i] = createTile(TileType::Hole);
 			}else{
-				coinPickup = std::make_shared<GameObject>(
-						std::make_unique<StaticRC>(getFile("/pickup2.raw"), PixelDim{ 11, 13 }),
-						std::make_unique<RectCC>(glm::vec2{11, 13})
-				);
+				road[rowToGenerate * HorizontalTiles + i] = createTile(TileType::Road);
+			}
+			road[rowToGenerate * HorizontalTiles + i]->setPos(10.0f + 36.0f * i, 96.0f - (VerticalTiles - 1) * 36.0f);
+			addObject(road[rowToGenerate * HorizontalTiles + i]);
+		}
 
-				coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{18.0f, 18.0f} - glm::vec2{5.5f, 6.5f});
+
+		if(nonHoleLocations > 0){
+			uint8_t pickupLocation = esp_random() % nonHoleLocations;
+
+			for(uint8_t i = 0; i < HorizontalTiles; i++){
+				if(holePending[i] && i == pickupLocation){
+					pickupLocation++;
+				}else if(!holePending[i] && i == pickupLocation){
+					break;
+				}
 			}
 
-			addObject(coinPickup);
-			pickups.insert(coinPickup);
-			coinPickup->getRenderComponent()->setLayer(1);
 
-			collision.addPair(*car, *coinPickup, [this, coinPickup](){
-				onPickup();
-				pickups.erase(coinPickup);
-				removeObject(coinPickup);
-			});
+			const float random = (1.0f * esp_random()) / INT_MAX;
+			if(random <= 0.1f){
+				GameObjPtr healthPickup = std::make_shared<GameObject>(
+						std::make_unique<StaticRC>(getFile("/life.raw"), PixelDim{ 9, 7 }),
+						std::make_unique<RectCC>(glm::vec2{ 9, 7 })
+				);
+
+				healthPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{ 18.0f, 18.0f } - glm::vec2{ 4.5f, 3.5f });
+				addObject(healthPickup);
+				pickups.insert(healthPickup);
+				healthPickup->getRenderComponent()->setLayer(1);
+
+				collision.addPair(*car, *healthPickup, [this, healthPickup](){
+					onHealthUp();
+					pickups.erase(healthPickup);
+					removeObject(healthPickup);
+				});
+			}else if(random <= 0.2f){
+				GameObjPtr batteryPickup = std::make_shared<GameObject>(
+						std::make_unique<StaticRC>(getFile("/bat.raw"), PixelDim{ 15, 17 }),
+						std::make_unique<RectCC>(glm::vec2{ 15, 17 })
+				);
+
+				batteryPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{ 18.0f, 18.0f } - glm::vec2{ 7.5f, 8.5f });
+				addObject(batteryPickup);
+				pickups.insert(batteryPickup);
+				batteryPickup->getRenderComponent()->setLayer(1);
+
+				collision.addPair(*car, *batteryPickup, [this, batteryPickup](){
+					onBatteryUp();
+					pickups.erase(batteryPickup);
+					removeObject(batteryPickup);
+				});
+			}else if(random <= 0.7f){
+				GameObjPtr coinPickup;
+
+				if(esp_random() % 2 == 0){
+					coinPickup = std::make_shared<GameObject>(
+							std::make_unique<StaticRC>(getFile("/pickup1.raw"), PixelDim{ 16, 11 }),
+							std::make_unique<RectCC>(glm::vec2{ 16, 11 })
+					);
+
+					coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{ 18.0f, 18.0f } - glm::vec2{ 8.0f, 5.5f });
+				}else{
+					coinPickup = std::make_shared<GameObject>(
+							std::make_unique<StaticRC>(getFile("/pickup2.raw"), PixelDim{ 11, 13 }),
+							std::make_unique<RectCC>(glm::vec2{ 11, 13 })
+					);
+
+					coinPickup->setPos(road[rowToGenerate * HorizontalTiles + pickupLocation]->getPos() + glm::vec2{ 18.0f, 18.0f } - glm::vec2{ 5.5f, 6.5f });
+				}
+
+				addObject(coinPickup);
+				pickups.insert(coinPickup);
+				coinPickup->getRenderComponent()->setLayer(1);
+
+				collision.addPair(*car, *coinPickup, [this, coinPickup](){
+					onPickup();
+					pickups.erase(coinPickup);
+					removeObject(coinPickup);
+				});
+			}
 		}
 
 		++sinceGenerated;
 	}else{
-		const uint8_t notObstacle = esp_random() % HorizontalTiles;
+		if(nonHoleLocations > 0){
+			uint8_t notObstacle = esp_random() % nonHoleLocations;
 
-		road[rowToGenerate * HorizontalTiles] = createTile(notObstacle == 0 ? TileType::Road : (TileType)(esp_random() % 6));
-		road[rowToGenerate * HorizontalTiles]->setPos(10.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles]);
 
-		road[rowToGenerate * HorizontalTiles + 1] = createTile(notObstacle == 1 ? TileType::Road : (TileType)(esp_random() % 6));
-		road[rowToGenerate * HorizontalTiles + 1]->setPos(46.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles + 1]);
+			for(uint8_t i = 0; i < HorizontalTiles; i++){
+				if(holePending[i] && i == notObstacle){
+					notObstacle++;
+				}else if(!holePending[i] && i == notObstacle){
+					break;
+				}
+			}
 
-		road[rowToGenerate * HorizontalTiles + 2] = createTile(notObstacle == 2 ? TileType::Road : (TileType)(esp_random() % 6));
-		road[rowToGenerate * HorizontalTiles + 2]->setPos(82.0f, 96.0f - (VerticalTiles - 1) * 36.0f);
-		addObject(road[rowToGenerate * HorizontalTiles + 2]);
+			for(uint8_t i = 0; i < HorizontalTiles; i++){
+				if(holePending[i]){
+					road[rowToGenerate * HorizontalTiles + i] = createTile(TileType::Hole);
+				}else{
+					const auto type = notObstacle == i ? TileType::Road : (TileType) (esp_random() % 5);
+					road[rowToGenerate * HorizontalTiles + i] = createTile(type);
+
+					if(type == Ramp){
+						newHolePending[i] = true;
+					}
+				}
+				road[rowToGenerate * HorizontalTiles + i]->setPos(10.0f + 36.0f * i, 96.0f - (VerticalTiles - 1) * 36.0f);
+				addObject(road[rowToGenerate * HorizontalTiles + i]);
+			}
+		}
 
 		sinceGenerated = 0;
+	}
+
+
+	for(uint8_t i = 0; i < 3; i++) {
+		holePending[i] = newHolePending[i];
 	}
 
 	rowToGenerate = (rowToGenerate + 1) % VerticalTiles;
@@ -390,7 +464,14 @@ void Planck::Planck::onBoost(){
 }
 
 void Planck::Planck::onRamp(){
+	if(lastAir != 0){
+		return;
+	}
+
 	lastAir = millis();
+
+	direction = 0;
+	poweredAcceleration = 0;
 }
 
 void Planck::Planck::onHealthUp(){
@@ -435,10 +516,6 @@ GameObjPtr Planck::Planck::createTile(Planck::Planck::TileType type){
 			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {8, 26}, {8, 22}, {12, 11}, {23, 11}, {27, 22}, {27, 26} });
 			break;
 		}
-		case Planck::TileType::Hole:{
-			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {5, 22}, {8, 14}, {12, 9}, {18, 9}, {28, 12}, {31, 15}, {31, 17}, {22, 26}, {8, 26} });
-			break;
-		}
 		case Planck::TileType::Rail:{
 			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {6, 28}, {4, 12}, {6, 10}, {29, 10}, {31, 12}, {30, 28} });
 			break;
@@ -473,13 +550,6 @@ GameObjPtr Planck::Planck::createTile(Planck::Planck::TileType type){
 					rc->setFile(getFile("/road.raw"));
 					collision.removePair(*car, *obj);
 				}
-			});
-			break;
-		}
-		case Planck::TileType::Hole:{
-			collision.addPair(*car, *obj, [this, obj](){
-				onCollision();
-				collision.removePair(*car, *obj);
 			});
 			break;
 		}
