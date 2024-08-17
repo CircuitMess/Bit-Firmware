@@ -139,9 +139,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 		swingDir = -1.0f;
 	}
 
-	const float speed = glm::max(-0.00001f * glm::pow(hook->getRot(), 4.0f) + SwingSpeed, 1.0f);
-
-	rotateHook(hook->getRot() + swingDir * speed * deltaTime);
+	hookRotation(deltaTime);
 
 	if(lastDrop != 0){
 		if(hookedRobot){
@@ -210,6 +208,15 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 		exit();
 		return;
 	}
+}
+
+void WackyStacky::WackyStacky::hookRotation(float dt){
+	swingT += dt * SwingSpeed;
+	if(swingT >= M_PI*2.0f){
+		swingT -= M_PI*2.0f;
+	}
+
+	rotateHook(map(std::cos(swingT), -1, 1, SwingLimits.x, SwingLimits.y));
 }
 
 void WackyStacky::WackyStacky::rotateHook(float deg){

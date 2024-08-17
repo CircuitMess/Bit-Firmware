@@ -34,6 +34,8 @@ private:
 	uint16_t score = 0;
 	glm::vec2 towerSwingLimits;
 
+	float swingT = 0.0f;
+
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
 	std::array<GameObjPtr, VisibleRobotCount> visibleRobots;
@@ -45,8 +47,7 @@ private:
 	std::array<GameObjPtr, ActiveCloudCount> clouds;
 
 	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f};
-
-	inline static constexpr const float SwingSpeed = 55.0f;
+	inline static constexpr const float SwingSpeed = 1.5f;
 
 	inline static constexpr const float TowerSwingSpeed = 3.50f;
 
@@ -84,6 +85,7 @@ private:
 	};
 
 private:
+	void hookRotation(float dt);
 	void rotateHook(float deg);
 	void attachRobot(uint8_t robot);
 	void miss();
