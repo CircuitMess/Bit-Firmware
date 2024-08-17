@@ -27,7 +27,6 @@ private:
 	GameObjPtr hookedRobot;
 	EventQueue queue;
 	uint8_t lives = 3;
-	uint64_t lastDrop = 0;
 	uint8_t currentRobot = 0;
 	float moveDelta = 0;
 	uint16_t score = 0;
@@ -36,6 +35,13 @@ private:
 	float swingT = 0.0f;
 	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f };
 	inline static constexpr const float SwingSpeed = 1.5f;
+
+	float dropT = 0.0f;
+	bool dropping = false;
+	struct {
+		glm::vec2 pos;
+		float rot;
+	} dropStart;
 
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
 
@@ -86,9 +92,12 @@ private:
 	void swingAnim(float dt);
 	void applyHookRot(float deg);
 
+	void drop();
+	void dropAnim(float dt);
+	void dropped();
+
 	void attachRobot(uint8_t robot);
 	void miss();
-	void onCollision();
 
 	inline static constexpr std::string getRobotPath(uint8_t robot) {
 		if(robot > 6){

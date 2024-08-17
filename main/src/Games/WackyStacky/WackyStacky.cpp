@@ -105,8 +105,8 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
             continue;
         }
 
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && moveDelta == 0.0f){
-            lastDrop = millis();
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping){
+			drop();
 		}
 
 		free(e.data);
@@ -136,17 +136,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	}
 
 	swingAnim(deltaTime);
-
-	if(lastDrop != 0){
-		if(hookedRobot){
-			hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * 75.0f * deltaTime);
-			hookedRobot->setRot(hookedRobot->getRot() + (hookedRobot->getRot() > 0 ? -1.0f : hookedRobot->getRot() < 0 ? 1.0f : 0.0f) * 25.0f * deltaTime);
-
-			if(hookedRobot->getPos().y > 128.0f){
-				miss();
-			}
-		}
-	}
+	dropAnim(deltaTime);
 
 	if(moveDelta > 0.0f){
 		size_t visibleCount = 0;
@@ -168,7 +158,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 				floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
 			}
 
-			if(lastDrop != 0 && hookedRobot){
+			if(dropping && hookedRobot){
 				hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
 			}
 
@@ -240,9 +230,38 @@ void WackyStacky::WackyStacky::applyHookRot(float deg){
 	hook->setRot(deg);
 	hook->setPos(hook->getPos() - (hookRotationTransform - HookBaseRelativeLocation));
 
-    if(hookedRobot && lastDrop == 0){
+    if(hookedRobot && !dropping){
 		attachRobot(currentRobot);
     }
+}
+
+void WackyStacky::WackyStacky::drop(){
+	if(dropping || !hookedRobot) return;
+
+	dropping = true;
+	dropT = 0;
+	dropStart = {
+			hookedRobot->getPos(),
+			hookedRobot->getRot()
+	};
+}
+
+void WackyStacky::WackyStacky::dropAnim(float dt){
+	if(!dropping || !hookedRobot) return;
+
+	dropT += dt;
+
+	const float t = std::pow(dropT, 2.0f);
+
+	auto newPos = dropStart.pos + glm::vec2 { 0, 1 } * 75.0f * t;
+	auto newRot = dropStart.rot - map(std::min(t, 1.0f), 0, 1, 0, std::abs(dropStart.rot)) * (dropStart.rot > 0 ? 1.0f : -1.0f);
+
+	hookedRobot->setPos(newPos);
+	hookedRobot->setRot(newRot);
+
+	if(hookedRobot->getPos().y > 128.0f){
+		miss();
+	}
 }
 
 void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
@@ -275,7 +294,7 @@ void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
 		addObject(hookedRobot);
 
 		auto onCollision = [this](){
-			this->onCollision();
+			this->dropped();
 		};
 
 		collision.addPair(*floor, *hookedRobot, onCollision);
@@ -292,7 +311,7 @@ void WackyStacky::WackyStacky::attachRobot(uint8_t robot){
 }
 
 void WackyStacky::WackyStacky::miss(){
-	lastDrop = 0;
+	dropping = false;
 	moveDelta = 0.0f;
 	removeObject(hookedRobot);
 	hookedRobot.reset();
@@ -303,12 +322,12 @@ void WackyStacky::WackyStacky::miss(){
 	audio.play({ { 200, 50, 100 } });
 }
 
-void WackyStacky::WackyStacky::onCollision(){
+void WackyStacky::WackyStacky::dropped(){
 	if(hookedRobot && hookedRobot->getPos().y < 40.0f){
 		return;
 	}
 
-	lastDrop = 0;
+	dropping = false;
 
 	if(hookedRobot->getRot() != 0.0f){
 		auto rect = CollisionSystem::getRotatedTranslatedRect(*hookedRobot.get());
