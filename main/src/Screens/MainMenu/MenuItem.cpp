@@ -1,6 +1,8 @@
+#include <cmath>
 #include "MenuItem.h"
 #include "Filepaths.hpp"
 #include "Screens/GrayscaleImageElement.h"
+#include "Util/stdafx.h"
 
 MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayedOut) : LVObject(parent){
 	lv_obj_set_size(*this, 37, 38);
@@ -18,6 +20,15 @@ MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string&
 	lv_obj_set_size(border, 37, 38);
 	lv_img_set_src(border, Filepath::IconBorder);
 	lv_obj_add_flag(border, LV_OBJ_FLAG_FLOATING);
+
+	overlay = lv_obj_create(*this);
+	lv_obj_add_flag(overlay, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_pos(overlay, 0, 0);
+	lv_obj_set_size(overlay, 37, 38);
+	lv_obj_set_style_bg_color(overlay, lv_color_white(), 0);
+	lv_obj_set_style_bg_opa(overlay, LV_OPA_COVER, 0);
+	lv_obj_move_foreground(overlay);
+	lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 
 	setBorder(false);
 
@@ -40,7 +51,7 @@ void MenuItem::startAnim(){
 	lv_anim_init(&glowAnim);
 	lv_anim_set_exec_cb(&glowAnim, animFunc);
 	lv_anim_set_var(&glowAnim, this);
-	lv_anim_set_values(&glowAnim, LV_OPA_100, LV_OPA_40);
+	lv_anim_set_values(&glowAnim, 0, 255);
 	lv_anim_set_time(&glowAnim, 1000);
 	lv_anim_set_playback_time(&glowAnim, 400);
 	lv_anim_set_repeat_count(&glowAnim, LV_ANIM_REPEAT_INFINITE);
@@ -54,16 +65,19 @@ void MenuItem::stopAnim(){
 
 void MenuItem::animFunc(void* var, int32_t val){
 	auto item = (MenuItem*) var;
-	lv_obj_set_style_shadow_opa(*item, val, LV_STATE_FOCUSED);
+	lv_obj_set_style_shadow_opa(*item, std::round(map((float) val, 0, 255, LV_OPA_100, LV_OPA_40)), LV_STATE_FOCUSED);
+	lv_obj_set_style_opa(item->overlay, std::round(map((float) val, 0, 255, LV_OPA_10, LV_OPA_20)), 0);
 }
 
 void MenuItem::setBorder(bool enabled){
 	if(enabled){
 		startAnim();
 		lv_obj_clear_flag(border, LV_OBJ_FLAG_HIDDEN);
+		lv_obj_clear_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 	}else{
 		stopAnim();
 		lv_obj_add_flag(border, LV_OBJ_FLAG_HIDDEN);
+		lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 	}
 }
 
