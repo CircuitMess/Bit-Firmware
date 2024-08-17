@@ -105,7 +105,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
             continue;
         }
 
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0){
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0 && moveDelta == 0){
 			drop();
 		}
 
