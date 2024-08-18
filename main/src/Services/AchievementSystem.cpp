@@ -90,6 +90,11 @@ void AchievementSystem::increment(Achievement ID, int32_t increment){
 }
 
 void AchievementSystem::startSession(){
+	if(inSession){
+		ESP_LOGW(TAG, "startSession called but already in session!");
+		return;
+	}
+
 	inSession = true;
 	previousState = achievementProgress;
 }
