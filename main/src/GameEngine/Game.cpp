@@ -8,7 +8,6 @@
 #include "Util/Notes.h"
 #include "Services/HighScoreManager.h"
 #include "Screens/Game/AwardsScreen.h"
-#include "Services/AchievementSystem.h"
 #include "Services/LEDService/LEDService.h"
 #include "Devices/SinglePwmLED.h"
 
@@ -21,13 +20,7 @@ Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescri
 
 	buttons = GameButtonsUsed[(uint8_t) gameType];
 	ledService = (LEDService*) Services.get(Service::LED);
-
-	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
-	if(achievementSystem == nullptr){
-		return;
-	}
-
-	achievementSystem->startSession();
+	achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
 }
 
 Game::~Game(){
@@ -103,6 +96,7 @@ void Game::start(){
 		}
 	}
 
+	achievementSystem->startSession();
 
 	started = true;
 	onStart();
@@ -145,17 +139,16 @@ void Game::removeObjects(std::initializer_list<const GameObjPtr> objs){
 	}
 }
 
+void Game::addAchi(Achievement id, int32_t increment){
+	achievementSystem->increment(id, increment);
+}
+
 void Game::handleInput(const Input::Data& data){
 
 }
 
 void Game::exit(){
 	exited = true;
-
-	AchievementSystem* achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
-	if(achievementSystem == nullptr){
-		return;
-	}
 
 	std::vector<AchievementData> achievements;
 	achievementSystem->endSession(achievements);
