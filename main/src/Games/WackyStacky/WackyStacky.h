@@ -55,8 +55,8 @@ private:
 
 	struct Robot {
 		GameObjPtr go;
-		glm::vec2 pos;
-		glm::vec2 posDiff;
+		glm::vec2 pos = { 0, 0 };
+		glm::vec2 posDiff = { 0, 0 };
 
 		operator bool() const{ return go.operator bool(); }
 	};

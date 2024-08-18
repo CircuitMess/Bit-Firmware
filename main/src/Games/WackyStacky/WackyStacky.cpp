@@ -427,7 +427,7 @@ void WackyStacky::WackyStacky::dropped(){
 
 	dropping = false;
 
-	if(hookedRobot->getRot() != 0.0f){
+	{
 		auto rect = CollisionSystem::getRotatedTranslatedRect(*hookedRobot.get());
 
 		glm::vec2 lowestPoint = { 0.0f, 0.0f};
