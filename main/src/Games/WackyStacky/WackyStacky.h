@@ -130,7 +130,7 @@ private:
 				return { 35, 26 };
 			}
 			case 4:{
-				return { 21, 20 };
+				return { 31, 20 };
 			}
 			case 5:{
 				return { 25, 26 };
