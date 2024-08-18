@@ -109,6 +109,8 @@ void AchievementSystem::endSession(std::vector<AchievementData>& unlockedList){
 			unlockedList.emplace_back(achievementProgress[i]);
 		}
 	}
+
+	store();
 }
 
 bool AchievementSystem::load(){
