@@ -175,13 +175,14 @@ void Harald::Harald::handleInput(const Input::Data& data){
 		return;
 	}
 
+	if(data.btn == Input::A || data.btn == Input::B || data.btn == Input::Menu) return;
+
 	if(!tileMoves.empty()) return;
 
 	findMoves(data.btn);
 }
 
 void Harald::Harald::findMoves(Input::Button dir){
-
 	IdField resultingIds = {};
 	for(int x = 0; x < 4; ++x){
 		for(int y = 0; y < 4; ++y){
