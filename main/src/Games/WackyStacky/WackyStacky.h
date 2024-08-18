@@ -28,7 +28,6 @@ private:
 	EventQueue queue;
 	uint8_t lives = 3;
 	uint8_t currentRobot = 0;
-	float moveDelta = 0;
 	uint16_t score = 0;
 	float deadTimer = 0;
 
@@ -50,9 +49,10 @@ private:
 	float towSwingT = 0.0f;
 	inline static constexpr const float TowerSwingSpeed = 1.0f;
 
-
+	bool scrolling = false;
+	float scrollDelta = 0;
+	static constexpr float TargetHeight = 95;
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
-
 	struct Robot {
 		GameObjPtr go;
 		glm::vec2 pos = { 0, 0 };
@@ -63,9 +63,7 @@ private:
 	std::array<Robot, VisibleRobotCount> visibleRobots;
 
 	inline static constexpr const uint8_t CloudCount = 4;
-
 	inline static constexpr const uint8_t ActiveCloudCount = 6;
-
 	std::array<GameObjPtr, ActiveCloudCount> clouds;
 
 	inline static constexpr PixelDim CloudDims[] {
@@ -101,6 +99,9 @@ private:
 	void drop();
 	void dropAnim(float dt);
 	void dropped();
+
+	void scrollStart();
+	void scrollAnim(float dt);
 
 	void spawnRobot();
 	void updateRobotPos();

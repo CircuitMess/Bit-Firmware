@@ -105,7 +105,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
             continue;
         }
 
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0 && moveDelta == 0){
+        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0 && !scrolling){
 			drop();
 		}
 
@@ -117,56 +117,7 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 	// Has to be before tower swing anim
 	dropAnim(deltaTime);
 
-	if(moveDelta > 0.0f){
-		size_t visibleCount = 0;
-		for(size_t i = 0; i < VisibleRobotCount; ++i){
-			if(!visibleRobots[i]){
-				continue;
-			}else{
-				++visibleCount;
-			}
-		}
-
-		if(visibleCount >= 1){
-			float move = 25.0f * deltaTime;
-			if(move > moveDelta){
-				move = moveDelta;
-			}
-
-			if(floor){
-				floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
-			}
-
-			if(dropping && hookedRobot){
-				hookedRobot->setPos(hookedRobot->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
-			}
-
-			for(size_t i = 0; i < VisibleRobotCount; ++i){
-				if(!visibleRobots[i]){
-					continue;
-				}
-
-				visibleRobots[i].pos = visibleRobots[i].pos + glm::vec2{ 0.0f, 1.0f } * move;
-				visibleRobots[i].go->setPos(visibleRobots[i].pos);
-			}
-
-			for(size_t i = 0; i < ActiveCloudCount; ++i){
-				if(!clouds[i]){
-					continue;
-				}
-
-				clouds[i]->setPos(clouds[i]->getPos() + glm::vec2{ 0.0f, 0.5f + (rand() % 6) * 0.05f } * move);
-
-				if(clouds[i]->getPos().y >= 128.0f){
-					clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, -(rand() % 100) -30.0f });
-				}
-			}
-
-			moveDelta -= move;
-		}else{
-			moveDelta = 0.0f;
-		}
-	}
+	scrollAnim(deltaTime);
 
 	// Has to be after scroll anim
 	towerSwingAnim(deltaTime);
@@ -177,6 +128,60 @@ void WackyStacky::WackyStacky::onLoop(float deltaTime){
 		if(deadTimer >= 2.0f && !hookedRobot){
 			exit();
 		}
+	}
+}
+
+void WackyStacky::WackyStacky::scrollAnim(float dt){
+	if(!scrolling) return;
+
+	size_t visibleCount = 0;
+	for(size_t i = 0; i < VisibleRobotCount; ++i){
+		if(!visibleRobots[i]){
+			continue;
+		}else{
+			++visibleCount;
+		}
+	}
+
+	if(visibleCount < 2){
+		scrollDelta = 0;
+		scrolling = false;
+	}
+
+	float move = 25.0f * dt;
+	if(move > scrollDelta){
+		move = scrollDelta;
+	}
+
+	if(floor){
+		floor->setPos(floor->getPos() + glm::vec2{ 0.0f, 1.0f } * move);
+	}
+
+	for(size_t i = 0; i < VisibleRobotCount; ++i){
+		if(!visibleRobots[i]){
+			continue;
+		}
+
+		visibleRobots[i].pos = visibleRobots[i].pos + glm::vec2{ 0.0f, 1.0f } * move;
+		visibleRobots[i].go->setPos(visibleRobots[i].pos);
+	}
+
+	for(size_t i = 0; i < ActiveCloudCount; ++i){
+		if(!clouds[i]){
+			continue;
+		}
+
+		clouds[i]->setPos(clouds[i]->getPos() + glm::vec2{ 0.0f, 0.5f + (rand() % 6) * 0.05f } * move * 0.2f);
+
+		if(clouds[i]->getPos().y >= 128.0f){
+			clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, -(rand() % 100) -30.0f });
+		}
+	}
+
+	scrollDelta -= move;
+	if(scrollDelta <= 0){
+		scrollDelta = 0;
+		scrolling = false;
 	}
 }
 
@@ -305,6 +310,27 @@ void WackyStacky::WackyStacky::updateRobotPos(){
 	hookedRobot->setRot(hook->getRot());
 }
 
+void WackyStacky::WackyStacky::scrollStart(){
+	if(scrolling) return;
+
+	size_t visibleCount = 0;
+	for(size_t i = 0; i < VisibleRobotCount; ++i){
+		if(!visibleRobots[i]){
+			continue;
+		}else{
+			++visibleCount;
+		}
+	}
+
+	if(visibleCount < 2) return;
+
+	float currentHeight = visibleRobots.back().pos.y;
+	if(currentHeight >= TargetHeight) return;
+
+	scrollDelta = TargetHeight - currentHeight;
+	scrolling = true;
+}
+
 void WackyStacky::WackyStacky::spawnRobot(){
 	if(hookedRobot) return;
 
@@ -337,7 +363,6 @@ void WackyStacky::WackyStacky::spawnRobot(){
 	updateRobotPos();
 }
 
-
 void WackyStacky::WackyStacky::miss(){
 	--lives;
 	hearts->setLives(lives);
@@ -366,7 +391,6 @@ void WackyStacky::WackyStacky::miss(){
 void WackyStacky::WackyStacky::robotFallen(){
 	dropping = false;
 	falling = false;
-	moveDelta = 0.0f;
 	removeObject(hookedRobot);
 	hookedRobot.reset();
 
@@ -452,23 +476,12 @@ void WackyStacky::WackyStacky::dropped(){
 		hookedRobot->setPos(pos);
 	}
 
-	size_t visibleCount = 0;
-	for(size_t i = 0; i < VisibleRobotCount; ++i){
-		if(!visibleRobots[i]){
-			continue;
-		}else{
-			++visibleCount;
-		}
-	}
-
 	++score;
 	if(perfectHit){
 		++score;
 	}
 
 	scoreDisplay->setScore(score);
-
-	moveDelta = getRobotDim(currentRobot).y / (visibleCount < 1 ? 2.0f : 1.0f);
 
 	if(visibleRobots.front()){
 		removeObject(visibleRobots.front().go);
@@ -484,6 +497,8 @@ void WackyStacky::WackyStacky::dropped(){
 
 	hookedRobot.reset();
 	spawnRobot();
+
+	scrollStart();
 
 	if(perfectHit){
 		audio.play({ { 400, 600, 70 }, { 0, 0, 5 }, { 600, 900, 75 } });
