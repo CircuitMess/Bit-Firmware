@@ -1,6 +1,7 @@
 #include "CharlieGame.h"
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/AnimRC.h"
+#include <esp_random.h>
 
 CharlieGame::CharlieGame::CharlieGame(Sprite& base) : Game(base, Games::Charlie, "/Games/Charlie", {
 		RES_GOBLET,
@@ -87,6 +88,10 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	updateFlies(deltaTime);
 
 	updatePufs(deltaTime);
+
+	if(lives == 0){
+		exit();
+	}
 }
 
 void CharlieGame::CharlieGame::updateRoll(float dt){
@@ -108,7 +113,11 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	rc->start();
 
 	addObject(cac);
-	cacs.emplace_back(Cacoon { cac, 0, rollingFly });
+	cacs.emplace_back(Cacoon { cac, 0, rollingFly, false, nullptr });
+
+	if((esp_random() % 100) < 30){
+		cacs.back().beingRescued = true;
+	}
 
 	rolling = false;
 	rollingFly = nullptr;
@@ -119,6 +128,10 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 	std::vector<Cacoon> forRemoval;
 
 	for(auto& cac : cacs){
+		if(cac.beingRescued && cac.rescuer){
+			continue;
+		}
+
 		cac.t += dt;
 		if(cac.t >= CacoonTime){
 			// TODO: score++ sound
@@ -139,6 +152,19 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			pufs.emplace_back(Puf { puf, 0 });
 
 			forRemoval.emplace_back(cac);
+		}else if(cac.beingRescued && cac.t >= CacoonTime/2.0f && cac.rescuer == nullptr){
+			auto fly = new Fly([this](const char* name){ return getFile(name); }, &cacs.back(), [this](Cacoon* cac){
+				lives--;
+				livesEl->setLives(lives);
+				// TODO: live/game lost audio
+
+				removeObject(cac->go);
+				std::erase_if(cacs, [cac](const Cacoon& other){ return other.go == cac->go; });
+			});
+			addObject(*fly);
+			flies.emplace(fly);
+
+			cac.rescuer = fly;
 		}
 	}
 
@@ -153,6 +179,13 @@ void CharlieGame::CharlieGame::updateFlies(float dt){
 	std::unordered_set<Fly*> forRemoval;
 
 	for(const auto fly : flies){
+		if(fly->isRescuing()){
+			const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize/2.0f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize/2.0f);
+			if(dist <= 30.0f){
+				fly->goAway();
+			}
+		}
+
 		fly->update(dt);
 		if(fly->isDone()){
 			forRemoval.emplace(fly);

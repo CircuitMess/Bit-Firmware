@@ -7,7 +7,7 @@ namespace CharlieGame {
 
 class Fly {
 public:
-	Fly(std::function<File(const char*)> getFile);
+	Fly(std::function<File(const char*)> getFile, struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
 
 	operator GameObjPtr();
 
@@ -20,6 +20,7 @@ public:
 	void done();
 
 	bool isPlotting();
+	bool isRescuing();
 	bool isDone();
 
 private:
@@ -27,7 +28,7 @@ private:
 	GameObjPtr go;
 
 	enum State {
-		FlyingIn, Plotting, FlyingOut, Cacoon, Done
+		FlyingIn, Plotting, FlyingOut, Cacoon, Rescuing, Done
 	} state = FlyingIn;
 
 	glm::vec2 startPos = { 0, 0 };
@@ -35,13 +36,24 @@ private:
 	float t = 0;
 
 	static constexpr float PlotTimeout = 5.0f;
+	static constexpr float RescueTimeout = 2.0f;
 
-	void goPlot();
-	void goOut();
+	struct Cacoon* rescue;
+	std::function<void(struct Cacoon*)> onRescued;
+
 	void setState(State newState);
 
 	void updateAnim();
 
+};
+
+struct Cacoon {
+	GameObjPtr go;
+	float t;
+	Fly* fly;
+
+	bool beingRescued;
+	Fly* rescuer;
 };
 
 };

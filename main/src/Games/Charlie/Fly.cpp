@@ -3,7 +3,7 @@
 #include <esp_random.h>
 #include <gtx/vector_angle.hpp>
 
-CharlieGame::Fly::Fly(std::function<File(const char*)> getFile) : getFile(getFile){
+CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* rescue, std::function<void(struct Cacoon*)> onRescued) : getFile(getFile), rescue(rescue), onRescued(onRescued){
 	go = std::make_shared<GameObject>(
 			std::make_unique<AnimRC>(getFile("/fly_fly.gif")),
 			nullptr
@@ -15,10 +15,14 @@ CharlieGame::Fly::Fly(std::function<File(const char*)> getFile) : getFile(getFil
 	startPos = center + dir * 120.0f;
 	go->setPos(startPos);
 
-	destPos = glm::vec2 {
-			((float) esp_random() / (float) UINT32_MAX),
-			((float) esp_random() / (float) UINT32_MAX)
-	} * (glm::vec2 { 128, 128 } - SpriteSize);
+	if(rescue){
+		destPos = rescue->fly->go->getPos() + glm::vec2 { -1, 19 };
+	}else{
+		destPos = glm::vec2 {
+				((float) esp_random() / (float) UINT32_MAX),
+				((float) esp_random() / (float) UINT32_MAX)
+		} * (glm::vec2 { 128, 128 } - SpriteSize);
+	}
 
 	auto rc = (AnimRC*) go->getRenderComponent().get();
 	rc->setLayer(2);
@@ -33,6 +37,10 @@ bool CharlieGame::Fly::isPlotting(){
 	return state == Plotting;
 }
 
+bool CharlieGame::Fly::isRescuing(){
+	return rescue && state == Rescuing;
+}
+
 bool CharlieGame::Fly::isDone(){
 	return state == Done;
 }
@@ -41,20 +49,32 @@ void CharlieGame::Fly::update(float dt){
 	t += dt;
 
 	if(state == FlyingIn || state == FlyingOut){
-		const float speed = state == FlyingIn ? 0.2f : 0.5f;
+		const float speed = (state == FlyingIn ? 0.2f : 0.5f) * (rescue ? 2.0f : 1.0f);
+
 		auto pos = startPos + (destPos - startPos) * t * speed;
 		go->setPos(pos);
 		// TODO: update rotation
 
 		if(t >= 1.0f / speed){
 			if(state == FlyingIn){
-				goPlot();
+				if(rescue){
+					setState(Rescuing);
+				}else{
+					setState(Plotting);
+				}
 			}else{
 				done();
 			}
 		}
 	}else if(state == Plotting){
 		if(t >= PlotTimeout){
+			goAway();
+		}
+	}else if(state == Rescuing){
+		if(t >= RescueTimeout){
+			onRescued(rescue);
+			rescue->fly->goAway();
+			rescue = nullptr;
 			goAway();
 		}
 	}
@@ -69,6 +89,9 @@ void CharlieGame::Fly::updateAnim(){
 	}else if(state == Plotting){
 		rc->setAnim(getFile("/fly_plot.gif"));
 		rc->setLayer(0);
+	}else if(state == Rescuing){
+		rc->setAnim(getFile("/fly_unroll.gif"));
+		rc->setLayer(0);
 	}else if(state == Cacoon || state == Done){
 		rc->stop();
 		rc->setVisible(false);
@@ -79,16 +102,20 @@ void CharlieGame::Fly::updateAnim(){
 	rc->setVisible(true);
 }
 
-void CharlieGame::Fly::goPlot(){
-	setState(Plotting);
-}
-
 void CharlieGame::Fly::goCac(){
 	setState(Cacoon);
 }
 
 void CharlieGame::Fly::goAway(){
-	startPos = destPos;
+	if(rescue){
+		startPos = go->getPos();
+
+		rescue->beingRescued = false;
+		rescue->rescuer = nullptr;
+		rescue = nullptr;
+	}else{
+		startPos = destPos;
+	}
 
 	const glm::vec2 center = (glm::vec2 { 128, 128 } - SpriteSize) / 2.0f;
 	const float randDir = M_PI * 2 * ((float) esp_random() / (float) UINT32_MAX);

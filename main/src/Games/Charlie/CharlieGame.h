@@ -44,11 +44,6 @@ private:
 	void stopRoll();
 	void updateRoll(float dt);
 
-	struct Cacoon {
-		GameObjPtr go;
-		float t;
-		Fly* fly;
-	};
 	std::vector<Cacoon> cacs;
 	static constexpr float CacoonTime = 4.0f;
 	void updateCacs(float dt);
