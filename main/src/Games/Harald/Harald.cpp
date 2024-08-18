@@ -393,11 +393,15 @@ void Harald::Harald::findMoves(Input::Button dir){
 			.field = resultingIds,
 			.score = score
 	};
+
+	audio.play({{ 300, 500, 150 }, { 0,   0,   50 }});
 }
 
 void Harald::Harald::applyMove(){
 	score = moveResult.score;
 	scoreElement->setScore(score);
+
+	bool comboFound = false;
 
 	for(const auto& move : tileMoves){
 		const auto sourceId = moveResult.field[move.source.x][move.source.y];
@@ -405,6 +409,8 @@ void Harald::Harald::applyMove(){
 		const auto oldId = elements[move.target.x][move.target.y].id;
 
 		if(move.combo){
+			comboFound = true;
+
 			GameObjPtr pufObj = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/Puf.gif")), nullptr);
 			pufObj->setPos(elements[move.target.x][move.target.y].gameObj->getPos() + glm::vec2 { -3, -6 });
 			auto pufRc = (AnimRC*) pufObj->getRenderComponent().get();
@@ -435,14 +441,14 @@ void Harald::Harald::applyMove(){
 		}
 	}
 
+	if(comboFound){
+		audio.play({{ 100, 80, 75 }});
+	}
+
 	spawnNew();
 }
 
 void Harald::Harald::spawnNew(){
-	audio.play({{ 300, 500, 150 },
-				{ 0,   0,   50 },
-				{ 100, 80, 75 },
-			   });
 	std::vector<uint8_t> validX;
 
 	for(int x = 0; x < 4; ++x){
