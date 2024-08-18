@@ -16,6 +16,7 @@
 #include "Games/Harald/Harald.h"
 #include "Games/Planck/Planck.h"
 #include "Games/WackyStacky/WackyStacky.h"
+#include "Games/Charlie/CharlieGame.h"
 
 static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
 		{ Games::MrBee,      [](Sprite& canvas){ return std::make_unique<Flappy>(canvas); } },
@@ -32,7 +33,8 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Artemis,    [](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } },
 		{ Games::Harald,    [](Sprite& canvas){ return std::make_unique<Harald::Harald>(canvas); } },
 		{ Games::Planck,    [](Sprite& canvas){ return std::make_unique<Planck::Planck>(canvas); } },
-		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } }
+		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } },
+		{ Games::Charlie,   [](Sprite& canvas){ return std::make_unique<CharlieGame::CharlieGame>(canvas); } }
 };
 
 GameRunner::GameRunner(Display& display) : display(display){

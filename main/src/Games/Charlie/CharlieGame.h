@@ -1,0 +1,68 @@
+#ifndef BIT_FIRMWARE_CHARLIEGAME_H
+#define BIT_FIRMWARE_CHARLIEGAME_H
+
+
+#include "GameEngine/Game.h"
+#include "Char.h"
+#include "Fly.h"
+#include "Games/Common/Score.h"
+#include "Games/Common/Hearts.h"
+
+namespace CharlieGame {
+
+class CharlieGame : public Game {
+protected:
+public:
+	CharlieGame(Sprite& base);
+
+private:
+	uint32_t getXP() const override;
+
+	void onLoad() override;
+	void handleInput(const Input::Data& data) override;
+	void onLoop(float deltaTime) override;
+
+private:
+	int score = 0;
+	int lives = 3;
+
+	std::unique_ptr<Score> scoreEl;
+	std::unique_ptr<Hearts> livesEl;
+
+	std::unique_ptr<Char> chrl;
+	std::unordered_set<Fly*> flies;
+
+	static constexpr float FlySpawnRate = 10.0f;
+	float flySpawnT = 8.0f;
+	void updateFlies(float dt);
+
+	bool rolling = false;
+	float rollT = 0;
+	Fly* rollingFly;
+	static constexpr float RollTime = 2.0f;
+	void startRoll();
+	void stopRoll();
+	void updateRoll(float dt);
+
+	struct Cacoon {
+		GameObjPtr go;
+		float t;
+		Fly* fly;
+	};
+	std::vector<Cacoon> cacs;
+	static constexpr float CacoonTime = 4.0f;
+	void updateCacs(float dt);
+
+	struct Puf {
+		GameObjPtr go;
+		float t;
+	};
+	std::vector<Puf> pufs;
+	void updatePufs(float dt);
+	static constexpr float PufDuration = 0.56f;
+
+};
+
+};
+
+#endif //BIT_FIRMWARE_CHARLIEGAME_H
