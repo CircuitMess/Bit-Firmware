@@ -100,7 +100,7 @@ private:
 	void dropAnim(float dt);
 	void dropped();
 
-	void scrollStart();
+	bool scrollStart();
 	void scrollAnim(float dt);
 
 	void spawnRobot();

@@ -143,11 +143,6 @@ void WackyStacky::WackyStacky::scrollAnim(float dt){
 		}
 	}
 
-	if(visibleCount < 2){
-		scrollDelta = 0;
-		scrolling = false;
-	}
-
 	float move = 25.0f * dt;
 	if(move > scrollDelta){
 		move = scrollDelta;
@@ -182,6 +177,7 @@ void WackyStacky::WackyStacky::scrollAnim(float dt){
 	if(scrollDelta <= 0){
 		scrollDelta = 0;
 		scrolling = false;
+		spawnRobot();
 	}
 }
 
@@ -310,8 +306,8 @@ void WackyStacky::WackyStacky::updateRobotPos(){
 	hookedRobot->setRot(hook->getRot());
 }
 
-void WackyStacky::WackyStacky::scrollStart(){
-	if(scrolling) return;
+bool WackyStacky::WackyStacky::scrollStart(){
+	if(scrolling) return true;
 
 	size_t visibleCount = 0;
 	for(size_t i = 0; i < VisibleRobotCount; ++i){
@@ -322,13 +318,15 @@ void WackyStacky::WackyStacky::scrollStart(){
 		}
 	}
 
-	if(visibleCount < 2) return;
+	if(visibleCount < 2) return false;
 
 	float currentHeight = visibleRobots.back().pos.y;
-	if(currentHeight >= TargetHeight) return;
+	if(currentHeight >= TargetHeight) return false;
 
 	scrollDelta = TargetHeight - currentHeight;
 	scrolling = true;
+
+	return true;
 }
 
 void WackyStacky::WackyStacky::spawnRobot(){
@@ -395,7 +393,9 @@ void WackyStacky::WackyStacky::robotFallen(){
 	hookedRobot.reset();
 
 	if(lives != 0){
-		spawnRobot();
+		if(!scrollStart()){
+			spawnRobot();
+		}
 	}
 }
 
@@ -496,9 +496,10 @@ void WackyStacky::WackyStacky::dropped(){
 	hookedRobot->getRenderComponent()->setLayer(1);
 
 	hookedRobot.reset();
-	spawnRobot();
 
-	scrollStart();
+	if(!scrollStart()){
+		spawnRobot();
+	}
 
 	if(perfectHit){
 		audio.play({ { 400, 600, 70 }, { 0, 0, 5 }, { 600, 900, 75 } });
