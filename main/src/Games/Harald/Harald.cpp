@@ -378,18 +378,8 @@ void Harald::Harald::findMoves(Input::Button dir){
 		}
 	}
 
-	size_t numOfSame = 0;
-	for(int x = 0; x < 4; ++x){
-		for(int y = 0; y < 4; ++y){
-			if(elements[x][y].id == moveResult.field[x][y]){
-				++numOfSame;
-				continue;
-			}
-		}
-	}
-
 	//No progress
-	if(numOfSame == 4 * 4){
+	if(foundMoves.empty()){
 		audio.play({{ 100, 100, 100 },
 					{ 0,   0,   75 },
 					{ 100, 100, 100 },
