@@ -2,6 +2,7 @@
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/AnimRC.h"
 #include <esp_random.h>
+#include "Util/stdafx.h"
 
 CharlieGame::CharlieGame::CharlieGame(Sprite& base) : Game(base, Games::Charlie, "/Games/Charlie", {
 		RES_GOBLET,
@@ -73,7 +74,7 @@ void CharlieGame::CharlieGame::handleInput(const Input::Data& data){
 
 void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	flySpawnT += deltaTime;
-	if(flySpawnT >= FlySpawnRate){
+	if(flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
 		auto fly = new Fly([this](const char* name){ return getFile(name); });
@@ -114,7 +115,7 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	addObject(cac);
 	cacs.emplace_back(Cacoon { cac, 0, rollingFly, false, nullptr });
 
-	if((esp_random() % 100) < 30){
+	if((esp_random() % 100) < (int) std::round(40 + std::min(50.0f, map((float) score, 1, 20, 0, 50)))){
 		cacs.back().beingRescued = true;
 	}
 
