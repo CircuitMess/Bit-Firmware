@@ -101,13 +101,12 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	if(rollT < RollTime) return;
 
 	auto go = (GameObjPtr) *rollingFly;
-	go->getRenderComponent()->setVisible(false);
 
 	auto cac = std::make_shared<GameObject>(
 			std::make_unique<AnimRC>(getFile("/cac.gif")),
 			nullptr
 	);
-	cac->setPos(go->getPos() + glm::vec2 { 3.5f, 18.0f });
+	cac->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
 	auto rc = (AnimRC*) cac->getRenderComponent().get();
 	rc->setLayer(0);
 	rc->start();
@@ -142,7 +141,7 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 					std::make_unique<AnimRC>(getFile("/puf.gif")),
 					nullptr
 			);
-			puf->setPos(cac.go->getPos() + glm::vec2 { -7.0f, -12.0f });
+			puf->setPos(cac.go->getPos() + glm::vec2 { -8.0f, -12.0f });
 			auto rc = (AnimRC*) puf->getRenderComponent().get();
 			rc->setLayer(2);
 			rc->setLoopMode(GIF::Single);
@@ -180,7 +179,7 @@ void CharlieGame::CharlieGame::updateFlies(float dt){
 
 	for(const auto fly : flies){
 		if(fly->isRescuing()){
-			const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize/2.0f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize/2.0f);
+			const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize * 0.5f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize * 0.5f);
 			if(dist <= 30.0f){
 				fly->goAway();
 			}
@@ -226,7 +225,7 @@ void CharlieGame::CharlieGame::startRoll(){
 
 	for(const auto fly : flies){
 		if(!fly->isPlotting()) continue;
-		const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize/2.0f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize/2.0f);
+		const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize * 0.5f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize * 0.5f);
 		closest.push_back(CloseFlies { fly, dist });
 	}
 

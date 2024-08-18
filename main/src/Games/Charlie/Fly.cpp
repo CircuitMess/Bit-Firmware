@@ -16,7 +16,7 @@ CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* r
 	go->setPos(startPos);
 
 	if(rescue){
-		destPos = rescue->fly->go->getPos() + glm::vec2 { -1, 19 };
+		destPos = rescue->go->getPos() + glm::vec2 { -4.5f, 1 };
 	}else{
 		destPos = glm::vec2 {
 				((float) esp_random() / (float) UINT32_MAX),
@@ -51,13 +51,24 @@ void CharlieGame::Fly::update(float dt){
 	if(state == FlyingIn || state == FlyingOut){
 		const float speed = (state == FlyingIn ? 0.2f : 0.5f) * (rescue ? 2.0f : 1.0f);
 
-		auto pos = startPos + (destPos - startPos) * t * speed;
+		const glm::vec2 moveDir = destPos - startPos;
+		glm::vec2 altMove = { 0, 0 };
+		if(state != FlyingIn || rescue == nullptr){
+			altMove = glm::rotate(glm::vec2 { std::sin(t * 3) * 40, 0 }, (float) M_PI * go->getRot() / 180.0f) * glm::length(destPos - go->getPos()) / glm::length(moveDir);
+		}
+
+		const auto pos = startPos + moveDir * t * speed + altMove * t * speed * 0.5f;
+
+		const auto relDir = glm::normalize(pos - go->getPos());
+		const float rot = std::atan2(relDir.y, relDir.x) * 180.0f / M_PI; // use moveDir instead of relDir
+
 		go->setPos(pos);
-		// TODO: update rotation
+		go->setRot(rot + 90.0f);
 
 		if(t >= 1.0f / speed){
 			if(state == FlyingIn){
 				if(rescue){
+					go->setPos(destPos);
 					setState(Rescuing);
 				}else{
 					setState(Plotting);
@@ -92,9 +103,11 @@ void CharlieGame::Fly::updateAnim(){
 	}else if(state == Rescuing){
 		rc->setAnim(getFile("/fly_unroll.gif"));
 		rc->setLayer(0);
+		go->setRot(0);
 	}else if(state == Cacoon || state == Done){
-		rc->stop();
 		rc->setVisible(false);
+		rc->stop();
+		go->setRot(0);
 		return;
 	}
 
