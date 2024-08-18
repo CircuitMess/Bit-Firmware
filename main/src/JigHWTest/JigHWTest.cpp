@@ -329,6 +329,17 @@ bool JigHWTest::Buttons(){
 		Chirp { 200, 200, 100 }
 	});
 
+	gpio_config_t cfg = {
+			.pin_bit_mask = ((uint64_t) 1) << LED_UP | ((uint64_t) 1) << LED_DOWN | ((uint64_t) 1) << LED_LEFT | ((uint64_t) 1) << LED_RIGHT |
+							((uint64_t) 1) << LED_A | ((uint64_t) 1) << LED_B | ((uint64_t) 1) << LED_MENU,
+			.mode = GPIO_MODE_OUTPUT,
+			.pull_up_en = GPIO_PULLUP_DISABLE,
+			.pull_down_en = GPIO_PULLDOWN_DISABLE,
+			.intr_type = GPIO_INTR_DISABLE
+	};
+	gpio_config(&cfg);
+
+
 	for(;;){
 		Event evt{};
 		if(!evts.get(evt, portMAX_DELAY)) continue;
@@ -336,6 +347,29 @@ bool JigHWTest::Buttons(){
 		auto data = (Input::Data*) evt.data;
 		if(data->action == Input::Data::Press){
 			pressed.insert(data->btn);
+			switch(data->btn){
+				case Input::Up:
+					gpio_set_level((gpio_num_t)LED_UP, 1);
+					break;
+				case Input::Down:
+					gpio_set_level((gpio_num_t)LED_DOWN, 1);
+					break;
+				case Input::Left:
+					gpio_set_level((gpio_num_t)LED_LEFT, 1);
+					break;
+				case Input::Right:
+					gpio_set_level((gpio_num_t)LED_RIGHT, 1);
+					break;
+				case Input::A:
+					gpio_set_level((gpio_num_t)LED_A, 1);
+					break;
+				case Input::B:
+					gpio_set_level((gpio_num_t)LED_B, 1);
+					break;
+				case Input::Menu:
+					gpio_set_level((gpio_num_t)LED_MENU, 1);
+					break;
+			}
 			buzz();
 		}else{
 			released.insert(data->btn);
@@ -354,6 +388,14 @@ bool JigHWTest::Buttons(){
 		   Chirp { 200, 200, 100 }
    });
 	vTaskDelay(500);
+
+	gpio_set_level((gpio_num_t)LED_UP, 0);
+	gpio_set_level((gpio_num_t)LED_DOWN, 0);
+	gpio_set_level((gpio_num_t)LED_LEFT, 0);
+	gpio_set_level((gpio_num_t)LED_RIGHT, 0);
+	gpio_set_level((gpio_num_t)LED_A, 0);
+	gpio_set_level((gpio_num_t)LED_B, 0);
+	gpio_set_level((gpio_num_t)LED_MENU, 0);
 
 	return true;
 }
