@@ -413,7 +413,7 @@ void Harald::Harald::applyMove(){
 		if(move.combo){
 			comboFound = true;
 
-			GameObjPtr pufObj = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/Puf.gif")), nullptr);
+			GameObjPtr pufObj = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/Puf.gif"), true), nullptr);
 			pufObj->setPos(elements[move.target.x][move.target.y].gameObj->getPos() + glm::vec2 { -4, -7 });
 			auto pufRc = (AnimRC*) pufObj->getRenderComponent().get();
 			pufRc->setLayer(5);
@@ -528,5 +528,9 @@ void Harald::Harald::checkPufs(float dt){
 	for(const auto& puf : forRemoval){
 		removeObject(puf.go);
 		std::erase_if(pufs, [puf](const Puf& other){ return puf.go == other.go; });
+	}
+
+	if(pufs.empty()){
+		heapRep();
 	}
 }
