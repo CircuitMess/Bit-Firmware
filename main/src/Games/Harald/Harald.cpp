@@ -7,7 +7,7 @@
 
 Harald::Harald::Harald(Sprite& canvas) : Game(canvas, Games::Harald, "/Games/Harald", {
 		{ "/bg.raw", {}, true },
-		{ "/Puf.gif", {}, false },
+		{ "/Puf.gif", {}, true },
 		{ Icons[0], {}, true },
 		{ Icons[1], {}, true },
 		{ Icons[2], {}, true },
