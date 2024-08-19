@@ -13,8 +13,10 @@
 #include "Util/Notes.h"
 #include "Settings/Settings.h"
 #include "Filepaths.hpp"
+#include "Screens/Profile/AchievementView.h"
 
-AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : highScore(highScore), xp(xp), evts(6), currentGame(current), start(millis()){
+AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp, std::vector<AchievementData>& achievements) :
+		highScore(highScore), xp(xp), achievements(std::move(achievements)), evts(6), currentGame(current), start(millis()){
 	const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
 	if(hsm == nullptr){
 		return;
@@ -27,6 +29,8 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp) : hig
 
 	if(xp > 0){
 		setAwardMode(Award::XP);
+	}else if(!this->achievements.empty()){
+		setAwardMode(Award::Achievement);
 	}else if(hsm->isHighScore(currentGame, highScore)){
 		setAwardMode(Award::HighScore);
 	}else{
@@ -138,6 +142,8 @@ void AwardsScreen::setAwardMode(Award award){
 		lv_obj_set_style_border_width(name[2], 1, 0);
 		lv_obj_set_style_text_color(name[2], lv_color_make(85, 126, 150), 0);
 
+		InputLVGL::getInstance()->setVertNav(true);
+
 	}else if(award == Award::XP){
 		lv_obj_set_style_pad_all(rest, 6, 0);
 
@@ -224,7 +230,19 @@ void AwardsScreen::setAwardMode(Award award){
 		xpBar = new XPBar(XPBarLength::Long, bar, 0.0f);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
-		// TODO: init achievement unlocked up UI
+		lv_obj_set_style_pad_top(rest, 3, 0);
+
+		auto img = lv_img_create(rest);
+		lv_img_set_src(img, Filepath::Award::AchievementsUnlocked);
+		lv_obj_set_align(img, LV_ALIGN_TOP_MID);
+
+		lv_group_set_editing(inputGroup, true);
+
+		achView = new AchievementView(rest, 4, 90, 27, achievements);
+		lv_obj_set_pos(*achView, 17, 78);
+
+		lv_group_add_obj(inputGroup, *achView);
+		achView->select();
 	}else{
 		exit();
 	}
@@ -236,7 +254,12 @@ void AwardsScreen::setAwardMode(Award award){
 
 void AwardsScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
-	InputLVGL::getInstance()->setVertNav(true);
+
+	if(awardMode == Award::Achievement){
+		achView->select();
+	}else if(awardMode == Award::HighScore){
+		InputLVGL::getInstance()->setVertNav(true);
+	}
 }
 
 void AwardsScreen::onStop(){
@@ -286,7 +309,7 @@ void AwardsScreen::loop(){
 		setAwardMode(Award::LevelUp);
 	}
 
-		HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
+	HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore);
 	if(hsm == nullptr){
 		return;
 	}
@@ -304,9 +327,9 @@ void AwardsScreen::loop(){
 				exit();
 				return;
 			}else if(data->btn == Input::A){
-				/*if(awardMode < Award::Achievement *//*TODO && new achievement unlocked, remove false*//*){
-					buildUI(Award::Achievement);
-				}else */if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
+				if(awardMode < Award::Achievement && !achievements.empty()){
+					setAwardMode(Award::Achievement);
+				}else if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
 					setAwardMode(Award::HighScore);
 				}else{
 					free(e.data);

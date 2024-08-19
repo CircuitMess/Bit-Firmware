@@ -15,6 +15,7 @@ struct Tone {
 class MelodyPlayer : private Threaded {
 public:
 	MelodyPlayer(uint8_t bpm, std::initializer_list<Tone> tones);
+	~MelodyPlayer() override;
 
 	void play();
 	bool isPlaying();

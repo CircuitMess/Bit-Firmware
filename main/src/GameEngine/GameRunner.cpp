@@ -56,9 +56,6 @@ void GameRunner::startGame(Games game){
 
 	auto inst = launcher(display.getCanvas());
 
-	EventQueue evts(12);
-	Events::listen(Facility::Battery, &evts);
-
 	inst->load();
 	while(!inst->isLoaded() || (millis() - startTime) < 2000){
 		delayMillis(100);
