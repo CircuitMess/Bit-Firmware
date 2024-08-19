@@ -89,7 +89,12 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	if(flies.count() < MaxFlies/2 && flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
-		auto fly = new Fly([this](const char* name){ return getFile(name); });
+		auto fly = new Fly([this](const char* name){ return getFile(name); }, nullptr, [this](Cacoon* cac){
+			lives--;
+			livesEl->setLives(lives);
+			// TODO: live/game lost audio
+		});
+
 		addObject(*fly);
 		if(!flies.add(fly)){ printf("Fail!!!\n"); }
 	}
@@ -174,9 +179,11 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 				livesEl->setLives(lives);
 				// TODO: live/game lost audio
 
-				removeObject(cac->go);
-				cacs.rem(cac);
-				delete cac;
+				if(cac){
+					removeObject(cac->go);
+					cacs.rem(cac);
+					delete cac;
+				}
 			});
 			addObject(*fly);
 			if(!flies.add(fly)){ printf("Fail!!!\n"); }

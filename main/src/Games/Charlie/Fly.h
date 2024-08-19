@@ -39,7 +39,7 @@ private:
 	static constexpr float RescueTimeout = 2.0f;
 
 	struct Cacoon* rescue;
-	std::function<void(struct Cacoon*)> onRescued;
+	std::function<void(struct Cacoon*)> onRescued; // also used when fly is done plotting
 
 	void setState(State newState);
 

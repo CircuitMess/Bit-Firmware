@@ -79,12 +79,18 @@ void CharlieGame::Fly::update(float dt){
 		}
 	}else if(state == Plotting){
 		if(t >= PlotTimeout){
+			if(onRescued){
+				onRescued(rescue);
+			}
 			goAway();
 		}
 	}else if(state == Rescuing){
 		if(t >= RescueTimeout){
-			onRescued(rescue);
-			rescue->fly->goAway();
+			if(onRescued && rescue){
+				onRescued(rescue);
+				rescue->fly->goAway();
+			}
+
 			goAway();
 		}
 	}
