@@ -55,7 +55,7 @@ private:
 	void startAnim(Section section);
 	void stopAnim(Section section);
 
-	AchievementView achievementSection = AchievementView(*this);
+	AchievementView achievementSection = AchievementView(*this, 3, 71, 123);
 	ThemePicker* themeSection = new ThemePicker(*this);
 	CharacterPicker characterSection = CharacterPicker(*this);
 

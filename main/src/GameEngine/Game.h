@@ -17,6 +17,7 @@
 #include <atomic>
 #include "RoboCtrl/RobotDriver.h"
 #include "Services/RobotManager.h"
+#include "Services/AchievementSystem.h"
 
 class Game {
 
@@ -53,6 +54,8 @@ protected:
 	void addObjects(std::initializer_list<const GameObjPtr> objs);
 	void removeObject(const GameObjPtr& obj);
 	void removeObjects(std::initializer_list<const GameObjPtr> objs);
+
+	void addAchi(Achievement ID, int32_t increment);
 
 	CollisionSystem collision;
 
@@ -94,6 +97,8 @@ private:
 	std::set<GameObjPtr> objects;
 
 	void loadFunc();
+
+	AchievementSystem* achievementSystem;
 
 	std::shared_ptr<RoboCtrl::RobotDriver> robot;
 

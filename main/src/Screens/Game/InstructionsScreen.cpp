@@ -9,8 +9,9 @@
 #include "Settings/Settings.h"
 #include "Filepaths.hpp"
 #include "Services/TwinkleService.h"
+#include "Util/stdafx.h"
 
-InstructionsScreen::InstructionsScreen(Games current) : evts(6), currentGame(current){
+InstructionsScreen::InstructionsScreen(Games current, bool launch) : evts(6), currentGame(current), launch(launch){
 	switch(currentGame){
 		case Games::Artemis:{
 			gameUIPath.append("Artemis/");
@@ -144,9 +145,6 @@ void InstructionsScreen::buildUI(){
 }
 
 void InstructionsScreen::onStart(){
-	Events::listen(Facility::Input, &evts);
-	InputLVGL::getInstance()->setVertNav(true);
-
 	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
 		twinkle->stop();
 	}
@@ -171,6 +169,11 @@ void InstructionsScreen::onStart(){
 			led->on(LED::B);
 		}
 	}
+
+	if(!launch){
+		Events::listen(Facility::Input, &evts);
+		InputLVGL::getInstance()->setVertNav(true);
+	}
 }
 
 void InstructionsScreen::onStop(){
@@ -179,6 +182,13 @@ void InstructionsScreen::onStop(){
 }
 
 void InstructionsScreen::loop(){
+	if(launch){
+		if(auto ui = (UIThread*) Services.get(Service::UI)){
+			ui->startGame(currentGame);
+		}
+		return;
+	}
+
 	for(Event e{}; evts.get(e, 0); ){
 		if(e.facility != Facility::Input){
 			free(e.data);

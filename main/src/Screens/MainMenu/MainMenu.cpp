@@ -15,7 +15,7 @@
 #include <unordered_set>
 #include "Util/Notes.h"
 #include "MenuHeader.h"
-#include "Screens/Game/GameMenuScreen.h"
+#include "Screens/Game/GameSplashScreen.h"
 #include "Filepaths.hpp"
 #include "../Profile/ProfileScreen.h"
 #include "Services/TwinkleService.h"
@@ -77,7 +77,7 @@ void MainMenu::launch(Games game){
 	}
 
 	auto ui = (UIThread*) Services.get(Service::UI);
-	ui->startScreen([game](){ return std::make_unique<GameMenuScreen>(game); });
+	ui->startScreen([game](){ return std::make_unique<GameSplashScreen>(game); });
 }
 
 void MainMenu::onStarting(){
