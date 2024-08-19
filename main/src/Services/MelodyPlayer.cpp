@@ -7,6 +7,10 @@ MelodyPlayer::MelodyPlayer(uint8_t bpm, std::initializer_list<Tone> tones) : Thr
 	beatDuration /= 5.0f;
 }
 
+MelodyPlayer::~MelodyPlayer(){
+	stop();
+}
+
 void MelodyPlayer::play(){
 	start();
 }

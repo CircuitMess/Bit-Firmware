@@ -1,8 +1,16 @@
 #include "AnimRC.h"
+#include "FS/RamFile.h"
 #include <utility>
 
 //parentSprite as nullptr is safe as long as you pass the correct parent Sprite* in the push() function
-AnimRC::AnimRC(File file) : gif(std::make_unique<GIFSprite>(file)){
+AnimRC::AnimRC(File file, bool copyFile){
+	if(copyFile){
+		this->file = RamFile::open(file);
+	}else{
+		this->file = file;
+	}
+
+	gif = std::make_unique<GIFSprite>(this->file);
 	gif->setLoopMode(loopMode);
 }
 

@@ -10,7 +10,7 @@ public:
 	/**
 	 * @param file GIF file.
 	 */
-	AnimRC(File file);
+	AnimRC(File file, bool copyFile = false);
 	~AnimRC() override = default;
 	/**
 	 * Replaces the current animation with the one provided.
@@ -41,6 +41,8 @@ private:
 	bool playing = false;
 
 	GIF::LoopMode loopMode = GIF::Infinite;
+
+	File file;
 };
 
 

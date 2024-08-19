@@ -8,6 +8,9 @@
 #include "Services/TwinkleService.h"
 #include "Util/stdafx.h"
 #include "Screens/Game/GameMenuScreen.h"
+#include "Util/Notes.h"
+
+extern const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds;
 
 GameSplashScreen::GameSplashScreen(Games current) : currentGame(current){
 	switch(currentGame){
@@ -134,7 +137,7 @@ void GameSplashScreen::buildUI(){
 }
 
 void GameSplashScreen::loop(){
-	if(millis() - startTime < HoldTime) return;
+	if(millis() - startTime < HoldTime || melody->isPlaying()) return;
 
 	if(auto ui = (UIThread*) Services.get(Service::UI)){
 		ui->startScreen([this](){ return std::make_unique<GameMenuScreen>(currentGame); });
@@ -165,4 +168,214 @@ void GameSplashScreen::onStart(){
 			led->on(LED::B);
 		}
 	}
+
+	if(IntroSounds.contains(currentGame)){
+		melody = IntroSounds.at(currentGame)();
+		if(melody){
+			melody->play();
+		}
+	}
 }
+
+void GameSplashScreen::onStop(){
+	delete melody;
+}
+
+const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds = {
+		{ Games::Blocks, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_B3, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_F3, 2 },
+					Tone { NOTE_G3, 2 },
+					Tone { NOTE_A3, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_G3, 2 },
+					Tone { NOTE_FS3, 2 },
+					Tone { NOTE_E3, 2 }
+			});
+		} },
+		{ Games::Pong, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C4, 2 },
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_D4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E4, 1 }
+			});
+		} },
+		{ Games::Snake, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS4, 1 },
+					Tone { NOTE_D4, 1 },
+					Tone { NOTE_G4, 4 },
+					Tone { 0, 1 },
+					Tone { NOTE_F4, 1 },
+					Tone { NOTE_A4, 1 },
+					Tone { NOTE_G4, 1 },
+					Tone { NOTE_AS4, 4 },
+					Tone { 0, 1 },
+					Tone { NOTE_GS4, 1 },
+					Tone { NOTE_FS4, 1 },
+					Tone { NOTE_D4, 1 },
+					Tone { NOTE_G4, 4 },
+			});
+		} },
+		{ Games::MrBee, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C5, 1 },
+					Tone { NOTE_F4, 1 },
+					Tone { NOTE_C4, 1 },
+					Tone { NOTE_F4, 1 },
+					Tone { NOTE_C5, 1 },
+					Tone { NOTE_F4, 1 },
+					Tone { NOTE_C4, 1 },
+					Tone { NOTE_E4, 1 },
+					Tone { NOTE_C5, 1 },
+			});
+		} },
+		{ Games::Bob, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C4, 2 },
+					Tone { NOTE_F4, 2 },
+					Tone { 0, 4 },
+					Tone { NOTE_D4, 2 },
+					Tone { NOTE_A4, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_C5, 2 },
+					Tone { NOTE_A4, 2 },
+					Tone { NOTE_F4, 2 },
+			});
+		} },
+		{ Games::Capacitron, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_E4, 6 },
+					Tone { 0, 1 },
+					Tone { NOTE_B4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G4, 6 },
+					Tone { 0, 1 },
+					Tone { NOTE_A4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E4, 6 },
+			});
+		} },
+		{ Games::Hertz, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_C5, 1 },
+					Tone { NOTE_F5, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_FS4, 1 },
+					Tone { NOTE_G4, 1 },
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E5, 1 },
+					Tone { NOTE_B4, 1 },
+					Tone { 0, 2 },
+					Tone { NOTE_F5, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_C6, 1 },
+			});
+		} },
+		{ Games::Marv, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS3, 6 },
+					Tone { 0, 1.5 },
+					Tone { NOTE_E4, 6 },
+					Tone { 0, 1.5 },
+					Tone { NOTE_FS4, 6 },
+			});
+		} },
+		{ Games::Resistron, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_FS4, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_GS4, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_FS4, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_E4, 2 },
+					Tone { 0, 1 },
+					Tone { NOTE_FS4, 2 },
+			});
+		} },
+		{ Games::Buttons, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_D4, 1 },
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G4, 1 },
+					Tone { 0, 1.5 },
+					Tone { NOTE_D4, 0.5 },
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_G4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_B3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_A3, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_D4, 1 },
+			});
+		} },
+		{ Games::Artemis, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_E4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_A4, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_B4, 1 },
+					Tone { NOTE_A4, 1 },
+					Tone { NOTE_E5, 2 },
+					Tone { NOTE_G5, 2 },
+					Tone { 0, 2 },
+					Tone { NOTE_B5, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_A5, 1 },
+					Tone { 0, 1 },
+					Tone { NOTE_E5, 2 },
+			});
+		} },
+		{ Games::Robby, [](){
+			return new MelodyPlayer(130, {
+					Tone { NOTE_E3, 4 },
+					Tone { 0, 2 },
+					Tone { NOTE_A4, 1 },
+					Tone { NOTE_F4, 1 },
+					Tone { NOTE_A3, 4 },
+					Tone { 0, 2 },
+					Tone { NOTE_C4, 1 },
+					Tone { NOTE_E4, 4 },
+			});
+		} },
+		// TODO intro sounds for the new games
+		{ Games::WackyStacky, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Harald, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Frank, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Charlie, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Fred, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Planck, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Dusty, [](){
+			return new MelodyPlayer(130, {});
+		} },
+		{ Games::Sparkly, [](){
+			return new MelodyPlayer(130, {});
+		} },
+};

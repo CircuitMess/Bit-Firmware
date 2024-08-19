@@ -9,6 +9,7 @@
 #include "Screens/Settings/SliderElement.h"
 #include "Services/RobotManager.h"
 #include "Screens/BatteryElement.h"
+#include "Services/MelodyPlayer.h"
 
 class GameSplashScreen : public LVScreen {
 public:
@@ -22,9 +23,13 @@ private:
 	void buildUI();
 	void loop() override;
 	void onStart() override;
+	void onStop() override;
 
 	uint32_t startTime;
 	static constexpr uint32_t HoldTime = 2000;
+
+	MelodyPlayer* melody = nullptr;
+
 };
 
 #endif //BIT_FIRMWARE_GAMESPLASHSCREEN_H

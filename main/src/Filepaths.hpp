@@ -110,6 +110,7 @@ namespace Filepath {
 	namespace Award {
 		inline static constexpr const char* BackgroundSmall = "S:/Award/BG-small.bin";
 		inline static constexpr const char* LeveledUp = "S:/Award/leveledup.bin";
+		inline static constexpr const char* AchievementsUnlocked = "S:/Award/achievements.bin";
 		inline static constexpr const char* XpFrame = "S:/Award/XP-frame.bin";
 		inline static constexpr const char* XpBackground = "S:/Award/XP-line.bin";
 		inline static constexpr const char* XpGained = "S:/Award/xpgained.bin";
