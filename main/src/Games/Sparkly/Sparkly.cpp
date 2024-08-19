@@ -6,8 +6,8 @@
 #include "GameEngine/Rendering/StaticRC.h"
 
 Sparkly::Sparkly::Sparkly(Sprite& canvas) : Game(canvas, Games::Sparkly, "/Games/Sparkly", {
-		{ "/Tilemap.raw", {}, true },
 		{ esp_random() % 2 == 0 ? "/Landscape2.raw" : "/Landscape1.raw", {}, true },
+		{ "/Tilemap.raw", {}, true },
 		{ "/Arrow-l.raw", {}, true },
 		{ "/Arrow-r.raw", {}, true },
 		{ "/Bush1.raw", {}, true },
@@ -141,8 +141,8 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 			const int planeYfloor = planeY; // opt: var should be float, value should be floored
 
 			const int spriteIndex = Field[(int) planeYfloor][(int) planeXfloor];
-			// Location of sprite inside sprite-sheet [3x3]
-			const int spriteY = spriteIndex * 0.142857f;
+			// Location of sprite inside sprite-sheet [7x6]
+			const int spriteY = spriteIndex * 0.142858f;
 			const int spriteX = spriteIndex - spriteY * 7;
 
 			// Start pixel coords of needed sprite inside sprite-sheet [96x96]
@@ -236,7 +236,6 @@ void Sparkly::Sparkly::positionBillboards(){
 		const auto screenPosB = vpMat * posB;
 		const float scale = glm::abs(screenPos.x / screenPos.w - screenPosB.x / screenPosB.w) * 1.0f;
 
-		// TODO figure out what to do with this BS because it makes the billboards float at certain angles
 		screenCoords.x -= (float) 32.0f * 0.5f * scale;
 		screenCoords.y += (float) 28.0f * scale;
 
