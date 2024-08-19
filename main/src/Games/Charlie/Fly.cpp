@@ -17,7 +17,7 @@ CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* r
 	}else{
 		destPos = glm::vec2 { 0, 10 } + glm::vec2 {
 				((float) esp_random() / (float) UINT32_MAX),
-				((float) esp_random() / (float) UINT32_MAX);
+				((float) esp_random() / (float) UINT32_MAX)
 		} * (glm::vec2 { 128, 128 } - SpriteSize - glm::vec2 { 0, 10 });
 	}
 
