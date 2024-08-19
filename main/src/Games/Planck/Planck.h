@@ -25,12 +25,14 @@ private:
 	inline static constexpr const float StraightlineSpeedLimit = 150;
 	inline static constexpr const uint32_t BoostDuration = 1000;
 	inline static constexpr const float BoostAccelerationRate = 75;
-	inline static constexpr const uint32_t AirDuration = 1000;
+	inline static constexpr const uint32_t AirDuration = 1500;
 	inline static constexpr const float PassiveDeceleration = -9.0f;
 	inline static constexpr const float GasBrakeAcceleration = 100.0f;
 	inline static constexpr const float BatteryDischargeRate = 0.25f;
 
 	inline static constexpr const float JumpMaxZoom = 1.3f;
+
+	inline static constexpr const float MinimumRampSpeed = 50; //speed below this will not result in a ramp jump
 
 	inline static constexpr const uint16_t CarYPos = 128 - 30 - 5;
 
@@ -39,11 +41,15 @@ private:
 	static constexpr float InvincibilityBlinkDuration = 0.25f;
 	static constexpr float InvincibilityDuration = 1.5f;
 
+	uint8_t nextObstacleDistance = 4;
+	inline static constexpr const uint8_t MinNextObstacleDistance = 2;
+	inline static constexpr const uint8_t MaxNextObstacleDistance = 3;
+
 	inline static constexpr const char* Obstacles[] = {
 			"/cones.raw",
 			"/rail.raw",
-			"/ramp.raw",
 			"/trash.raw",
+			"/ramp.raw",
 			"/boost.raw",
 			"/hole.raw",
 	};
@@ -82,8 +88,8 @@ private:
 	enum TileType {
 		Cones,
 		Rail,
-		Ramp,
 		Trash,
+		Ramp,
 		Boost,
 		Hole,
 		Road
