@@ -51,7 +51,10 @@ private:
 		bool combo;
 	};
 
-	std::vector<TileMove> tileMoves;
+	struct TileMoveComp { bool operator()(const TileMove& a, const TileMove& b) const {
+		return ((int) a.source.x * 3 + (int) a.source.y * 7) < ((int) b.source.x * 3 + (int) b.source.y * 7);
+	} };
+	std::set<TileMove, TileMoveComp> tileMoves;
 	struct {
 		IdField field;
 		uint32_t score;

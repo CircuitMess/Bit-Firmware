@@ -190,8 +190,15 @@ void Harald::Harald::findMoves(Input::Button dir){
 		}
 	}
 
-	std::vector<TileMove> foundMoves;
+	std::set<TileMove, TileMoveComp> foundMoves;
 	uint32_t score = this->score;
+
+	const auto addMove = [&foundMoves](const TileMove& move){
+		if(foundMoves.contains(move)){
+			foundMoves.erase(move);
+		}
+		foundMoves.insert(move);
+	};
 
 	if(dir == Input::Button::Up){
 		for(int x = 0; x < 4; ++x){
@@ -202,8 +209,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 							resultingIds[x][target] = resultingIds[x][y];
 							resultingIds[x][y] = 0;
 
-							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-							foundMoves.emplace_back(TileMove {
+							addMove(TileMove {
 									.source = { x, y },
 									.target = { x, target },
 									.combo = false
@@ -223,8 +229,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 						resultingIds[x][target]++;
 						score += std::pow(2, resultingIds[x][target]);
 
-						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-						foundMoves.emplace_back(TileMove {
+						addMove(TileMove {
 								.source = { x, y },
 								.target = { x, target },
 								.combo = true
@@ -248,8 +253,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 							resultingIds[x][target] = resultingIds[x][y];
 							resultingIds[x][y] = 0;
 
-							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-							foundMoves.emplace_back(TileMove {
+							addMove(TileMove {
 									.source = { x, y },
 									.target = { x, target },
 									.combo = false
@@ -269,8 +273,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 						resultingIds[x][target]++;
 						score += std::pow(2, resultingIds[x][target]);
 
-						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-						foundMoves.emplace_back(TileMove {
+						addMove(TileMove {
 								.source = { x, y },
 								.target = { x, target },
 								.combo = true
@@ -294,8 +297,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 							resultingIds[target][y] = resultingIds[x][y];
 							resultingIds[x][y] = 0;
 
-							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-							foundMoves.emplace_back(TileMove {
+							addMove(TileMove {
 									.source = { x, y },
 									.target = { target, y },
 									.combo = false
@@ -315,8 +317,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 						resultingIds[target][y]++;
 						score += std::pow(2, resultingIds[target][y]);
 
-						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-						foundMoves.emplace_back(TileMove {
+						addMove(TileMove {
 								.source = { x, y },
 								.target = { target, y },
 								.combo = true
@@ -340,8 +341,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 							resultingIds[target][y] = resultingIds[x][y];
 							resultingIds[x][y] = 0;
 
-							elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-							foundMoves.emplace_back(TileMove {
+							addMove(TileMove {
 									.source = { x, y },
 									.target = { target, y },
 									.combo = false
@@ -361,8 +361,7 @@ void Harald::Harald::findMoves(Input::Button dir){
 						resultingIds[target][y]++;
 						score += std::pow(2, resultingIds[target][y]);
 
-						elements[x][y].gameObj->getRenderComponent()->setLayer(1);
-						foundMoves.emplace_back(TileMove {
+						addMove(TileMove {
 								.source = { x, y },
 								.target = { target, y },
 								.combo = true
@@ -388,6 +387,10 @@ void Harald::Harald::findMoves(Input::Button dir){
 		return;
 	}
 
+	for(const auto& move : foundMoves){
+		elements[move.source.x][move.source.y].gameObj->getRenderComponent()->setLayer(1);
+	}
+
 	tileMoves = foundMoves;
 	moveResult = {
 			.field = resultingIds,
@@ -406,7 +409,6 @@ void Harald::Harald::applyMove(){
 	for(const auto& move : tileMoves){
 		const auto sourceId = moveResult.field[move.source.x][move.source.y];
 		const auto targetId = moveResult.field[move.target.x][move.target.y];
-		const auto oldId = elements[move.target.x][move.target.y].id;
 
 		if(move.combo){
 			comboFound = true;
@@ -428,7 +430,7 @@ void Harald::Harald::applyMove(){
 		rc->setFile(getFile(Icons[targetId]));
 
 		// Change source tile
-		elements[move.source.x][move.source.y].id = 0;
+		elements[move.source.x][move.source.y].id = sourceId;
 		elements[move.source.x][move.source.y].gameObj->setPos(glm::vec2{14, 23} + glm::vec2{move.source.x * 25, move.source.y * 25});
 		rc = (StaticRC*) elements[move.source.x][move.source.y].gameObj->getRenderComponent().get();
 		rc->setFile(getFile(Icons[sourceId]));
@@ -494,7 +496,7 @@ void Harald::Harald::tileMoveAnim(float dt){
 	for(const auto& move : tileMoves){
 		GameObjPtr movingTile = elements[move.source.x][move.source.y].gameObj;
 		const auto sourcePos = glm::vec2{14, 23} + glm::vec2{move.source.x * 25, move.source.y * 25};
-		const auto targetPos = elements[move.target.x][move.target.y].gameObj->getPos();
+		const auto targetPos = glm::vec2{14, 23} + glm::vec2{move.target.x * 25, move.target.y * 25};
 
 		const auto gotoPos = glm::vec<2, float>{
 				std::round((float) sourcePos.x + (float) (targetPos.x - sourcePos.x) * t),
