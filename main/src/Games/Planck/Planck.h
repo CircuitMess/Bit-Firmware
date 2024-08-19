@@ -32,6 +32,8 @@ private:
 
 	inline static constexpr const float JumpMaxZoom = 1.3f;
 
+	inline static constexpr const uint16_t CarYPos = 128 - 30 - 5;
+
 	bool invincible = false;
 	float invincibilityTime = 0;
 	static constexpr float InvincibilityBlinkDuration = 0.25f;

@@ -92,7 +92,7 @@ void Planck::Planck::onLoad(){
 	carRC = std::static_pointer_cast<SpriteRC>(car->getRenderComponent());
 	carRC->getSprite()->clear(TFT_TRANSPARENT);
 	Display::drawFile(*carRC->getSprite(), getFile("/car.raw"), 0, 0, 26, 30);
-	car->setPos(51.0f, 80.0f);
+	car->setPos(51.0f, CarYPos);
 	car->getRenderComponent()->setLayer(2);
 	addObject(car);
 
@@ -532,6 +532,10 @@ GameObjPtr Planck::Planck::createTile(Planck::Planck::TileType type){
 			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {4, 30}, {4, 11}, {17, 5}, {19, 5}, {32, 11}, {32, 30} });
 			break;
 		}
+		case Planck::TileType::Hole:{
+			cc = std::make_unique<PolygonCC>(std::initializer_list<glm::vec2>{ {5, 22}, {8, 14}, {12, 9}, {18, 9}, {28, 12}, {31, 15}, {31, 17}, {22, 26}, {8, 26} });
+			break;
+		}
 		default:{
 			break;
 		}
@@ -586,6 +590,13 @@ GameObjPtr Planck::Planck::createTile(Planck::Planck::TileType type){
 		case Planck::TileType::Boost:{
 			collision.addPair(*car, *obj, [this](){
 				onBoost();
+			});
+			break;
+		}
+		case Planck::TileType::Hole:{
+			collision.addPair(*car, *obj, [this, obj](){
+				onCollision();
+				collision.removePair(*car, *obj);
 			});
 			break;
 		}
