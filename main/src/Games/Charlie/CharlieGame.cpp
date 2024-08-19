@@ -9,14 +9,14 @@ CharlieGame::CharlieGame::CharlieGame(Sprite& base) : Game(base, Games::Charlie,
 		RES_HEART,
 		{ "/bg.raw", {}, true },
 		{ "/net.raw", {}, true },
-		{ "/cac.gif", {}, false },
-		{ "/puf.gif", {}, false },
-		{ "/ch_idle.gif", {}, false },
-		{ "/ch_roll.gif", {}, false },
-		{ "/ch_walk.gif", {}, false },
-		{ "/fly_fly.gif", {}, false },
-		{ "/fly_plot.gif", {}, false },
-		{ "/fly_unroll.gif", {}, false }
+		{ "/cac.gif", {}, true },
+		{ "/puf.gif", {}, true },
+		{ "/ch_idle.gif", {}, true },
+		{ "/ch_roll.gif", {}, true },
+		{ "/ch_walk.gif", {}, true },
+		{ "/fly_fly.gif", {}, true },
+		{ "/fly_plot.gif", {}, true },
+		{ "/fly_unroll.gif", {}, true }
 }){
 
 }
@@ -116,7 +116,7 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	auto go = (GameObjPtr) *rollingFly;
 
 	auto cacGo = std::make_shared<GameObject>(
-			std::make_unique<AnimRC>(getFile("/cac.gif")),
+			std::make_unique<AnimRC>(getFile("/cac.gif"), true),
 			nullptr
 	);
 	cacGo->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
@@ -151,7 +151,7 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			scoreEl->setScore(score);
 
 			auto puf = std::make_shared<GameObject>(
-					std::make_unique<AnimRC>(getFile("/puf.gif")),
+					std::make_unique<AnimRC>(getFile("/puf.gif"), true),
 					nullptr
 			);
 			puf->setPos(cac->go->getPos() + glm::vec2 { -8.0f, -12.0f });

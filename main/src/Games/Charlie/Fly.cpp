@@ -94,13 +94,13 @@ void CharlieGame::Fly::updateAnim(){
 	auto rc = (AnimRC*) go->getRenderComponent().get();
 
 	if(state == FlyingIn || state == FlyingOut){
-		rc->setAnim(getFile("/fly_fly.gif"));
+		rc->setAnim(getFile("/fly_fly.gif"), true);
 		rc->setLayer(3);
 	}else if(state == Plotting){
-		rc->setAnim(getFile("/fly_plot.gif"));
+		rc->setAnim(getFile("/fly_plot.gif"), true);
 		rc->setLayer(0);
 	}else if(state == Rescuing){
-		rc->setAnim(getFile("/fly_unroll.gif"));
+		rc->setAnim(getFile("/fly_unroll.gif"), true);
 		rc->setLayer(0);
 		go->setRot(0);
 	}else if(state == Cacoon || state == Done){
