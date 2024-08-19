@@ -18,6 +18,7 @@ public:
 	void update(float dt);
 
 	void setRoll(bool rolling);
+	void setStop(bool stop);
 
 	static constexpr glm::vec2 SpriteSize = { 57, 51 };
 
@@ -29,6 +30,7 @@ private:
 	static constexpr float MoveSpeed = 60.0f;
 
 	bool rolling = false;
+	bool stopped = false;
 
 	void updateAnim();
 

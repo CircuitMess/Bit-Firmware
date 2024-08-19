@@ -60,6 +60,13 @@ private:
 	void updatePufs(float dt);
 	static constexpr float PufDuration = 0.56f;
 
+	void dmg();
+	bool over = false;
+	float overT = 0;
+	static constexpr float OverTimeout = 2.0f;
+	void gameOver();
+	void updateOver(float dt);
+
 };
 
 };

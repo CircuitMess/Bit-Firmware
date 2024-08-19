@@ -20,6 +20,7 @@ public:
 	void done();
 
 	bool isPlotting();
+	bool isCacooned();
 	bool isRescuing();
 	bool isDone();
 

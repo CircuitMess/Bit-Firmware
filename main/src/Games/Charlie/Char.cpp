@@ -46,7 +46,7 @@ void CharlieGame::Char::btnRelease(Input::Button btn){
 }
 
 void CharlieGame::Char::update(float dt){
-	if(rolling || glm::length(moveDir) == 0) return;
+	if(stopped || rolling || glm::length(moveDir) == 0) return;
 
 	glm::vec2 dir = glm::normalize(moveDir);
 
@@ -63,7 +63,7 @@ void CharlieGame::Char::updateAnim(){
 
 	if(rolling){
 		rc->setAnim(getFile("/ch_roll.gif"));
-	}else if(glm::length(moveDir) == 0){
+	}else if(glm::length(moveDir) == 0 || stopped){
 		rc->setAnim(getFile("/ch_idle.gif"));
 	}else{
 		rc->setAnim(getFile("/ch_walk.gif"));
@@ -74,5 +74,10 @@ void CharlieGame::Char::updateAnim(){
 
 void CharlieGame::Char::setRoll(bool rolling){
 	this->rolling = rolling;
+	updateAnim();
+}
+
+void CharlieGame::Char::setStop(bool stop){
+	this->stopped = stop;
 	updateAnim();
 }

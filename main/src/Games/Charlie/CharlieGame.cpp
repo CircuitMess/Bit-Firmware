@@ -65,10 +65,12 @@ void CharlieGame::CharlieGame::onLoad(){
 }
 
 uint32_t CharlieGame::CharlieGame::getXP() const{
-	return 0;
+	return 0; // TODO
 }
 
 void CharlieGame::CharlieGame::handleInput(const Input::Data& data){
+	if(over) return;
+
 	if(data.action == Input::Data::Press){
 		chrl->btnPress(data.btn);
 	}else{
@@ -85,14 +87,19 @@ void CharlieGame::CharlieGame::handleInput(const Input::Data& data){
 }
 
 void CharlieGame::CharlieGame::onLoop(float deltaTime){
+	if(over){
+		updateFlies(deltaTime);
+		updateOver(deltaTime);
+		return;
+	}
+
 	flySpawnT += deltaTime;
 	if(flies.count() < MaxFlies/2 && flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
 		auto fly = new Fly([this](const char* name){ return getFile(name); }, nullptr, [this](Cacoon* cac){
-			lives--;
-			livesEl->setLives(lives);
-			// TODO: live/game lost audio
+			if(over) return;
+			dmg();
 		});
 
 		addObject(*fly);
@@ -106,10 +113,6 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	updateFlies(deltaTime);
 
 	updatePufs(deltaTime);
-
-	if(lives == 0){
-		exit();
-	}
 }
 
 void CharlieGame::CharlieGame::updateRoll(float dt){
@@ -175,15 +178,15 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			delete cac;
 		}else if(cac->beingRescued && cac->t >= CacoonTime/2.0f && cac->rescuer == nullptr){
 			auto fly = new Fly([this](const char* name){ return getFile(name); }, cac, [this](Cacoon* cac){
-				lives--;
-				livesEl->setLives(lives);
-				// TODO: live/game lost audio
+				if(over) return;
 
 				if(cac){
 					removeObject(cac->go);
 					cacs.rem(cac);
 					delete cac;
 				}
+
+				dmg();
 			});
 			addObject(*fly);
 			if(!flies.add(fly)){ printf("Fail!!!\n"); }
@@ -271,5 +274,43 @@ void CharlieGame::CharlieGame::stopRoll(){
 	if(rollingFly){
 		rollingFly->goAway();
 		rollingFly = nullptr;
+	}
+}
+
+void CharlieGame::CharlieGame::dmg(){
+	lives--;
+	livesEl->setLives(lives);
+
+	if(lives == 0){
+		gameOver();
+	}else{
+		// TODO: lose life audio
+	}
+}
+
+void CharlieGame::CharlieGame::gameOver(){
+	// TODO: game over audio
+
+	over = true;
+
+	flies.iterate([](Fly* fly){
+		fly->goAway();
+	});
+
+	cacs.iterate([this](Cacoon* cac){
+		removeObject(cac->go);
+		cacs.rem(cac);
+		delete cac;
+	});
+
+	chrl->setRoll(false);
+	chrl->setStop(true);
+}
+
+void CharlieGame::CharlieGame::updateOver(float dt){
+	overT += dt;
+
+	if(overT >= OverTimeout){
+		exit();
 	}
 }

@@ -34,6 +34,10 @@ bool CharlieGame::Fly::isPlotting(){
 	return state == Plotting;
 }
 
+bool CharlieGame::Fly::isCacooned(){
+	return state == Cacoon;
+}
+
 bool CharlieGame::Fly::isRescuing(){
 	return rescue && state == Rescuing;
 }
