@@ -7,6 +7,7 @@
 #include "Fly.h"
 #include "Games/Common/Score.h"
 #include "Games/Common/Hearts.h"
+#include "Storage.h"
 
 namespace CharlieGame {
 
@@ -14,6 +15,7 @@ class CharlieGame : public Game {
 protected:
 public:
 	CharlieGame(Sprite& base);
+	~CharlieGame() override;
 
 private:
 	uint32_t getXP() const override;
@@ -30,7 +32,9 @@ private:
 	std::unique_ptr<Hearts> livesEl;
 
 	std::unique_ptr<Char> chrl;
-	std::unordered_set<Fly*> flies;
+
+	static constexpr size_t MaxFlies = 8;
+	Storage<Fly, MaxFlies> flies;
 
 	static constexpr float FlySpawnRate = 10.0f;
 	float flySpawnT = 8.0f;
@@ -44,7 +48,7 @@ private:
 	void stopRoll();
 	void updateRoll(float dt);
 
-	std::vector<Cacoon> cacs;
+	Storage<Cacoon, MaxFlies> cacs;
 	static constexpr float CacoonTime = 4.0f;
 	void updateCacs(float dt);
 

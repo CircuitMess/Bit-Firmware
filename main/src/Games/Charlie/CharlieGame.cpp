@@ -21,6 +21,18 @@ CharlieGame::CharlieGame::CharlieGame(Sprite& base) : Game(base, Games::Charlie,
 
 }
 
+CharlieGame::CharlieGame::~CharlieGame(){
+	cacs.iterate([this](Cacoon* cac){
+		cacs.rem(cac);
+		delete cac;
+	});
+
+	flies.iterate([this](Fly* fly){
+		flies.rem(fly);
+		delete fly;
+	});
+}
+
 void CharlieGame::CharlieGame::onLoad(){
 	auto bg = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim{ 128, 128 }),
@@ -74,12 +86,12 @@ void CharlieGame::CharlieGame::handleInput(const Input::Data& data){
 
 void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	flySpawnT += deltaTime;
-	if(flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
+	if(flies.count() < MaxFlies/2 && flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
 		auto fly = new Fly([this](const char* name){ return getFile(name); });
 		addObject(*fly);
-		flies.emplace(fly);
+		if(!flies.add(fly)){ printf("Fail!!!\n"); }
 	}
 
 	updateRoll(deltaTime);
@@ -103,20 +115,22 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 
 	auto go = (GameObjPtr) *rollingFly;
 
-	auto cac = std::make_shared<GameObject>(
+	auto cacGo = std::make_shared<GameObject>(
 			std::make_unique<AnimRC>(getFile("/cac.gif")),
 			nullptr
 	);
-	cac->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
-	auto rc = (AnimRC*) cac->getRenderComponent().get();
+	cacGo->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
+	auto rc = (AnimRC*) cacGo->getRenderComponent().get();
 	rc->setLayer(0);
 	rc->start();
 
-	addObject(cac);
-	cacs.emplace_back(Cacoon { cac, 0, rollingFly, false, nullptr });
+	addObject(cacGo);
 
-	if((esp_random() % 100) < (int) std::round(40 + std::min(50.0f, map((float) score, 1, 20, 0, 50)))){
-		cacs.back().beingRescued = true;
+	auto cac = new Cacoon(cacGo, 0, rollingFly, false, nullptr);
+	cacs.add(cac);
+
+	if((esp_random() % 100) < (int) std::round(40 + std::min(50.0f, map((float) score, 1, 20, 0, 50))) && flies.count() < MaxFlies){
+		cac->beingRescued = true;
 	}
 
 	rolling = false;
@@ -125,15 +139,13 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 }
 
 void CharlieGame::CharlieGame::updateCacs(float dt){
-	std::vector<Cacoon> forRemoval;
+	if(cacs.count() == 0) return;
 
-	for(auto& cac : cacs){
-		if(cac.beingRescued && cac.rescuer){
-			continue;
-		}
+	cacs.iterate([this, dt](Cacoon* cac){
+		if(cac->beingRescued && cac->rescuer) return;
 
-		cac.t += dt;
-		if(cac.t >= CacoonTime){
+		cac->t += dt;
+		if(cac->t >= CacoonTime){
 			// TODO: score++ sound
 			score++;
 			scoreEl->setScore(score);
@@ -142,7 +154,7 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 					std::make_unique<AnimRC>(getFile("/puf.gif")),
 					nullptr
 			);
-			puf->setPos(cac.go->getPos() + glm::vec2 { -8.0f, -12.0f });
+			puf->setPos(cac->go->getPos() + glm::vec2 { -8.0f, -12.0f });
 			auto rc = (AnimRC*) puf->getRenderComponent().get();
 			rc->setLayer(2);
 			rc->setLoopMode(GIF::Single);
@@ -151,34 +163,35 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			addObject(puf);
 			pufs.emplace_back(Puf { puf, 0 });
 
-			forRemoval.emplace_back(cac);
-		}else if(cac.beingRescued && cac.t >= CacoonTime/2.0f && cac.rescuer == nullptr){
-			auto fly = new Fly([this](const char* name){ return getFile(name); }, &cacs.back(), [this](Cacoon* cac){
+			cac->fly->done();
+
+			removeObject(cac->go);
+			cacs.rem(cac);
+			delete cac;
+		}else if(cac->beingRescued && cac->t >= CacoonTime/2.0f && cac->rescuer == nullptr){
+			auto fly = new Fly([this](const char* name){ return getFile(name); }, cac, [this](Cacoon* cac){
 				lives--;
 				livesEl->setLives(lives);
 				// TODO: live/game lost audio
 
 				removeObject(cac->go);
-				std::erase_if(cacs, [cac](const Cacoon& other){ return other.go == cac->go; });
+				cacs.rem(cac);
+				delete cac;
 			});
 			addObject(*fly);
-			flies.emplace(fly);
+			if(!flies.add(fly)){ printf("Fail!!!\n"); }
 
-			cac.rescuer = fly;
+			cac->rescuer = fly;
 		}
-	}
-
-	for(const auto& cac : forRemoval){
-		removeObject(cac.go);
-		cac.fly->done();
-		std::erase_if(cacs, [cac](const Cacoon& other){ return other.go == cac.go; });
-	}
+	});
 }
 
 void CharlieGame::CharlieGame::updateFlies(float dt){
-	std::unordered_set<Fly*> forRemoval;
+	if(flies.count() == 0) return;
 
-	for(const auto fly : flies){
+	flies.iterate([this, dt](Fly* fly){
+		if(fly == nullptr) return;
+
 		if(fly->isRescuing()){
 			const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize * 0.5f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize * 0.5f);
 			if(dist <= 30.0f){
@@ -188,18 +201,16 @@ void CharlieGame::CharlieGame::updateFlies(float dt){
 
 		fly->update(dt);
 		if(fly->isDone()){
-			forRemoval.emplace(fly);
+			removeObject(*fly);
+			flies.rem(fly);
+			delete fly;
 		}
-	}
-
-	for(auto fly : forRemoval){
-		flies.erase(fly);
-		removeObject(*fly);
-		delete fly;
-	}
+	});
 }
 
 void CharlieGame::CharlieGame::updatePufs(float dt){
+	if(pufs.empty()) return;
+
 	std::vector<Puf> forRemoval;
 
 	for(auto& puf : pufs){
@@ -224,11 +235,11 @@ void CharlieGame::CharlieGame::startRoll(){
 	};
 	std::vector<CloseFlies> closest;
 
-	for(const auto fly : flies){
-		if(!fly->isPlotting()) continue;
+	flies.iterate([this, &closest](Fly* fly){
+		if(!fly->isPlotting()) return;
 		const float dist = glm::length(((GameObjPtr) *fly)->getPos() + Fly::SpriteSize * 0.5f - ((GameObjPtr) *chrl)->getPos() - Char::SpriteSize * 0.5f);
 		closest.push_back(CloseFlies { fly, dist });
-	}
+	});
 
 	if(closest.empty()) return;
 

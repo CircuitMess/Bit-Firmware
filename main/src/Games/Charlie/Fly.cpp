@@ -85,7 +85,6 @@ void CharlieGame::Fly::update(float dt){
 		if(t >= RescueTimeout){
 			onRescued(rescue);
 			rescue->fly->goAway();
-			rescue = nullptr;
 			goAway();
 		}
 	}
