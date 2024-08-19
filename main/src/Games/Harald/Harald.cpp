@@ -414,7 +414,7 @@ void Harald::Harald::applyMove(){
 			comboFound = true;
 
 			GameObjPtr pufObj = std::make_shared<GameObject>(std::make_unique<AnimRC>(getFile("/Puf.gif")), nullptr);
-			pufObj->setPos(elements[move.target.x][move.target.y].gameObj->getPos() + glm::vec2 { -3, -6 });
+			pufObj->setPos(elements[move.target.x][move.target.y].gameObj->getPos() + glm::vec2 { -4, -7 });
 			auto pufRc = (AnimRC*) pufObj->getRenderComponent().get();
 			pufRc->setLayer(5);
 			pufRc->setLoopMode(GIF::Single);
