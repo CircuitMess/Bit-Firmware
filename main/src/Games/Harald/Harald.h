@@ -60,7 +60,7 @@ private:
 		uint32_t score;
 	} moveResult;
 	float tileMoveT = 0;
-	static constexpr float TileMoveSpeed = 2.0f;
+	static constexpr float TileMoveSpeed = 2.5f;
 
 	struct Puf {
 		GameObjPtr go;
