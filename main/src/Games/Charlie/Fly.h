@@ -45,6 +45,8 @@ private:
 
 	void updateAnim();
 
+	static glm::vec2 randPoint(float centerDistance);
+
 };
 
 struct Cacoon {

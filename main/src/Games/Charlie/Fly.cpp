@@ -9,19 +9,16 @@ CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* r
 			nullptr
 	);
 
-	const glm::vec2 center = (glm::vec2 { 128, 128 } - SpriteSize) / 2.0f;
-	const float randDir = M_PI * 2 * ((float) esp_random() / (float) UINT32_MAX);
-	const glm::vec2 dir = glm::rotate(glm::vec2 { 0, 1 }, randDir);
-	startPos = center + dir * 120.0f;
+	startPos = randPoint(120);
 	go->setPos(startPos);
 
 	if(rescue){
 		destPos = rescue->go->getPos() + glm::vec2 { -4.5f, 1 };
 	}else{
-		destPos = glm::vec2 {
+		destPos = glm::vec2 { 0, 10 } + glm::vec2 {
 				((float) esp_random() / (float) UINT32_MAX),
-				((float) esp_random() / (float) UINT32_MAX)
-		} * (glm::vec2 { 128, 128 } - SpriteSize);
+				((float) esp_random() / (float) UINT32_MAX);
+		} * (glm::vec2 { 128, 128 } - SpriteSize - glm::vec2 { 0, 10 });
 	}
 
 	auto rc = (AnimRC*) go->getRenderComponent().get();
@@ -135,10 +132,7 @@ void CharlieGame::Fly::goAway(){
 		startPos = destPos;
 	}
 
-	const glm::vec2 center = (glm::vec2 { 128, 128 } - SpriteSize) / 2.0f;
-	const float randDir = M_PI * 2 * ((float) esp_random() / (float) UINT32_MAX);
-	const glm::vec2 dir = glm::rotate(glm::vec2 { 0, 1 }, randDir);
-	destPos = center + dir * 120.0f;
+	destPos = randPoint(120);
 
 	setState(FlyingOut);
 }
@@ -151,4 +145,11 @@ void CharlieGame::Fly::setState(CharlieGame::Fly::State newState){
 	t = 0;
 	state = newState;
 	updateAnim();
+}
+
+glm::vec2 CharlieGame::Fly::randPoint(float centerDistance){
+	const glm::vec2 center = (glm::vec2 { 128, 128 } - SpriteSize) / 2.0f;
+	const float randDir = (float) M_PI * 2.0f * ((float) esp_random() / (float) UINT32_MAX);
+	const glm::vec2 dir = glm::rotate(glm::vec2 { 0, 1 }, randDir);
+	return center + dir * centerDistance;
 }
