@@ -4,6 +4,14 @@
 
 //parentSprite as nullptr is safe as long as you pass the correct parent Sprite* in the push() function
 AnimRC::AnimRC(File file, bool copyFile){
+	setAnim(std::move(file), copyFile);
+}
+
+void AnimRC::setAnim(File file, bool copyFile){
+	if(gif){
+		gif->stop();
+	}
+
 	if(copyFile){
 		this->file = RamFile::open(file);
 	}else{
@@ -11,13 +19,6 @@ AnimRC::AnimRC(File file, bool copyFile){
 	}
 
 	gif = std::make_unique<GIFSprite>(this->file);
-	gif->setLoopMode(loopMode);
-}
-
-void AnimRC::setAnim(File file){
-	gif->stop();
-//	gif.reset();
-	gif = std::make_unique<GIFSprite>(file);
 	gif->setLoopMode(loopMode);
 
 	if(playing){
