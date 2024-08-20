@@ -99,6 +99,7 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 
 		auto fly = new Fly([this](const char* name){ return getFile(name); }, nullptr, [this](Cacoon* cac){
 			if(over) return;
+			// TODO: fly left sound (before dmg call)
 			dmg();
 		});
 
@@ -144,6 +145,8 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	rolling = false;
 	rollingFly = nullptr;
 	chrl->setRoll(false);
+
+	// TODO: fly rolled sound
 }
 
 void CharlieGame::CharlieGame::updateCacs(float dt){
@@ -185,6 +188,8 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 					cacs.rem(cac);
 					delete cac;
 				}
+
+				// TODO: fly rescued sound (before dmg call)
 
 				dmg();
 			});
@@ -264,6 +269,8 @@ void CharlieGame::CharlieGame::startRoll(){
 	chrl->setRoll(true);
 	rollingFly = closest.front().fly;
 	rollingFly->goCac();
+
+	// TODO: roll start sound
 }
 
 void CharlieGame::CharlieGame::stopRoll(){
@@ -283,8 +290,6 @@ void CharlieGame::CharlieGame::dmg(){
 
 	if(lives == 0){
 		gameOver();
-	}else{
-		// TODO: lose life audio
 	}
 }
 
