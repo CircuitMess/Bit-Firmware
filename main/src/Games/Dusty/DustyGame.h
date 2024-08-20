@@ -20,7 +20,6 @@ protected:
 	void onStart() override;
 
 private:
-
 	struct {
 		const char* path;
 		PixelDim size;
@@ -38,6 +37,9 @@ private:
 	static constexpr glm::vec2 ArmPos = CharPos + glm::vec2 { 29, 12 } + glm::vec2 { 0, -14 };
 
 	GameObjPtr armGo;
+
+	int score = 0;
+	int level = 1;
 
 	static std::vector<glm::vec2> randPoints(size_t count);
 

@@ -22,7 +22,7 @@ DustyGame::DustyGame::DustyGame(Sprite& canvas) : Game(canvas, Games::Dusty, "/G
 }
 
 uint32_t DustyGame::DustyGame::getXP() const{
-	return 0;
+	return score * 10;
 }
 
 void DustyGame::DustyGame::onLoad(){
@@ -119,15 +119,17 @@ void DustyGame::DustyGame::updateRetract(float dt){
 		armGo->setPos(ArmPos);
 		state = Aiming;
 
-		// TODO: score++
-
 		if(caught){
+			score++;
+			// TODO: item caught sound
+
 			removeObject(caught.item->go);
 			items.rem(caught.item);
 			delete caught.item;
 			caught = {};
 
 			if(items.count() == 0){
+				level++;
 				spawnItems();
 			}
 		}
@@ -171,6 +173,7 @@ void DustyGame::DustyGame::spawnItems(){
 		);
 		go->setPos(randPos);
 		go->setRot(randRot);
+		go->getRenderComponent()->setLayer(0);
 		addObject(go);
 
 		auto item = new DustyGame::Item(go, id);
