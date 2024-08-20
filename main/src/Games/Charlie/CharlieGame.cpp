@@ -65,7 +65,7 @@ void CharlieGame::CharlieGame::onLoad(){
 }
 
 uint32_t CharlieGame::CharlieGame::getXP() const{
-	return 0; // TODO
+	return score;
 }
 
 void CharlieGame::CharlieGame::handleInput(const Input::Data& data){
