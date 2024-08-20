@@ -1,8 +1,10 @@
 #ifndef BIT_FIRMWARE_DUSTYGAME_H
 #define BIT_FIRMWARE_DUSTYGAME_H
 
-#include "../Charlie/Storage.h"
 #include "GameEngine/Game.h"
+#include "../Charlie/Storage.h"
+#include "Games/Common/Score.h"
+#include "Games/Common/Hearts.h"
 
 namespace DustyGame {
 
@@ -40,6 +42,10 @@ private:
 
 	int score = 0;
 	int level = 1;
+	int lives = 3;
+
+	std::unique_ptr<Score> scoreEl;
+	std::unique_ptr<Hearts> livesEl;
 
 	static std::vector<glm::vec2> randPoints(size_t count);
 
@@ -77,6 +83,7 @@ private:
 		glm::vec2 offset;
 		explicit operator bool() const { return item != nullptr; }
 	} caught;
+	void remCaught();
 	void itemCollision(Item* item);
 
 

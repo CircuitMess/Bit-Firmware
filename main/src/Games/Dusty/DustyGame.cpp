@@ -7,6 +7,8 @@
 #include <esp_random.h>
 
 DustyGame::DustyGame::DustyGame(Sprite& canvas) : Game(canvas, Games::Dusty, "/Games/Dusty", {
+		RES_GOBLET,
+		RES_HEART,
 		{ "/bg.raw",         {}, true },
 		{ "/char.raw",       {}, true },
 		{ "/arm.raw",        {}, true },
@@ -32,6 +34,19 @@ void DustyGame::DustyGame::onLoad(){
 	);
 	bg->getRenderComponent()->setLayer(-2);
 	addObject(bg);
+
+	livesEl = std::make_unique<Hearts>(getFile(FILE_HEART));
+	livesEl->getGO()->setPos({ 2, 2 });
+	livesEl->getGO()->getRenderComponent()->setLayer(10);
+	livesEl->setLives(lives);
+	addObject(livesEl->getGO());
+
+	scoreEl = std::make_unique<Score>(getFile(FILE_GOBLET));
+	scoreEl->getGO()->setPos({ 128 - 28 - 2, 2 });
+	scoreEl->getGO()->getRenderComponent()->setLayer(10);
+	scoreEl->setScore(score);
+	addObject(scoreEl->getGO());
+
 
 	auto chr = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/char.raw"), PixelDim{ 37, 29 }),
@@ -121,17 +136,10 @@ void DustyGame::DustyGame::updateRetract(float dt){
 
 		if(caught){
 			score++;
+			scoreEl->setScore(score);
+
 			// TODO: item caught sound
-
-			removeObject(caught.item->go);
-			items.rem(caught.item);
-			delete caught.item;
-			caught = {};
-
-			if(items.count() == 0){
-				level++;
-				spawnItems();
-			}
+			remCaught();
 		}
 	}
 }
@@ -188,6 +196,17 @@ void DustyGame::DustyGame::spawnItems(){
 void DustyGame::DustyGame::updateSpawn(float dt){
 	if(!spawning) return; // TODO: spawn animation
 	spawnT += dt;
+}
+
+void DustyGame::DustyGame::remCaught(){
+	removeObject(caught.item->go);
+	items.rem(caught.item);
+	delete caught.item;
+	caught = {};
+
+	if(items.count() == 0){
+		spawnItems();
+	}
 }
 
 void DustyGame::DustyGame::itemCollision(Item* item){
