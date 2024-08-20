@@ -127,15 +127,14 @@ void CharlieGame::Fly::goCac(){
 
 void CharlieGame::Fly::goAway(){
 	if(rescue){
-		startPos = go->getPos();
-
 		rescue->beingRescued = false;
 		rescue->rescuer = nullptr;
 		rescue = nullptr;
-	}else{
-		startPos = destPos;
 	}
 
+	if(state == FlyingOut) return;
+
+	startPos = go->getPos();
 	destPos = randPoint(120);
 
 	setState(FlyingOut);
@@ -146,6 +145,8 @@ void CharlieGame::Fly::done(){
 }
 
 void CharlieGame::Fly::setState(CharlieGame::Fly::State newState){
+	if(newState == state) return;
+
 	t = 0;
 	state = newState;
 	updateAnim();
