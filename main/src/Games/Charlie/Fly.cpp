@@ -88,8 +88,8 @@ void CharlieGame::Fly::update(float dt){
 	}else if(state == Rescuing){
 		if(t >= RescueTimeout){
 			if(onRescued && rescue){
-				onRescued(rescue);
 				rescue->fly->goAway();
+				onRescued(rescue);
 			}
 
 			goAway();

@@ -293,6 +293,9 @@ void CharlieGame::CharlieGame::gameOver(){
 
 	over = true;
 
+	chrl->setStop(true);
+	stopRoll();
+
 	flies.iterate([](Fly* fly){
 		fly->goAway();
 	});
@@ -302,9 +305,6 @@ void CharlieGame::CharlieGame::gameOver(){
 		cacs.rem(cac);
 		delete cac;
 	});
-
-	chrl->setRoll(false);
-	chrl->setStop(true);
 }
 
 void CharlieGame::CharlieGame::updateOver(float dt){
