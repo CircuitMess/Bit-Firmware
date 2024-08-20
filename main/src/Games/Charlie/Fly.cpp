@@ -53,9 +53,12 @@ void CharlieGame::Fly::update(float dt){
 		const float speed = (state == FlyingIn ? 0.2f : 0.5f) * (rescue ? 2.0f : 1.0f);
 
 		const glm::vec2 moveDir = destPos - startPos;
+		const float moveAngle = std::atan2(moveDir.y, moveDir.x);
+
 		glm::vec2 altMove = { 0, 0 };
 		if(state != FlyingIn || rescue == nullptr){
-			altMove = glm::rotate(glm::vec2 { std::sin(t * 3) * 40, 0 }, (float) M_PI * go->getRot() / 180.0f) * glm::length(destPos - go->getPos()) / glm::length(moveDir);
+			altMove = glm::rotate(glm::vec2 { std::sin(t * 3.0f) * 40.0f, 0 }, moveAngle + (float) M_PI_2);
+			altMove *= glm::length(destPos - go->getPos()) / glm::length(moveDir);
 		}
 
 		const auto pos = startPos + moveDir * t * speed + altMove * t * speed * 0.5f;
