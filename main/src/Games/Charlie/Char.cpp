@@ -18,6 +18,8 @@ CharlieGame::Char::operator GameObjPtr(){
 }
 
 void CharlieGame::Char::btnPress(Input::Button btn){
+	started = true;
+
 	if(btn == Input::Right){
 		moveDir += glm::vec2 { 1, 0 };
 	}else if(btn == Input::Left){
@@ -32,6 +34,8 @@ void CharlieGame::Char::btnPress(Input::Button btn){
 }
 
 void CharlieGame::Char::btnRelease(Input::Button btn){
+	if(!started) return;
+
 	if(btn == Input::Right){
 		moveDir -= glm::vec2 { 1, 0 };
 	}else if(btn == Input::Left){
