@@ -10,14 +10,14 @@ public:
 	/**
 	 * @param file GIF file.
 	 */
-	AnimRC(File file);
+	AnimRC(File file, bool copyFile = false);
 	~AnimRC() override = default;
 	/**
 	 * Replaces the current animation with the one provided.
 	 * Will auto-play the anim if the last one was running when the new one was set.
 	 * @param file GIF file.
 	 */
-	void setAnim(File file);
+	void setAnim(File file, bool copyFile = false);
 
 	/**
 	 * Sets a function to be executed when the animation loops back again.
@@ -41,6 +41,8 @@ private:
 	bool playing = false;
 
 	GIF::LoopMode loopMode = GIF::Infinite;
+
+	File file;
 };
 
 

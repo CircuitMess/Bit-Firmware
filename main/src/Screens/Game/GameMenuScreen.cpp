@@ -169,7 +169,7 @@ void GameMenuScreen::buildUI(){
 			screen->addUsedLEDs();
 
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
-				ui->startScreen([screen](){ return std::make_unique<GameSplashScreen>(screen->currentGame); });
+				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame, true); });
 			}
 		}, e->user_data);
 	}, LV_EVENT_PRESSED, this);
@@ -202,7 +202,7 @@ void GameMenuScreen::buildUI(){
 			screen->addUsedLEDs();
 
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
-				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame); });
+				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame, false); });
 			}
 		}, e->user_data);
 	}, LV_EVENT_PRESSED, this);

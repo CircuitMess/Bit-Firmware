@@ -12,7 +12,7 @@
 
 class InstructionsScreen : public LVScreen {
 public:
-	explicit InstructionsScreen(Games current);
+	explicit InstructionsScreen(Games current, bool launch);
 
 private:
 	bool ignoreFirstInput = false;
@@ -28,6 +28,8 @@ private:
 	void loop() override;
 
 	void exit();
+
+	bool launch;
 };
 
 #endif //BIT_FIRMWARE_INSTRUCTIONSSCREEN_H
