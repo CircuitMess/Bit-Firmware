@@ -38,7 +38,6 @@ RamFile::RamFile(File file, bool use32bAligned) : filePath(file.name()){
 	}
 
 	file.read(data, fileSize);
-	file.close();
 }
 
 RamFile::~RamFile(){

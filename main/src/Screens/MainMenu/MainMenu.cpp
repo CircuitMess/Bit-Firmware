@@ -291,8 +291,8 @@ void MainMenu::buildUI(){
 
 	auto contentContainer = lv_obj_create(*this);
 	lv_obj_set_size(contentContainer, 128, 115);
-	lv_obj_set_style_pad_top(contentContainer, 5, 0);
-	lv_obj_set_style_pad_bottom(contentContainer, 5, 0);
+	lv_obj_set_style_pad_top(contentContainer, 3, 0);
+	lv_obj_set_style_pad_bottom(contentContainer, 3, 0);
 
 	itemCont = lv_obj_create(contentContainer);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
@@ -300,6 +300,7 @@ void MainMenu::buildUI(){
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_style_pad_gap(itemCont, 2, 0);
 	lv_obj_set_style_pad_hor(itemCont, 5, 0);
+	lv_obj_set_style_pad_ver(itemCont, 2, 0);
 
 	auto onClick = [](lv_event_t* e){
 		auto menu = (MainMenu*) e->user_data;

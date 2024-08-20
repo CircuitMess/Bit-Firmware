@@ -12,7 +12,6 @@
 namespace Filepath {
 	// These might change to be consistent with the active theme
 	inline static constexpr const char* BackgroundSplash = "/spiffs/bgSplash.bmp";
-	inline static constexpr const char* IconBorder = "S:/IconBorder.bin";
 	inline static constexpr const char* Locked = "S:/Lock.bin";
 	inline static constexpr const char* Unlocked = "S:/Lock_unlocked.bin";
 	inline static constexpr const char* RobotPopup = "S:/ModalBg2.bin";

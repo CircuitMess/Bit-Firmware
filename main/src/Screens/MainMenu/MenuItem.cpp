@@ -5,7 +5,7 @@
 #include "Util/stdafx.h"
 
 MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string& pathGrayscale, bool grayedOut) : LVObject(parent){
-	lv_obj_set_size(*this, 37, 38);
+	lv_obj_set_size(*this, 38, 38);
 	lv_obj_set_flex_align(*this, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
 	lv_obj_add_flag(*this, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
@@ -16,10 +16,10 @@ MenuItem::MenuItem(lv_obj_t* parent, const std::string& path, const std::string&
 
 	img = new GrayscaleImageElement(*this, path, pathGrayscale, grayedOut);
 
-	border = lv_img_create(*this);
-	lv_obj_set_size(border, 37, 38);
-	lv_img_set_src(border, Filepath::IconBorder);
-	lv_obj_add_flag(border, LV_OBJ_FLAG_FLOATING);
+	lv_obj_set_style_border_color(*this, lv_color_white(), LV_STATE_DEFAULT);
+	lv_obj_set_style_border_opa(*this, LV_OPA_TRANSP, LV_STATE_DEFAULT);
+	lv_obj_set_style_border_opa(*this, LV_OPA_COVER, LV_STATE_FOCUSED);
+	lv_obj_set_style_border_width(*this, 1, LV_STATE_DEFAULT);
 
 	overlay = lv_obj_create(*this);
 	lv_obj_add_flag(overlay, LV_OBJ_FLAG_FLOATING);
@@ -72,11 +72,9 @@ void MenuItem::animFunc(void* var, int32_t val){
 void MenuItem::setBorder(bool enabled){
 	if(enabled){
 		startAnim();
-		lv_obj_clear_flag(border, LV_OBJ_FLAG_HIDDEN);
 		lv_obj_clear_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 	}else{
 		stopAnim();
-		lv_obj_add_flag(border, LV_OBJ_FLAG_HIDDEN);
 		lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 	}
 }
