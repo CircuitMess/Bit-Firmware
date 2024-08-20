@@ -118,17 +118,78 @@ void Planck::Planck::onLoad(){
 
 	for(int i = 0; i < VerticalTiles; ++i){
 		if(i == VerticalTiles - 1){
-			const uint8_t notObstacle = esp_random() % HorizontalTiles;
 
-			for(uint8_t j = 0; j < HorizontalTiles; j++){
-				const auto type = notObstacle == j ? TileType::Road : (TileType) (esp_random() % 5);
-				holePending[j] = (type == Ramp);
+			bool newHolePending[3] = { 0 };
 
-				road[i * HorizontalTiles + j] = createTile(type);
-				road[i * HorizontalTiles + j]->setPos(10.0f + 36 * j, 96.0f - i * 36.0f);
-				addObject(road[i * HorizontalTiles + j]);
+			float random = (float) esp_random() / (float) UINT32_MAX;
+
+			uint8_t numObstacles = 0;
+			if(random < 0.75){
+				numObstacles = 1;
+			}else{
+				numObstacles = 2;
 			}
 
+			uint8_t obstaclesLocation[2] = { 0 };
+			uint8_t obstacleColumn = esp_random() % HorizontalTiles;
+			for(int x = 0; x < numObstacles; ++x){
+				for(; obstacleColumn < HorizontalTiles; obstacleColumn = (obstacleColumn + 1) % HorizontalTiles){
+					if(holePending[obstacleColumn]){
+						continue;
+					}else if(!holePending[obstacleColumn]){
+						break;
+					}
+				}
+				obstaclesLocation[x] = obstacleColumn;
+				obstacleColumn = (obstacleColumn + 1) % HorizontalTiles;
+			}
+
+			//new obstacles
+			TileType firstType;
+			for(uint8_t x = 0; x < numObstacles; x++){
+				uint8_t location = obstaclesLocation[x];
+
+				random = (float) esp_random() / (float) UINT32_MAX;
+				TileType type = Road;
+
+				if(random < 0.9){
+					type = (TileType) (esp_random() % 3);
+				}else if(random < 0.95){
+					type = Ramp;
+				}else{
+					type = Boost;
+				}
+
+				if(x == 0){
+					firstType = type;
+				}
+
+				if(x == 1 && type == firstType){
+					type = (TileType) ((type + 1) % 5);
+				}
+
+				road[i * HorizontalTiles + location] = createTile(type);
+
+				if(type == Ramp){
+					newHolePending[location] = true;
+				}
+
+				road[i * HorizontalTiles + location]->setPos(10.0f + 36 * location, 96.0f - i * 36.0f);
+				addObject(road[i * HorizontalTiles + location]);
+			}
+
+			//rest is road
+			for(uint8_t j = 0; j < HorizontalTiles; j++){
+				if(!holePending[j] && (obstaclesLocation[0] != j || numObstacles < 1) && (obstaclesLocation[1] != j || numObstacles < 2)){
+					road[i * HorizontalTiles + j] = createTile(TileType::Road);
+					road[i * HorizontalTiles + j]->setPos(10.0f + 36 * j, 96.0f - i * 36.0f);
+					addObject(road[i * HorizontalTiles + j]);
+				}
+			}
+
+			for(uint8_t x = 0; x < 3; x++){
+				holePending[x] = newHolePending[x];
+			}
 		}else{
 			for(uint8_t j = 0; j < HorizontalTiles; j++){
 				road[i * HorizontalTiles + j] = createTile(TileType::Road);
@@ -348,7 +409,7 @@ void Planck::Planck::generateRoad(){
 					pickups.erase(healthPickup);
 					removeObject(healthPickup);
 				});
-			}else if(random <= 0.1f){
+			}else if(random <= 0.1){
 				GameObjPtr batteryPickup = std::make_shared<GameObject>(
 						std::make_unique<StaticRC>(getFile("/bat.raw"), PixelDim{ 15, 17 }),
 						std::make_unique<RectCC>(glm::vec2{ 15, 17 })
@@ -364,7 +425,7 @@ void Planck::Planck::generateRoad(){
 					pickups.erase(batteryPickup);
 					removeObject(batteryPickup);
 				});
-			}else if(random <= 0.3f){
+			}else if(random <= 0.2f){
 				GameObjPtr coinPickup;
 
 				if(esp_random() % 2 == 0){
@@ -441,9 +502,10 @@ void Planck::Planck::generateRoad(){
 		for(uint8_t i = 0; i < HorizontalTiles; i++){
 			if(holePending[i]){
 				road[rowToGenerate * HorizontalTiles + i] = createTile(TileType::Hole);
+				const float y = road[prevRow * HorizontalTiles]->getPos().y - 36.0f;
+				road[rowToGenerate * HorizontalTiles + i]->setPos(10.0f + 36.0f * i, y);
+				addObject(road[rowToGenerate * HorizontalTiles + i]);
 			}
-			road[rowToGenerate * HorizontalTiles + i]->setPos(10.0f + 36.0f * i, road[prevRow * HorizontalTiles]->getPos().y - 36.0f);
-			addObject(road[rowToGenerate * HorizontalTiles + i]);
 		}
 
 		//new obstacles
@@ -482,7 +544,7 @@ void Planck::Planck::generateRoad(){
 
 		//rest is road
 		for(uint8_t i = 0; i < HorizontalTiles; i++){
-			if(!holePending[i] && obstaclesLocation[0] != i && obstaclesLocation[1] != i){
+			if(!holePending[i] && (obstaclesLocation[0] != i || numObstacles < 1) && (obstaclesLocation[1] != i || numObstacles < 2)){
 				road[rowToGenerate * HorizontalTiles + i] = createTile(TileType::Road);
 				road[rowToGenerate * HorizontalTiles + i]->setPos(10.0f + 36.0f * i, road[prevRow * HorizontalTiles]->getPos().y - 36.0f);
 				addObject(road[rowToGenerate * HorizontalTiles + i]);
