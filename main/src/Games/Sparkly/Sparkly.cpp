@@ -261,7 +261,7 @@ void Sparkly::Sparkly::movement(float dt){
 	const glm::vec3 fw2 = glm::rotateZ(glm::vec3(1.0f, 0, 0), glm::radians(rotZ)); // Forward vector disregarding up/down rotation
 
 	const uint16_t collisionPoints = isColliding();
-	const float collisionFactor = collisionPoints > 0 ? 2.0f : 1.0f;
+	const float collisionFactor = collisionPoints > 0 ? 2.5f : 1.0f;
 
 	if(spd != 0.0f){
 		rotZ += (spd > 0 ? 1.0f : -1.0f) * spdZ * dt * 50.0f * collisionFactor;
