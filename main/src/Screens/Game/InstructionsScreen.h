@@ -9,6 +9,7 @@
 #include "Screens/Settings/SliderElement.h"
 #include "Services/RobotManager.h"
 #include "Screens/BatteryElement.h"
+#include "Screens/InstructionsElement.h"
 
 class InstructionsScreen : public LVScreen {
 public:
@@ -21,7 +22,7 @@ private:
 
 	std::string gameUIPath = "S:/Splash/";
 
-	void buildUI();
+	InstructionsElement instrElement;
 
 	void onStart() override;
 	void onStop() override;
