@@ -97,6 +97,12 @@ void DustyGame::DustyGame::onStart(){
 }
 
 void DustyGame::DustyGame::onLoop(float deltaTime){
+	if(lives == 0){
+		// TODO: lose anim and audio
+		exit();
+		return;
+	}
+
 	if(state == Aiming){
 		updateAim(deltaTime);
 	}else if(state == Shooting){
@@ -106,6 +112,7 @@ void DustyGame::DustyGame::onLoop(float deltaTime){
 	}
 
 	updateSpawn(deltaTime);
+	updateRats(deltaTime);
 }
 
 void DustyGame::DustyGame::updateAim(float dt){
@@ -214,6 +221,79 @@ void DustyGame::DustyGame::itemCollision(Item* item){
 	state = Retracting;
 
 	caught = { item, item->go->getPos() - armGo->getPos() };
+}
+
+void DustyGame::DustyGame::updateRats(float dt){
+	rats.iterate([this, dt](Rat* rat){
+		rat->t += dt * rat->speed * 0.2f;
+
+		const glm::vec2 newPos = { (float) (128+30) * rat->t - 30, rat->go->getPos().y };
+		rat->go->setPos(newPos);
+
+		if(rat->t >= 1){
+			removeObject(rat->go);
+			rats.rem(rat);
+			delete rat;
+		}
+	});
+
+	ratSpawnT += dt;
+	if(ratSpawnT >= RatSpawnDelay && rats.count() < MaxRats){
+		spawnRat();
+		ratSpawnT = 0;
+	}
+}
+
+void DustyGame::DustyGame::spawnRat(){
+	const float y = 40.0f + ((float) esp_random() / (float) UINT32_MAX) * (128.0f - 40.0f - 11.0f);
+
+	auto rc = std::make_unique<AnimRC>(getFile("/rat.gif"), true);
+	rc->setLayer(1);
+	rc->setLoopMode(GIF::Infinite);
+	rc->start();
+
+	// TODO: arm collision: whole rat; item collision: only head
+	// current: all collision is on head
+
+	auto go = std::make_shared<GameObject>(
+		std::move(rc),
+		std::make_unique<RectCC>(PixelDim { 8, 11 }, PixelDim { 22, 0 })
+	);
+	go->setPos(glm::vec2 { -30, y });
+	addObject(go);
+
+	auto rat = new Rat(go, 1.0f + ((float) esp_random() / (float) UINT32_MAX));
+	rats.add(rat);
+
+	collision.addPair(*go, *armGo, [this](){ ratArm(); });
+
+	items.iterate([this, &go](Item* item){
+		collision.addPair(*go, *item->go, [this, item](){ ratItem(item); });
+	});
+}
+
+void DustyGame::DustyGame::ratItem(Item* item){
+	if(state != Retracting || !caught || caught.item != item) return;
+
+	remCaught();
+
+	state = Retracting;
+}
+
+void DustyGame::DustyGame::ratArm(){
+	if(state != Shooting) return;
+
+	lives--;
+	livesEl->setLives(lives);
+
+	if(lives == 0){
+		// TODO: lose anim and audio
+		// can't exit here, lives == 0 check should be done first thing in onLoop (collision is done right before the game's onLoop call)
+		return;
+	}
+
+	state = Retracting; // TODO: lose the arm, lives-- audio, spawn new arm after a delay
+	// TODO: rat takes away arm?
 }
 
 std::vector<glm::vec2> DustyGame::DustyGame::randPoints(size_t count){

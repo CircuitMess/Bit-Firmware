@@ -86,6 +86,21 @@ private:
 	void remCaught();
 	void itemCollision(Item* item);
 
+	static constexpr uint8_t MaxRats = 6;
+	static constexpr float RatSpawnDelay = 1.0f;
+	struct Rat {
+		GameObjPtr go;
+		float speed;
+		float t = 0.0f;
+	};
+	CharlieGame::Storage<Rat, MaxRats> rats;
+	float ratSpawnT = 0;
+
+	void updateRats(float dt);
+	void spawnRat();
+
+	void ratItem(Item* item);
+	void ratArm();
 
 };
 
