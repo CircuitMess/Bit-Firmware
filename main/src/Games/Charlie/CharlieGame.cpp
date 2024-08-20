@@ -137,7 +137,7 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	auto cac = new Cacoon(cacGo, 0, rollingFly, false, nullptr);
 	cacs.add(cac);
 
-	if((esp_random() % 100) < (int) std::round(40 + std::min(50.0f, map((float) score, 1, 20, 0, 50))) && flies.count() < MaxFlies){
+	if((esp_random() % 100) < (int) std::round(50.0f + std::min(50.0f, map((float) score, 0, 20, 0, 50))) && flies.count() < MaxFlies && score >= 2){
 		cac->beingRescued = true;
 	}
 

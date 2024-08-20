@@ -36,8 +36,8 @@ private:
 	static constexpr size_t MaxFlies = 8;
 	Storage<Fly, MaxFlies> flies;
 
-	static constexpr float FlySpawnRate = 10.0f;
-	float flySpawnT = 8.0f;
+	static constexpr float FlySpawnRate = 6.0f;
+	float flySpawnT = 4.0f;
 	void updateFlies(float dt);
 
 	bool rolling = false;
