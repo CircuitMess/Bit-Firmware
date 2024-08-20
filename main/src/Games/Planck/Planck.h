@@ -21,7 +21,7 @@ protected:
 private:
 	inline static constexpr const uint8_t VerticalTiles = 5;
 	inline static constexpr const uint8_t HorizontalTiles = 3;
-	inline static constexpr const float HorizontalSpeed = 65.0f;
+	inline static constexpr const float HorizontalSpeed = 80.0f;
 	inline static constexpr const float StraightlineSpeedLimit = 150;
 	inline static constexpr const uint32_t BoostDuration = 1000;
 	inline static constexpr const float BoostAccelerationRate = 75;
