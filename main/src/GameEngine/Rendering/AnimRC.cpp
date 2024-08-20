@@ -10,6 +10,7 @@ AnimRC::AnimRC(File file, bool copyFile){
 void AnimRC::setAnim(File file, bool copyFile){
 	if(gif){
 		gif->stop();
+		gif.reset();
 	}
 
 	if(copyFile){
