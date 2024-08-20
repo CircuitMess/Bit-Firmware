@@ -111,6 +111,10 @@ File::operator bool() const{
 	return _p != nullptr;
 }
 
+bool File::operator==(const File& other) const{
+	return std::string(name()) == other.name();
+}
+
 const char* File::name() const{
 	if(!_p){
 		return nullptr;

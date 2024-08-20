@@ -31,6 +31,7 @@ public:
 	size_t size() const;
 	void close();
 	operator bool() const;
+	bool operator ==(const File& other) const;
 	time_t getLastWrite();
 	const char* name() const;
 

@@ -2,7 +2,6 @@
 #define BIT_FIRMWARE_SPARKLY_H
 
 #include "GameEngine/Game.h"
-#include "Transform.h"
 
 namespace Sparkly {
 class Sparkly : public Game {
@@ -20,18 +19,21 @@ protected:
 	virtual void onLoad() override;
 	virtual void onLoop(float deltaTime) override;
 	virtual void preRender(Sprite& canvas) override;
-	virtual void handleInput(const Input::Data& data);
+	virtual void handleInput(const Input::Data& data) override;
 
 private:;
+	glm::vec3 forward = { 1.0f, 0.0f, 0.0f };
+	glm::vec3 camPos = { -8.0f, 1.2f, 0.5f };
 	glm::mat4 vpMat; // view-projection matrix
 	glm::mat4 vpInv; // inverted view-projection matrix
-	Transform cameraTransform = Transform(glm::vec3{ 0.0f, -0.5f, 2.2f });
 
 	float spd = 0; // Forward/backward
-	float spdUD = 0; // Up/down
 	float spdZ = 0; // Left/right
+	float rotZ = -78;
 
 	File skybox;
+
+	static constexpr const float CameraAngle = 15.0f;
 
 	static constexpr DRAM_ATTR glm::vec3 Up = { 0, 0, 1 };
 
@@ -58,8 +60,12 @@ private:;
 			{ 30, 36, 26, 26, 26, 26, 26, 26, 35, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 },
 	};
 
+	static constexpr const char* DRAM_ATTR BillboardAssets[] = {
+			""
+	};
+
 	static constexpr glm::vec2 DRAM_ATTR Billboards[] = {
-			{ 1.0f, 1.0f },
+			/*{ 1.0f, 1.0f },
 			{ 1.0f, -0.75f },
 			{ 1.0f, -0.5f },
 			{ 1.0f, -0.25f },
@@ -77,18 +83,40 @@ private:;
 			{ 0.0f, 1.0f },
 			{ 0.0f, 0.75f },
 			{ 0.0f, 0.5f },
-			{ 0.0f, 0.25f },
+			{ 0.0f, 0.25f },*/
 	};
 
 	const glm::mat4 Proj;
 
 	std::vector<GameObjPtr> billboardGameObjs;
 
+	GameObjPtr playerCar;
+
+	static constexpr const glm::vec<2, int> CarTopLeft = { 50, 79 };
+	static constexpr const glm::vec<2, int> CarTopRight = { 79, 79 };
+	static constexpr const glm::vec<2, int> CarBttmLeft = { 43, 93 };
+	static constexpr const glm::vec<2, int> CarBttmRight = { 86, 93 };
+
+	struct CollisionInfo {
+		int spriteIndex = -1;
+		glm::vec<2, int> spriteCoords = { 0, 0 };
+		bool skybox = false;
+	};
+
+	CollisionInfo TopLeftCollision;
+	CollisionInfo TopRightCollision;
+	CollisionInfo BttmLeftCollision;
+	CollisionInfo BttmRightCollision;
+
 private:
 	void sampleGround(Sprite& canvas);
 	uint16_t sampleSkybox(int x, int y);
 	void movement(float dt);
 	void positionBillboards();
+	static bool isCollisionBlocking(const CollisionInfo& collision);
+	CollisionInfo getCollision(int x, int y) const;
+	uint16_t isColliding() const;
+	uint16_t isCollidingTemporary() const;
 };
 } // Sparkly
 

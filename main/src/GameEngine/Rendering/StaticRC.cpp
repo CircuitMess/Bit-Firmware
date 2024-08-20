@@ -3,7 +3,7 @@
 #include <esp_log.h>
 #include "Color.h"
 
-StaticRC::StaticRC(File file, PixelDim dim) : file(std::move(file)), dim(dim){}
+StaticRC::StaticRC(File file, PixelDim dim, glm::vec2 scale) : file(std::move(file)), dim(dim), scale(scale){}
 
 void StaticRC::push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool flipY) const{
 	if(!file){
