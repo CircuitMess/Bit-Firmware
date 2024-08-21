@@ -41,7 +41,7 @@ private:
 	GameObjPtr armGo;
 
 	int score = 0;
-	int level = 1;
+	int level = 0;
 	int lives = 3;
 
 	std::unique_ptr<Score> scoreEl;

@@ -190,6 +190,8 @@ void DustyGame::DustyGame::spawnItems(){
 	spawning = true;
 	spawnT = 0;
 
+	level++;
+
 	const auto points = randPoints(MaxItems);
 	for(int i = 0; i < MaxItems; i++){
 		const int id = esp_random() % ItemCount;
