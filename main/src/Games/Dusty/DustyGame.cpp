@@ -267,6 +267,16 @@ void DustyGame::DustyGame::updateRats(float dt){
 
 		if(ratArm && ratArm.rat == rat){
 			armGo->setPos(rat->go->getPos() + ratArm.offset);
+			if(ratArm.rat->go->getPos().y + ratArm.ropeStartOffset.y + 14 > 130.0f){
+				if(lives != 0){
+					armGo->setPos(ArmPos);
+					armGo->setRot(0);
+					swingT = 0;
+					state = Aiming;
+
+					ratArm = {};
+				}
+			}
 		}
 
 		ratItems.iterate([rat](RatItem* ratItem){
