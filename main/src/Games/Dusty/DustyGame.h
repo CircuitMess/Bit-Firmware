@@ -88,7 +88,7 @@ private:
 	void itemCollision(Item* item);
 
 	static constexpr uint8_t MaxRats = 6;
-	static constexpr float RatSpawnDelay = 1.0f;
+	static constexpr float RatSpawnDelay = 6.0f;
 	struct Rat {
 		GameObjPtr go;
 		float speed;

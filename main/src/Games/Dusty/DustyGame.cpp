@@ -260,7 +260,7 @@ void DustyGame::DustyGame::itemCollision(Item* item){
 
 void DustyGame::DustyGame::updateRats(float dt){
 	rats.iterate([this, dt](Rat* rat){
-		rat->t += dt * rat->speed * 0.2f;
+		rat->t += dt * rat->speed * (0.1f + 0.15f * std::min(1.0f, (float) score / 40.0f));
 
 		const glm::vec2 newPos = { (float) (128+30) * rat->t - 30, rat->go->getPos().y };
 		rat->go->setPos(newPos);
@@ -318,7 +318,7 @@ void DustyGame::DustyGame::updateRats(float dt){
 	if(lives == 0) return;
 
 	ratSpawnT += dt;
-	if(ratSpawnT >= RatSpawnDelay && rats.count() < MaxRats){
+	if(ratSpawnT >= RatSpawnDelay - 5.5f * std::min(1.0f, (float) score / 30.0f) && rats.count() < MaxRats){
 		spawnRat();
 		ratSpawnT = 0;
 	}
