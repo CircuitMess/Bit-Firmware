@@ -15,6 +15,9 @@ public:
 	PauseScreen(Games current);
 
 private:
+	enum class State {
+		Pause, Controls, IgnoreInput
+	} state = State::Pause;
 	EventQueue evts;
 	Games currentGame;
 
@@ -25,12 +28,14 @@ private:
 	SliderElement* blSlider;
 
 	void buildUI();
+	void addUsedLEDs();
 
 	void onStart() override;
 	void onStop() override;
 	void loop() override;
 
 	void showControls();
+	void exitControls();
 	void exit();
 };
 

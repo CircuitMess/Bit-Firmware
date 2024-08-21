@@ -16,6 +16,7 @@
 #include "Games/Harald/Harald.h"
 #include "Games/Planck/Planck.h"
 #include "Games/WackyStacky/WackyStacky.h"
+#include "Games/Charlie/CharlieGame.h"
 #include "Games/Dusty/DustyGame.h"
 
 static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprite& canvas)>> Launcher{
@@ -34,6 +35,7 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Harald,    [](Sprite& canvas){ return std::make_unique<Harald::Harald>(canvas); } },
 		{ Games::Planck,    [](Sprite& canvas){ return std::make_unique<Planck::Planck>(canvas); } },
 		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } },
+		{ Games::Charlie,   [](Sprite& canvas){ return std::make_unique<CharlieGame::CharlieGame>(canvas); } },
 		{ Games::Dusty,   [](Sprite& canvas){ return std::make_unique<DustyGame::DustyGame>(canvas); } }
 };
 
