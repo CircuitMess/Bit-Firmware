@@ -108,6 +108,7 @@ void DustyGame::DustyGame::handleInput(const Input::Data& data){
 
 void DustyGame::DustyGame::onRender(Sprite& canvas){
 	if(state != Shooting && state != Retracting) return;
+	if(lives == 0 && !ratArm) return;
 
 	glm::vec2 armLinePos = glm::vec2 { 2, 14 };
 	glm::rotate(armLinePos, shootAngl);
@@ -255,6 +256,13 @@ void DustyGame::DustyGame::remCaught(){
 
 void DustyGame::DustyGame::itemCollision(Item* item){
 	if(state != Shooting) return;
+
+	bool ratSnatched = false;
+	ratItems.iterate([item, &ratSnatched](RatItem* ratItem){
+		if(ratItem->item->item == item) ratSnatched = true;
+	});
+	if(ratSnatched) return;
+
 	state = Retracting;
 
 	caught = { item, item->go->getPos() - armGo->getPos() };
@@ -287,11 +295,15 @@ void DustyGame::DustyGame::updateRats(float dt){
 		});
 
 		if(rat->t >= 1){
-			if(ratArm && ratArm.rat == rat && lives != 0){
-				armGo->setPos(ArmPos);
-				armGo->setRot(0);
-				swingT = 0;
-				state = Aiming;
+			if(ratArm && ratArm.rat == rat){
+				if(lives != 0){
+					armGo->setPos(ArmPos);
+					armGo->setRot(0);
+					swingT = 0;
+					state = Aiming;
+				}else{
+					armGo->getRenderComponent()->setVisible(false);
+				}
 
 				ratArm = {};
 			}
@@ -367,6 +379,12 @@ void DustyGame::DustyGame::spawnRat(){
 void DustyGame::DustyGame::ratHitItem(Rat* rat, Item* item){
 	if(state != Retracting || !caught || caught.item != item) return;
 
+	if(ratArm && ratArm.rat == rat) return;
+
+	bool ratBusy = false;
+	ratItems.iterate([&ratBusy, rat](RatItem* ratItem){ if(ratItem->rat == rat) ratBusy = true; });
+	if(ratBusy) return;
+
 	auto ratItem = new RatItem(rat, new CaughtItem(caught.item, caught.item->go->getPos() - rat->go->getPos()));
 	caught = {};
 	ratItems.add(ratItem);
@@ -376,6 +394,14 @@ void DustyGame::DustyGame::ratHitItem(Rat* rat, Item* item){
 
 void DustyGame::DustyGame::ratHitArm(Rat* rat){
 	if(!(state == Shooting || (state == Retracting && !caught && !ratArm && ratItems.count() == 0))) return;
+
+	if(ratArm && ratArm.rat == rat) return;
+
+	bool ratBusy = false;
+	ratItems.iterate([&ratBusy, rat](RatItem* ratItem){ if(ratItem->rat == rat) ratBusy = true; });
+	if(ratBusy) return;
+
+	if(lives == 0) return;
 
 	ratArm = { rat, armGo->getPos() - rat->go->getPos(), rat->t };
 
