@@ -320,7 +320,7 @@ void DustyGame::DustyGame::updateRats(float dt){
 				ratArm.ropeSpd = -ratArm.ropeStartOffset * 1.0f;
 			}
 
-			ratArm.ropeSpd += glm::vec2 { 0, 60.0f } * dt;
+			ratArm.ropeSpd += glm::vec2 { 0, 40.0f } * dt;
 			ratArm.ropeStartOffset += ratArm.ropeSpd * dt;
 		}
 	});
