@@ -11,6 +11,7 @@ namespace DustyGame {
 class DustyGame : public Game {
 public:
 	DustyGame(Sprite& canvas);
+	~DustyGame() override;
 
 protected:
 	uint32_t getXP() const override;

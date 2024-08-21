@@ -24,6 +24,23 @@ DustyGame::DustyGame::DustyGame(Sprite& canvas) : Game(canvas, Games::Dusty, "/G
 
 }
 
+DustyGame::DustyGame::~DustyGame(){
+	ratItems.iterate([this](RatItem* ratItem){
+		ratItems.rem(ratItem);
+		delete ratItem;
+	});
+
+	rats.iterate([this](Rat* rat){
+		rats.rem(rat);
+		delete rat;
+	});
+
+	items.iterate([this](Item* item){
+		items.rem(item);
+		delete item;
+	});
+}
+
 uint32_t DustyGame::DustyGame::getXP() const{
 	return score * 10;
 }
