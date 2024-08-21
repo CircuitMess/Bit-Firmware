@@ -5,6 +5,7 @@
 #include "GameEngine/Collision/RectCC.h"
 #include <gtx/rotate_vector.hpp>
 #include <esp_random.h>
+#include "Util/stdafx.h"
 
 DustyGame::DustyGame::DustyGame(Sprite& canvas) : Game(canvas, Games::Dusty, "/Games/Dusty", {
 		RES_GOBLET,
@@ -78,6 +79,8 @@ void DustyGame::DustyGame::handleInput(const Input::Data& data){
 	if(data.action != Input::Data::Press) return;
 	if(data.btn != Input::A) return;
 
+	if(ratArm) return;
+
 	if(state == Aiming){
 		shoot();
 	}
@@ -89,7 +92,17 @@ void DustyGame::DustyGame::onRender(Sprite& canvas){
 	glm::vec2 armLinePos = glm::vec2 { 2, 14 };
 	glm::rotate(armLinePos, shootAngl);
 
-	canvas.drawLine(ArmPos.x + 2, ArmPos.y + 14, std::round(armGo->getPos().x + armLinePos.x), std::round(armGo->getPos().y + armLinePos.y), TFT_BLACK);
+	glm::vec2 start = { ArmPos.x + 2, ArmPos.y + 14 };
+	glm::vec2 end = { armGo->getPos().x + armLinePos.x, armGo->getPos().y + armLinePos.y };
+
+	if(ratArm && glm::length(ratArm.ropeStartOffset) != 0){
+		start = ratArm.rat->go->getPos() + ratArm.ropeStartOffset + glm::vec2 { 2, 14 };
+	}
+
+	glm::vec<2, int32_t> _0 = glm::round(start);
+	glm::vec<2, int32_t> _1 = glm::round(end);
+
+	canvas.drawLine(_0.x, _0.y, _1.x, _1.y, TFT_BLACK);
 }
 
 void DustyGame::DustyGame::onStart(){
@@ -103,6 +116,10 @@ void DustyGame::DustyGame::onLoop(float deltaTime){
 		return;
 	}
 
+	updateRats(deltaTime);
+
+	if(ratArm) return;
+
 	if(state == Aiming){
 		updateAim(deltaTime);
 	}else if(state == Shooting){
@@ -111,8 +128,7 @@ void DustyGame::DustyGame::onLoop(float deltaTime){
 		updateRetract(deltaTime);
 	}
 
-	updateSpawn(deltaTime);
-	updateRats(deltaTime);
+	updateSpawn(deltaTime); // unused for now
 }
 
 void DustyGame::DustyGame::updateAim(float dt){
@@ -230,10 +246,53 @@ void DustyGame::DustyGame::updateRats(float dt){
 		const glm::vec2 newPos = { (float) (128+30) * rat->t - 30, rat->go->getPos().y };
 		rat->go->setPos(newPos);
 
+		if(ratArm && ratArm.rat == rat){
+			armGo->setPos(rat->go->getPos() + ratArm.offset);
+		}
+
+		ratItems.iterate([rat](RatItem* ratItem){
+			if(ratItem->rat != rat) return;
+			ratItem->item->item->go->setPos(rat->go->getPos() + ratItem->item->offset);
+		});
+
 		if(rat->t >= 1){
+			if(ratArm && ratArm.rat == rat){
+				armGo->setPos(ArmPos);
+				armGo->setRot(0);
+				swingT = 0;
+				state = Aiming;
+
+				ratArm = {};
+			}
+
+			if(ratItems.count() != 0){
+				ratItems.iterate([this, rat](RatItem* ratItem){
+					if(ratItem->rat != rat) return;
+
+					removeObject(ratItem->item->item->go);
+					items.rem(ratItem->item->item);
+					delete ratItem->item->item;
+
+					ratItems.rem(ratItem);
+					delete ratItem;
+				});
+
+				if(items.count() == 0){
+					spawnItems();
+				}
+			}
+
 			removeObject(rat->go);
 			rats.rem(rat);
 			delete rat;
+		}else if(ratArm.rat == rat && map(ratArm.rat->t, ratArm.startT, 1.0f, 0.0f, 1.0f) >= 0.5f){
+			if(ratArm.ropeStartOffset == glm::vec2 { 0, 0 }){
+				ratArm.ropeStartOffset = ArmPos - rat->go->getPos();
+				ratArm.ropeSpd = -ratArm.ropeStartOffset * 1.0f;
+			}
+
+			ratArm.ropeSpd += glm::vec2 { 0, 60.0f } * dt;
+			ratArm.ropeStartOffset += ratArm.ropeSpd * dt;
 		}
 	});
 
@@ -265,35 +324,39 @@ void DustyGame::DustyGame::spawnRat(){
 	auto rat = new Rat(go, 1.0f + ((float) esp_random() / (float) UINT32_MAX));
 	rats.add(rat);
 
-	collision.addPair(*go, *armGo, [this](){ ratArm(); });
+	collision.addPair(*go, *armGo, [this, rat](){ ratHitArm(rat); });
 
-	items.iterate([this, &go](Item* item){
-		collision.addPair(*go, *item->go, [this, item](){ ratItem(item); });
+	items.iterate([this, &go, rat](Item* item){
+		collision.addPair(*go, *item->go, [this, rat, item](){ ratHitItem(rat, item); });
 	});
 }
 
-void DustyGame::DustyGame::ratItem(Item* item){
+void DustyGame::DustyGame::ratHitItem(Rat* rat, Item* item){
 	if(state != Retracting || !caught || caught.item != item) return;
 
-	remCaught();
+	auto ratItem = new RatItem(rat, new CaughtItem(caught.item, caught.item->go->getPos() - rat->go->getPos()));
+	caught = {};
+	ratItems.add(ratItem);
 
 	state = Retracting;
 }
 
-void DustyGame::DustyGame::ratArm(){
-	if(state != Shooting) return;
+void DustyGame::DustyGame::ratHitArm(Rat* rat){
+	if(!(state == Shooting || (state == Retracting && !caught && !ratArm && ratItems.count() == 0))) return;
+
+	ratArm = { rat, armGo->getPos() - rat->go->getPos(), rat->t };
 
 	lives--;
 	livesEl->setLives(lives);
 
 	if(lives == 0){
-		// TODO: lose anim and audio
 		// can't exit here, lives == 0 check should be done first thing in onLoop (collision is done right before the game's onLoop call)
 		return;
 	}
 
-	state = Retracting; // TODO: lose the arm, lives-- audio, spawn new arm after a delay
-	// TODO: rat takes away arm?
+	// TODO: lives-- audio
+
+	state = Retracting;
 }
 
 std::vector<glm::vec2> DustyGame::DustyGame::randPoints(size_t count){

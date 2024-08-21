@@ -78,9 +78,9 @@ private:
 
 	void wallCollision();
 
-	struct {
+	struct CaughtItem {
 		Item* item = nullptr;
-		glm::vec2 offset;
+		glm::vec2 offset = { 0, 0 };
 		explicit operator bool() const { return item != nullptr; }
 	} caught;
 	void remCaught();
@@ -99,8 +99,23 @@ private:
 	void updateRats(float dt);
 	void spawnRat();
 
-	void ratItem(Item* item);
-	void ratArm();
+	void ratHitItem(Rat* rat, Item* item);
+	void ratHitArm(Rat* rat);
+
+	struct {
+		Rat* rat = nullptr;
+		glm::vec2 offset;
+		float startT = 0;
+		glm::vec2 ropeStartOffset = { 0, 0 };
+		glm::vec2 ropeSpd = { 0, 1 };
+		explicit operator bool() const { return rat != nullptr; }
+	} ratArm;
+
+	struct RatItem {
+		Rat* rat;
+		CaughtItem* item;
+	};
+	CharlieGame::Storage<RatItem, MaxRats> ratItems;
 
 };
 
