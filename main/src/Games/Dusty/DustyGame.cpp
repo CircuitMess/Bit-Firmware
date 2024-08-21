@@ -90,6 +90,8 @@ void DustyGame::DustyGame::onLoad(){
 	collision.wallLeft(*armGo, wc);
 	collision.wallRight(*armGo, wc);
 	collision.wallBot(*armGo, wc);
+
+	spawnItems();
 }
 
 void DustyGame::DustyGame::handleInput(const Input::Data& data){
@@ -124,7 +126,7 @@ void DustyGame::DustyGame::onRender(Sprite& canvas){
 }
 
 void DustyGame::DustyGame::onStart(){
-	spawnItems();
+
 }
 
 void DustyGame::DustyGame::onLoop(float deltaTime){
