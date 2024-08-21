@@ -79,6 +79,7 @@ void DustyGame::DustyGame::handleInput(const Input::Data& data){
 	if(data.action != Input::Data::Press) return;
 	if(data.btn != Input::A) return;
 
+	if(lives == 0) return;
 	if(ratArm) return;
 
 	if(state == Aiming){
@@ -110,13 +111,12 @@ void DustyGame::DustyGame::onStart(){
 }
 
 void DustyGame::DustyGame::onLoop(float deltaTime){
-	if(lives == 0){
-		// TODO: lose anim and audio
+	updateRats(deltaTime);
+
+	if(lives == 0 && rats.count() == 0){
 		exit();
 		return;
 	}
-
-	updateRats(deltaTime);
 
 	if(ratArm) return;
 
@@ -258,7 +258,7 @@ void DustyGame::DustyGame::updateRats(float dt){
 		});
 
 		if(rat->t >= 1){
-			if(ratArm && ratArm.rat == rat){
+			if(ratArm && ratArm.rat == rat && lives != 0){
 				armGo->setPos(ArmPos);
 				armGo->setRot(0);
 				swingT = 0;
@@ -279,7 +279,7 @@ void DustyGame::DustyGame::updateRats(float dt){
 					delete ratItem;
 				});
 
-				if(items.count() == 0){
+				if(items.count() == 0 && lives != 0){
 					spawnItems();
 				}
 			}
@@ -297,6 +297,8 @@ void DustyGame::DustyGame::updateRats(float dt){
 			ratArm.ropeStartOffset += ratArm.ropeSpd * dt;
 		}
 	});
+
+	if(lives == 0) return;
 
 	ratSpawnT += dt;
 	if(ratSpawnT >= RatSpawnDelay && rats.count() < MaxRats){
@@ -352,7 +354,7 @@ void DustyGame::DustyGame::ratHitArm(Rat* rat){
 	livesEl->setLives(lives);
 
 	if(lives == 0){
-		// can't exit here, lives == 0 check should be done first thing in onLoop (collision is done right before the game's onLoop call)
+		// TODO: lose audio
 		return;
 	}
 
