@@ -37,10 +37,6 @@ void ProfileScreen::onStop(){
 	saved.pet = characterSection.getPet() == Pet::COUNT ? -1 : (int8_t) characterSection.getPet();
 	settings->set(saved);
 	settings->store();
-
-	if(Display* display = (Display*) Services.get(Service::Display)){
-		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
-	}
 }
 
 void ProfileScreen::loop(){

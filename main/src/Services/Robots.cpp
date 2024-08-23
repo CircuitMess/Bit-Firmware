@@ -19,6 +19,10 @@ Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
 	gpio_set_pull_mode((gpio_num_t) DET_1, GPIO_PULLUP_ONLY);
 	gpio_set_pull_mode((gpio_num_t) DET_2, GPIO_PULLDOWN_ONLY);
 
+	for(const auto& pin : AddrPins){
+		gpio_set_pull_mode((gpio_num_t) pin, GPIO_PULLUP_ONLY);
+	}
+
 	Robots::sleepyLoop();
 	start();
 }

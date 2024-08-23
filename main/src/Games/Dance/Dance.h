@@ -35,7 +35,7 @@ private:
 	std::shared_ptr<AnimRC> playerRC;
 
 	void gameDone(bool success);
-	constexpr static float gameDonePause = 1.5f;
+	constexpr static float gameDonePause = 0.5f;
 	float gameDoneTimer = 0;
 
 	uint8_t life = 3;
@@ -94,6 +94,9 @@ private:
 	void hideBars(float deltaTime);
 
 	std::shared_ptr<RoboCtrl::Buttons> robot;
+
+	File goToAnim;
+	glm::vec2 goToPos;
 };
 
 

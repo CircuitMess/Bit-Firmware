@@ -18,6 +18,11 @@ BobGame::Player::~Player(){
 }
 
 void BobGame::Player::loop(float deltaTime){
+	if(eatDone){
+		finishEating();
+		eatDone = false;
+	}
+
 //	if(eating) return;
 	float moveX = deltaTime * velocity * speed;
 	moveX += go->getPos().x;
@@ -35,8 +40,9 @@ void BobGame::Player::startEating(int value){
 	}
 	anim->start();
 
+	anim->setLoopMode(GIF::Single);
 	anim->setLoopDoneCallback([this](uint32_t t){
-		finishEating();
+		eatDone = true;
 	});
 }
 

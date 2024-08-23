@@ -2,6 +2,7 @@
 #define BIT_FIRMWARE_UITHREAD_H
 
 #include "LV_Interface/LVGL.h"
+#include "LV_Interface/FSLVGL.h"
 #include "GameEngine/GameRunner.h"
 #include "Util/Threaded.h"
 #include "GameEngine/Game.h"
@@ -9,7 +10,7 @@
 
 class UIThread : public Threaded {
 public:
-	UIThread(LVGL& lvgl, GameRunner& gameRunner);
+	UIThread(LVGL& lvgl, GameRunner& gameRunner, FSLVGL& fs);
 	~UIThread() override;
 
 	void startGame(Games game);
@@ -22,6 +23,7 @@ public:
 private:
 	LVGL& lvgl;
 	GameRunner& gamer;
+	FSLVGL& fs;
 
 	EventQueue evts;
 

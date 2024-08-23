@@ -204,9 +204,12 @@ void Planck::Planck::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 	const auto input = (Input*) Services.get(Service::Input);
 
-	if(lastBoost != 0 && millis() - lastBoost >= BoostDuration){
-		boostAcceleration = 0;
-		lastBoost = 0;
+	if(boosting){
+		boostProgress += deltaTime;
+		if(boostProgress >= BoostDuration){
+			boosting = false;
+			boostAcceleration = 0;
+		}
 	}
 
 	if(lastAir != 0){
@@ -585,7 +588,8 @@ void Planck::Planck::onBoost(){
 
 	boostAcceleration = BoostAccelerationRate;
 
-	lastBoost = millis();
+	boosting = true;
+	boostProgress = 0;
 }
 
 void Planck::Planck::onRamp(){

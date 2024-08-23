@@ -147,30 +147,27 @@ void CharacterPicker::toggleState(){
 	if(!arrowsState){
 		lv_obj_set_style_opa(arrowLeft, LV_OPA_100, 0);
 		lv_obj_set_style_opa(arrowRight, LV_OPA_100, 0);
-		lv_obj_set_style_opa(arrowUp, LV_OPA_100, 0);
-		lv_obj_set_style_opa(arrowDown, LV_OPA_100, 0);
 
-		if(avatarIndex > 0){
-			lv_anim_set_values(&animChar, -2, 0);
-			lv_anim_set_var(&animChar, arrowLeft);
-			lv_anim_start(&animChar);
-		}
-		if(avatarIndex < (CharactersNum - 1)){
-			lv_anim_set_values(&animChar, 2, 0);
-			lv_anim_set_var(&animChar, arrowRight);
-			lv_anim_start(&animChar);
+		if(!unlockedPets.empty()){
+			lv_obj_set_style_opa(arrowUp, LV_OPA_100, 0);
+			lv_obj_set_style_opa(arrowDown, LV_OPA_100, 0);
 		}
 
-		if(petIndex > -1){
-			lv_anim_set_values(&animPet, 2, 0);
-			lv_anim_set_var(&animPet, arrowDown);
-			lv_anim_start(&animPet);
-		}
-		if(petIndex < ((int) unlockedPets.size() - 1)){
-			lv_anim_set_values(&animPet, -2, 0);
-			lv_anim_set_var(&animPet, arrowUp);
-			lv_anim_start(&animPet);
-		}
+		lv_anim_set_values(&animChar, -2, 0);
+		lv_anim_set_var(&animChar, arrowLeft);
+		lv_anim_start(&animChar);
+
+		lv_anim_set_values(&animChar, 2, 0);
+		lv_anim_set_var(&animChar, arrowRight);
+		lv_anim_start(&animChar);
+
+		lv_anim_set_values(&animPet, 2, 0);
+		lv_anim_set_var(&animPet, arrowDown);
+		lv_anim_start(&animPet);
+
+		lv_anim_set_values(&animPet, -2, 0);
+		lv_anim_set_var(&animPet, arrowUp);
+		lv_anim_start(&animPet);
 
 
 		lv_group_set_editing((lv_group_t*) lv_obj_get_group(obj), true);
@@ -184,9 +181,12 @@ void CharacterPicker::toggleState(){
 void CharacterPicker::scrollUp(){
 	if(unlockedPets.empty()) return;
 
-	if(petIndex == unlockedPets.size() - 1) return;
+	if(petIndex == unlockedPets.size() - 1){
+		petIndex = -1;
+	}else{
+		petIndex = (petIndex + 1) % unlockedPets.size();
+	}
 
-	petIndex++;
 	setPetSrc();
 
 	lv_anim_del(arrowLeft, HorizontalAnimCB);
@@ -194,22 +194,18 @@ void CharacterPicker::scrollUp(){
 	lv_anim_del(arrowDown, VerticalAnimCB);
 	lv_anim_del(arrowUp, VerticalAnimCB);
 
-	if(petIndex != unlockedPets.size() - 1){
-		lv_anim_set_values(&animPet, -2, 0);
-		lv_anim_set_var(&animPet, arrowUp);
-		lv_anim_start(&animPet);
-	}
+	lv_anim_set_values(&animPet, -2, 0);
+	lv_anim_set_var(&animPet, arrowUp);
+	lv_anim_start(&animPet);
 
-	if(avatarIndex != CharactersNum - 1){
-		lv_anim_set_values(&animChar, 2, 0);
-		lv_anim_set_var(&animChar, arrowRight);
-		lv_anim_start(&animChar);
-	}
-	if(avatarIndex != 0){
-		lv_anim_set_values(&animChar, -2, 0);
-		lv_anim_set_var(&animChar, arrowLeft);
-		lv_anim_start(&animChar);
-	}
+	lv_anim_set_values(&animChar, 2, 0);
+	lv_anim_set_var(&animChar, arrowRight);
+	lv_anim_start(&animChar);
+
+	lv_anim_set_values(&animChar, -2, 0);
+	lv_anim_set_var(&animChar, arrowLeft);
+	lv_anim_start(&animChar);
+
 	lv_anim_set_values(&animPet, 2, 0);
 	lv_anim_set_var(&animPet, arrowDown);
 	lv_anim_start(&animPet);
@@ -218,9 +214,12 @@ void CharacterPicker::scrollUp(){
 void CharacterPicker::scrollDown(){
 	if(unlockedPets.empty()) return;
 
-	if(petIndex == -1) return;
+	if(petIndex == -1){
+		petIndex = unlockedPets.size() - 1;
+	}else{
+		petIndex--;
+	}
 
-	petIndex--;
 	setPetSrc();
 
 	lv_anim_del(arrowLeft, HorizontalAnimCB);
@@ -228,63 +227,28 @@ void CharacterPicker::scrollDown(){
 	lv_anim_del(arrowDown, VerticalAnimCB);
 	lv_anim_del(arrowUp, VerticalAnimCB);
 
-	if(petIndex != -1){
-		lv_anim_set_values(&animPet, 2, 0);
-		lv_anim_set_var(&animPet, arrowDown);
-		lv_anim_start(&animPet);
-	}
+	lv_anim_set_values(&animPet, 2, 0);
+	lv_anim_set_var(&animPet, arrowDown);
+	lv_anim_start(&animPet);
 
-	if(avatarIndex != CharactersNum - 1){
-		lv_anim_set_values(&animChar, 2, 0);
-		lv_anim_set_var(&animChar, arrowRight);
-		lv_anim_start(&animChar);
-	}
-	if(avatarIndex != 0){
-		lv_anim_set_values(&animChar, -2, 0);
-		lv_anim_set_var(&animChar, arrowLeft);
-		lv_anim_start(&animChar);
-	}
+	lv_anim_set_values(&animChar, 2, 0);
+	lv_anim_set_var(&animChar, arrowRight);
+	lv_anim_start(&animChar);
+
+	lv_anim_set_values(&animChar, -2, 0);
+	lv_anim_set_var(&animChar, arrowLeft);
+	lv_anim_start(&animChar);
 	lv_anim_set_values(&animPet, -2, 0);
 	lv_anim_set_var(&animPet, arrowUp);
 	lv_anim_start(&animPet);
 }
 
 void CharacterPicker::scrollLeft(){
-	if(avatarIndex == 0) return;
-
-	avatarIndex--;
-	setCharacterSrc();
-
-	lv_anim_del(arrowLeft, HorizontalAnimCB);
-	lv_anim_del(arrowRight, HorizontalAnimCB);
-	lv_anim_del(arrowDown, VerticalAnimCB);
-	lv_anim_del(arrowUp, VerticalAnimCB);
-
-	if(avatarIndex != 0){
-		lv_anim_set_values(&animChar, -2, 0);
-		lv_anim_set_var(&animChar, arrowLeft);
-		lv_anim_start(&animChar);
+	if(avatarIndex == 0){
+		avatarIndex = CharactersNum - 1;
+	}else{
+		avatarIndex--;
 	}
-
-	lv_anim_set_values(&animChar, 2, 0);
-	lv_anim_set_var(&animChar, arrowRight);
-	lv_anim_start(&animChar);
-	if(petIndex != -1){
-		lv_anim_set_values(&animPet, 2, 0);
-		lv_anim_set_var(&animPet, arrowDown);
-		lv_anim_start(&animPet);
-	}
-	if(petIndex != unlockedPets.size() - 1){
-		lv_anim_set_values(&animPet, -2, 0);
-		lv_anim_set_var(&animPet, arrowUp);
-		lv_anim_start(&animPet);
-	}
-}
-
-void CharacterPicker::scrollRight(){
-	if(avatarIndex == CharactersNum - 1) return;
-
-	avatarIndex++;
 	setCharacterSrc();
 
 	lv_anim_del(arrowLeft, HorizontalAnimCB);
@@ -295,23 +259,44 @@ void CharacterPicker::scrollRight(){
 	lv_anim_set_values(&animChar, -2, 0);
 	lv_anim_set_var(&animChar, arrowLeft);
 	lv_anim_start(&animChar);
-	if(petIndex != -1){
-		lv_anim_set_values(&animPet, 2, 0);
-		lv_anim_set_var(&animPet, arrowDown);
-		lv_anim_start(&animPet);
-	}
-	if(petIndex != unlockedPets.size() - 1){
-		lv_anim_set_values(&animPet, -2, 0);
-		lv_anim_set_var(&animPet, arrowUp);
-		lv_anim_start(&animPet);
-	}
 
-	if(avatarIndex != CharactersNum - 1){
-		lv_anim_set_values(&animChar, 2, 0);
-		lv_anim_set_var(&animChar, arrowRight);
-		lv_anim_start(&animChar);
-	}
+	lv_anim_set_values(&animChar, 2, 0);
+	lv_anim_set_var(&animChar, arrowRight);
+	lv_anim_start(&animChar);
 
+	lv_anim_set_values(&animPet, 2, 0);
+	lv_anim_set_var(&animPet, arrowDown);
+	lv_anim_start(&animPet);
+
+	lv_anim_set_values(&animPet, -2, 0);
+	lv_anim_set_var(&animPet, arrowUp);
+	lv_anim_start(&animPet);
+}
+
+void CharacterPicker::scrollRight(){
+	avatarIndex = (avatarIndex + 1) % CharactersNum;
+	setCharacterSrc();
+
+	lv_anim_del(arrowLeft, HorizontalAnimCB);
+	lv_anim_del(arrowRight, HorizontalAnimCB);
+	lv_anim_del(arrowDown, VerticalAnimCB);
+	lv_anim_del(arrowUp, VerticalAnimCB);
+
+	lv_anim_set_values(&animChar, -2, 0);
+	lv_anim_set_var(&animChar, arrowLeft);
+	lv_anim_start(&animChar);
+
+	lv_anim_set_values(&animPet, 2, 0);
+	lv_anim_set_var(&animPet, arrowDown);
+	lv_anim_start(&animPet);
+
+	lv_anim_set_values(&animPet, -2, 0);
+	lv_anim_set_var(&animPet, arrowUp);
+	lv_anim_start(&animPet);
+
+	lv_anim_set_values(&animChar, 2, 0);
+	lv_anim_set_var(&animChar, arrowRight);
+	lv_anim_start(&animChar);
 }
 
 uint8_t CharacterPicker::getCharacterIndex() const{

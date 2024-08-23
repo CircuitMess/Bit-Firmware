@@ -37,10 +37,6 @@ void SettingsScreen::onStop(){
 
 	settings.set(set);
 	settings.store();
-
-	if(Display* display = (Display*) Services.get(Service::Display)){
-		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
-	}
 }
 
 void SettingsScreen::loop(){

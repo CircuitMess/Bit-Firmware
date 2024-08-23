@@ -31,6 +31,8 @@ private:
 	std::unique_ptr<Score> scoreElement;
 	std::unique_ptr<Score> bestScoreElement;
 
+	std::vector<GameObjPtr> bgTiles;
+
 	inline static constexpr const char* Icons[] = {
 			"/Tile01.raw",
 			"/Tile02.raw",
@@ -76,6 +78,25 @@ private:
 
 	static constexpr float PufDuration = 0.42f;
 	void checkPufs(float dt);
+
+	void checkLoseCondition();
+
+	void gameWin();
+	void gameLose();
+
+	bool exiting = false;
+	float exitT = 0;
+	bool won = false;
+	static constexpr float ExitPauseLose = 0.85f;
+	static constexpr float ExitPauseWin = 0.75f;
+	struct ExitObj {
+		GameObjPtr go;
+		glm::vec2 speed;
+	};
+	std::vector<ExitObj> exitObjs;
+	GameObjPtr floor;
+	void exitStart();
+	void exitAnim(float dt);
 
 };
 } // Harald

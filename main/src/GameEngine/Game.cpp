@@ -9,6 +9,7 @@
 #include "Services/HighScoreManager.h"
 #include "Screens/Game/AwardsScreen.h"
 #include "Services/LEDService/LEDService.h"
+#include "Services/TwinkleService.h"
 #include "Devices/SinglePwmLED.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
@@ -168,6 +169,10 @@ void Game::exit(){
 	const Games type = getType();
 
 	if(hsm->isHighScore(type, score) || xp != 0 || !achievements.empty()){
+		if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
+			twinkle->start();
+		}
+
 		ui->startScreen([type, score, xp, &achievements](){ return std::make_unique<AwardsScreen>(type, score, xp, achievements); });
 		return;
 	}
@@ -182,7 +187,7 @@ void Game::loop(uint micros){
 	if(inputQueue.get(e, 0)){
 		if(e.facility == Facility::Input){
 			auto data = (Input::Data*) e.data;
-			if(data->btn == Input::Menu && data->action == Input::Data::Release){
+			if(data->btn == Input::Menu && data->action == Input::Data::Press){
 				stop();
 					audio.play({ { NOTE_E6, NOTE_E6, 100 },
 								  { NOTE_C6, NOTE_C6, 100 },

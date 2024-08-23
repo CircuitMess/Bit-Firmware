@@ -17,19 +17,21 @@ enum class SeekMode : uint8_t {
 class FileImpl {
 public:
 	virtual ~FileImpl() = default;
+
+	virtual operator bool() = 0;
+
+	virtual void close() = 0;
+
+	virtual size_t size() const = 0;
+	virtual const char* name() const = 0;
+
 	virtual size_t write(const uint8_t* buf, size_t size) = 0;
 	virtual size_t read(uint8_t* buf, size_t size) = 0;
 	virtual void flush() = 0;
-	virtual bool seek(uint32_t pos, SeekMode mode) = 0;
-	virtual size_t position() const = 0;
-	virtual size_t size() const = 0;
-	virtual void close() = 0;
-	virtual time_t getLastWrite() = 0;
-	virtual const char* name() const = 0;
-	virtual bool isDirectory() = 0;
-	virtual FileImplPtr openNextFile(const char* mode) = 0;
-	virtual void rewindDirectory() = 0;
-	virtual operator bool() = 0;
+
+	virtual bool seek(int pos, int mode) = 0;
+	virtual size_t pos() const = 0;
+
 };
 
 

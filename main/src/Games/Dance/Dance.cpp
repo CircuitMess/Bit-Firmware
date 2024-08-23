@@ -88,6 +88,14 @@ void Dance::onLoad(){
 }
 
 void Dance::onLoop(float deltaTime){
+	if(goToAnim){
+		playerRC->setAnim(goToAnim);
+		playerRC->setLoopMode(GIF::Infinite);
+		playerRC->start();
+		player->setPos(goToPos);
+		goToAnim = File();
+	}
+
 	switch(state){
 		case Running:
 			beatTimer += deltaTime;
@@ -123,6 +131,7 @@ void Dance::onLoop(float deltaTime){
 			gameDoneTimer += deltaTime;
 			if(gameDoneTimer >= gameDonePause){
 				exit();
+				return;
 			}
 			break;
 
@@ -130,6 +139,13 @@ void Dance::onLoop(float deltaTime){
 			break;
 	}
 
+	if(goToAnim){
+		playerRC->setAnim(goToAnim);
+		playerRC->setLoopMode(GIF::Infinite);
+		playerRC->start();
+		player->setPos(goToPos);
+		goToAnim = File();
+	}
 }
 
 
@@ -227,10 +243,10 @@ void Dance::noteHit(uint8_t track){
 		playerRC->setAnim(getFile(danceGIFs[i].path));
 		player->setPos(PlayerPos + danceGIFs[i].offset);
 
-		playerRC->setLoopMode(GIF::LoopMode::Infinite);
+		playerRC->setLoopMode(GIF::LoopMode::Single);
 		playerRC->setLoopDoneCallback([this](uint32_t){
-			playerRC->setAnim((getFile("/idle.gif")));
-			player->setPos(PlayerPos + idleGIF.offset);
+			goToAnim = getFile("/idle.gif");
+			goToPos = PlayerPos + idleGIF.offset;
 		});
 
 	}else{
@@ -258,10 +274,10 @@ void Dance::noteHit(uint8_t track){
 			player->setPos(PlayerPos + failGIF.offset);
 
 
-			playerRC->setLoopMode(GIF::LoopMode::Infinite);
+			playerRC->setLoopMode(GIF::LoopMode::Single);
 			playerRC->setLoopDoneCallback([this](uint32_t){
-				playerRC->setAnim((getFile("/idle.gif")));
-				player->setPos(PlayerPos + idleGIF.offset);
+				goToAnim = getFile("/idle.gif");
+				goToPos = PlayerPos + idleGIF.offset;
 			});
 
 		}

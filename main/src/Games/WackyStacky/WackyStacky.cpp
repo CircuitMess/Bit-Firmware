@@ -22,16 +22,16 @@ WackyStacky::WackyStacky::WackyStacky(Sprite& base): Game(base, Games::WackyStac
 		{ RobotPaths[4], {}, true },
 		{ RobotPaths[5], {}, true },
 		{ RobotPaths[6], {}, true },
-}), queue(16) {
-    Events::listen(Facility::Input, &queue);
-}
+}){
 
-WackyStacky::WackyStacky::~WackyStacky() {
-    Events::unlisten(&queue);
 }
 
 uint32_t WackyStacky::WackyStacky::getXP() const{
 	return score * 3;
+}
+
+uint32_t WackyStacky::WackyStacky::getScore() const{
+	return score;
 }
 
 void WackyStacky::WackyStacky::onLoad(){
@@ -92,26 +92,13 @@ void WackyStacky::WackyStacky::onLoad(){
 	}
 }
 
+void WackyStacky::WackyStacky::handleInput(const Input::Data& data){
+	if(data.action != Input::Data::Press || data.btn != Input::A) return;
+	if(hookedRobot == nullptr || dropping || lives == 0 || scrolling) return;
+	drop();
+}
+
 void WackyStacky::WackyStacky::onLoop(float deltaTime){
-	Game::onLoop(deltaTime);
-
-	for(Event e; queue.get(e, 0); ){
-        if(e.facility != Facility::Input){
-            continue;
-        }
-
-        Input::Data* inputData = (Input::Data*) e.data;
-        if(inputData == nullptr){
-            continue;
-        }
-
-        if(inputData->action == Input::Data::Press && inputData->btn == Input::A && hookedRobot && !dropping && lives != 0 && !scrolling){
-			drop();
-		}
-
-		free(e.data);
-    }
-
 	swingAnim(deltaTime);
 
 	// Has to be before tower swing anim

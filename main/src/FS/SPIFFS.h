@@ -5,9 +5,15 @@
 
 class SPIFFS {
 public:
+	static bool init();
+
 	static File open(const char* path, const char* mode = "r");
+
 private:
-	static constexpr const char* prefix = "/spiffs";
+	static constexpr const char* Prefix = "/spiffs";
+
+	static bool inited;
+
 };
 
 

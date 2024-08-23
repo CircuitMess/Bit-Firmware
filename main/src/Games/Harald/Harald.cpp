@@ -1,9 +1,11 @@
 #include "Harald.h"
 #include "GameEngine/Rendering/StaticRC.h"
 #include "GameEngine/Rendering/AnimRC.h"
+#include "GameEngine/Collision//RectCC.h"
 #include "Services/HighScoreManager.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include <esp_random.h>
 
 Harald::Harald::Harald(Sprite& canvas) : Game(canvas, Games::Harald, "/Games/Harald", {
 		{ "/bg.raw", {}, true },
@@ -29,7 +31,7 @@ void Harald::Harald::onLoad(){
 			std::make_unique<StaticRC>(getFile("/bg.raw"), PixelDim{ 128, 128 }),
 			nullptr
 	);
-	bg->getRenderComponent()->setLayer(-1);
+	bg->getRenderComponent()->setLayer(-2);
 	addObject(bg);
 
 	const size_t x1 = rand() % 4;
@@ -89,6 +91,19 @@ void Harald::Harald::onLoad(){
 
 	addObject(elements[x2][y2].gameObj);
 
+	for(int x = 0; x < 4; x++){
+		for(int y = 0; y < 4; y++){
+			auto bgObj = std::make_shared<GameObject>(
+					std::make_unique<StaticRC>(getFile("/Tile01.raw"), PixelDim{ 25, 25 }),
+					nullptr
+			);
+			bgObj->getRenderComponent()->setLayer(-1);
+			bgObj->setPos(elements[x][y].gameObj->getPos());
+			bgTiles.emplace_back(bgObj);
+			addObject(bgObj);
+		}
+	}
+
 	scoreElement = std::make_unique<Score>("POPULATION");
 	scoreElement->setScore(score);
 	addObject(scoreElement->getGO());
@@ -108,69 +123,19 @@ void Harald::Harald::onLoad(){
 }
 
 void Harald::Harald::onLoop(float deltaTime){
-	Game::onLoop(deltaTime);
-
-	tileMoveAnim(deltaTime);
 	checkPufs(deltaTime);
 
-	bool foundPair = false;
-
-	for(int x = 0; x < 4; ++x){
-		for(int y = 0; y < 4; ++y){
-			if(elements[x][y].id == 0){
-				foundPair = true;
-				break;
-			}
-
-			if(x >= 0 && x < 3){
-				if(elements[x + 1][y].id == elements[x][y].id){
-					foundPair = true;
-					break;
-				}
-			}
-
-			if(x > 0){
-				if(elements[x - 1][y].id == elements[x][y].id){
-					foundPair = true;
-					break;
-				}
-			}
-
-			if(y >= 0 && y < 3){
-				if(elements[x][y + 1].id == elements[x][y].id){
-					foundPair = true;
-					break;
-				}
-			}
-
-			if(y > 0){
-				if(elements[x][y - 1].id == elements[x][y].id){
-					foundPair = true;
-					break;
-				}
-			}
-		}
-	}
-
-	if(!foundPair){
-		//Lose condition
-		audio.play({{ 500, 500, 400 },
-					{ 0,   0,   100 },
-					{ 300, 300, 400 },
-					{ 500, 300, 150 },
-					{ 0,   0,   100 },
-					{ 400, 200, 150 },
-					{ 100, 100, 400 },
-				   });
-
-		delayMillis(2000);
-
-		exit();
+	if(exiting){
+		exitAnim(deltaTime);
 		return;
 	}
+
+	tileMoveAnim(deltaTime);
 }
 
 void Harald::Harald::handleInput(const Input::Data& data){
+	if(exiting) return;
+
 	if(data.action != Input::Data::Action::Press){
 		return;
 	}
@@ -438,9 +403,13 @@ void Harald::Harald::applyMove(){
 
 		//Win condition
 		if(targetId >= 10){
-			exit();
-			return;
+			won = true;
 		}
+	}
+
+	if(won){
+		gameWin();
+		return;
 	}
 
 	if(comboFound){
@@ -448,6 +417,8 @@ void Harald::Harald::applyMove(){
 	}
 
 	spawnNew();
+
+	checkLoseCondition();
 }
 
 void Harald::Harald::spawnNew(){
@@ -484,6 +455,51 @@ void Harald::Harald::spawnNew(){
 	elements[newX][newY].id = (1.0f * rand()) / INT_MAX > 0.65f ? 2 : 1;
 	StaticRC* rc = (StaticRC*) elements[newX][newY].gameObj->getRenderComponent().get();
 	rc->setFile(getFile(Icons[elements[newX][newY].id]));
+}
+
+void Harald::Harald::checkLoseCondition(){
+	bool foundPair = false;
+
+	for(int x = 0; x < 4; ++x){
+		for(int y = 0; y < 4; ++y){
+			if(elements[x][y].id == 0){
+				foundPair = true;
+				break;
+			}
+
+			if(x >= 0 && x < 3){
+				if(elements[x + 1][y].id == elements[x][y].id){
+					foundPair = true;
+					break;
+				}
+			}
+
+			if(x > 0){
+				if(elements[x - 1][y].id == elements[x][y].id){
+					foundPair = true;
+					break;
+				}
+			}
+
+			if(y >= 0 && y < 3){
+				if(elements[x][y + 1].id == elements[x][y].id){
+					foundPair = true;
+					break;
+				}
+			}
+
+			if(y > 0){
+				if(elements[x][y - 1].id == elements[x][y].id){
+					foundPair = true;
+					break;
+				}
+			}
+		}
+	}
+
+	if(!foundPair){
+		gameLose();
+	}
 }
 
 void Harald::Harald::tileMoveAnim(float dt){
@@ -529,8 +545,95 @@ void Harald::Harald::checkPufs(float dt){
 		removeObject(puf.go);
 		std::erase_if(pufs, [puf](const Puf& other){ return puf.go == other.go; });
 	}
+}
 
-	if(pufs.empty()){
-		heapRep();
+void Harald::Harald::gameWin(){
+	audio.play({{ 400, 600, 400 },
+				{ 0,   0,   75 },
+				{ 500, 700, 300 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 },
+			   });
+
+	exitStart();
+}
+
+void Harald::Harald::gameLose(){
+	audio.play({{ 500, 500, 400 },
+				{ 0,   0,   100 },
+				{ 300, 300, 400 },
+				{ 500, 300, 150 },
+				{ 0,   0,   100 },
+				{ 400, 200, 150 },
+				{ 100, 100, 400 },
+			   });
+
+	exitStart();
+}
+
+void Harald::Harald::exitStart(){
+	if(exiting) return;
+	exiting = true;
+
+	for(const auto& obj : bgTiles){
+		removeObject(obj);
+	}
+
+	exitObjs.reserve(4*4);
+
+	static constexpr int32_t ExitAnimYPush = 50;
+	static constexpr uint32_t MaxSpeedX = 50;
+	static constexpr uint32_t MinSpeedX = 20;
+
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < 4; j++){
+			glm::vec2 spd = {
+					(float) (esp_random() % (MaxSpeedX - MinSpeedX)) + MinSpeedX,
+					won ? -(25.0f + 25.0f * ((float) esp_random() / (float) UINT32_MAX)) : (5.0f + 5.0f * ((float) esp_random() / (float) UINT32_MAX))
+			};
+
+			if(esp_random() % 2 == 0){
+				spd.x *= -1;
+			}
+
+			ExitObj& obj = exitObjs.emplace_back(ExitObj { elements[i][j].gameObj, spd });
+
+			obj.go->setCollisionComponent(std::make_shared<RectCC>(PixelDim{ 25, 25 }));
+			collision.wallBot(*exitObjs.back().go, [&obj, this](){
+				obj.speed.y *= won ? -1 : -0.5f;
+			});
+
+			if(elements[i][j].id != 0){
+				obj.go->getRenderComponent()->setLayer(1);
+			}
+		}
+	}
+}
+
+void Harald::Harald::exitAnim(float dt){
+	if(!exiting) return;
+
+	exitT += dt;
+	if(exitT < (won ? ExitPauseWin : ExitPauseLose)) return;
+
+	static constexpr float Gravity = 125.0f;
+
+	bool visible = false;
+
+	for(auto& obj : exitObjs){
+		obj.speed.y += Gravity * dt;
+
+		const auto newPos = obj.go->getPos() + obj.speed * dt;
+		obj.go->setPos(newPos);
+
+		visible |= !(newPos.x < -25 || newPos.x > 128 || newPos.y > 128);
+	}
+
+	if(!visible){
+		exit();
 	}
 }

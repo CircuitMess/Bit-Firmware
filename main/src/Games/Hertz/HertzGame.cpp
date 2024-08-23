@@ -72,6 +72,11 @@ void HertzGame::onLoop(float deltaTime){
 	}else{
 		indicator->move(deltaTime);
 	}
+
+	if(animResetQueued){
+		animResetQueued = false;
+		resetAnim();
+	}
 }
 
 void HertzGame::onStart(){
@@ -140,8 +145,9 @@ void HertzGame::addPoints(int difference){
 		done = true;
 	}else{
 		duckAnim->setAnim(getFile("/blink.gif"));
+		duckAnim->setLoopMode(GIF::Single);
 		duckAnim->setLoopDoneCallback([this](uint32_t){
-			resetAnim();
+			animResetQueued = true;
 		});
 
 		if(indicator->getDifference() < 30){

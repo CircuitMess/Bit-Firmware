@@ -23,7 +23,7 @@ private:
 	inline static constexpr const uint8_t HorizontalTiles = 3;
 	inline static constexpr const float HorizontalSpeed = 80.0f;
 	inline static constexpr const float StraightlineSpeedLimit = 150;
-	inline static constexpr const uint32_t BoostDuration = 1000;
+	inline static constexpr const uint32_t BoostDuration = 1.0f;
 	inline static constexpr const float BoostAccelerationRate = 75;
 	inline static constexpr const uint32_t AirDuration = 1500;
 	inline static constexpr const float PassiveDeceleration = -9.0f;
@@ -81,7 +81,8 @@ private:
 	float boostAcceleration = 0.0f;
 	float speed = 0;
 	glm::vec2 speedLimits = { 0, StraightlineSpeedLimit };
-	uint32_t lastBoost = 0;
+	float boostProgress = 0;
+	bool boosting = false;
 	uint32_t lastAir = 0;
 	std::set<GameObjPtr> pickups;
 
