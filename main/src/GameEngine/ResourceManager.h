@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "FS/File.h"
+#include "Services/Allocator.h"
 
 #define RES_HEART { "c/heart.raw", {}, true }
 #define RES_GOBLET { "c/goblet.raw", {}, true }
@@ -30,7 +31,7 @@ struct ResDescriptor {
 class ResourceManager {
 public:
 	ResourceManager(const char* root);
-	void load(const std::vector<ResDescriptor>& descriptors);
+	void load(const std::vector<ResDescriptor>& descriptors, Allocator* alloc = nullptr);
 
 	File getResource(std::string path);
 

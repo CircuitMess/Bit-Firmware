@@ -62,6 +62,9 @@ private:
 	lv_obj_t* achievementOverlay; //used for focus indication
 
 	class XPBar* xpBar = nullptr;
+
+	Theme oldTheme;
+	
 };
 
 #endif //BIT_FIRMWARE_PROFILESCREEN_H

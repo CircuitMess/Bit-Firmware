@@ -5,10 +5,11 @@
 #include "Util/Threaded.h"
 #include "Game.h"
 #include "Services/RobotManager.h"
+#include "Services/Allocator.h"
 
 class GameRunner{
 public:
-	GameRunner(Display& display);
+	GameRunner(Display& display, Allocator* alloc = nullptr);
 
 	Games getCurrent();
 
@@ -21,6 +22,7 @@ public:
 
 private:
 	Display& display;
+	Allocator* alloc = nullptr;
 
 	uint64_t lastMicros;
 

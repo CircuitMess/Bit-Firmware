@@ -36,6 +36,7 @@ void UIThread::startGame(Games game){
 
 void UIThread::startScreen(std::function<std::unique_ptr<LVScreen>()> create){
 	gamer.endGame();
+	lvgl.stopScreen();
 	fs.loadCache();
 	lvgl.startScreen(std::move(create));
 	active = Src::LVGL;

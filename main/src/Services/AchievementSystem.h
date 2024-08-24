@@ -86,6 +86,7 @@ public:
 	AchievementSystem();
 	virtual ~AchievementSystem() = default;
 
+	bool isUnlocked(Achievement achi);
 	void getAll(std::vector<AchievementData>& unlockedList) const;
 	void reset(Achievement ID);
 	void increment(Achievement ID, int32_t increment);

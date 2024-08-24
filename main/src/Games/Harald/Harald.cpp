@@ -34,10 +34,10 @@ void Harald::Harald::onLoad(){
 	bg->getRenderComponent()->setLayer(-2);
 	addObject(bg);
 
-	const size_t x1 = rand() % 4;
-	const size_t y1 = rand() % 4;
-	size_t x2 = rand() % 4;
-	size_t y2 = rand() % 4;
+	const size_t x1 = esp_random() % 4;
+	const size_t y1 = esp_random() % 4;
+	size_t x2 = esp_random() % 4;
+	size_t y2 = esp_random() % 4;
 
 	if(x1 == x2){
 		x2 = (x2 + 1) % 4;
@@ -66,8 +66,8 @@ void Harald::Harald::onLoad(){
 		}
 	}
 
-	const uint8_t type1 = (rand() % 2) + 1;
-	const uint8_t type2 = (rand() % 2) + 1;
+	const uint8_t type1 = (esp_random() % 2) + 1;
+	const uint8_t type2 = (esp_random() % 2) + 1;
 
 	elements[x1][y1].id = type1;
 	elements[x1][y1].gameObj = std::make_shared<GameObject>(
@@ -436,7 +436,7 @@ void Harald::Harald::spawnNew(){
 		return;
 	}
 
-	const uint8_t newX = validX[rand() % validX.size()];
+	const uint8_t newX = validX[esp_random() % validX.size()];
 
 	std::vector<uint8_t> validY;
 
@@ -450,9 +450,9 @@ void Harald::Harald::spawnNew(){
 		return;
 	}
 
-	const uint8_t newY = validY[rand() % validY.size()];
+	const uint8_t newY = validY[esp_random() % validY.size()];
 
-	elements[newX][newY].id = (1.0f * rand()) / INT_MAX > 0.65f ? 2 : 1;
+	elements[newX][newY].id = (1.0f * esp_random()) / INT_MAX > 0.65f ? 2 : 1;
 	StaticRC* rc = (StaticRC*) elements[newX][newY].gameObj->getRenderComponent().get();
 	rc->setFile(getFile(Icons[elements[newX][newY].id]));
 }

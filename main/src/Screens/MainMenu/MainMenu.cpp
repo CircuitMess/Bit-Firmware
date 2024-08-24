@@ -89,10 +89,6 @@ void MainMenu::onStart(){
 	Events::listen(Facility::Themes, &events);
 	Events::listen(Facility::Input, &events);
 
-	if(bg != nullptr){
-		bg->start();
-	}
-
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
 	if(!delayed){
@@ -129,10 +125,6 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 }
 
 void MainMenu::onStop(){
-	if(bg != nullptr){
-		bg->stop();
-	}
-
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
 
@@ -195,6 +187,7 @@ void MainMenu::handleGameInsert(const RobotManager::Event& evt){
 	}
 
 	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot)){
+		FSLVGL::reloadMenu();
 		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot);
 		item->setLocked(false);
 	}
@@ -276,15 +269,9 @@ void MainMenu::buildUI(){
 
 	lv_obj_set_size(*this, 128, 128);
 
-	if(settings->get().theme == Theme::Theme1){
-		bg = new LVGIF(*this, "S:/bg");
-		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
-		lv_obj_set_pos(*bg, 0, 0);
-	}else{
-		auto img = lv_img_create(*this);
-		lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
-		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
-	}
+	auto img = lv_img_create(*this);
+	lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
+	lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
 
 	padTop = lv_obj_create(*this);
 	lv_obj_set_size(padTop, 128, 128);
@@ -426,7 +413,7 @@ std::string MainMenu::imgFullPath(const char* game){
 }
 
 std::string MainMenu::imgGrayscalePath(const char* game){
-	std::string path("S:/MenuBW/bw/");
+	std::string path("S:/Menu/BW/");
 	path.append(game);
 	path.append(".bin");
 	return path;

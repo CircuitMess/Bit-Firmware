@@ -3,6 +3,7 @@
 #include "Util/Services.h"
 #include "Periph/NVSFlash.h"
 #include "Screens/MainMenu/MainMenu.h"
+#include "LV_Interface/FSLVGL.h"
 
 const std::unordered_map<Games, RobotData> RobotManager::GameRobot = {
 		{ Games::MrBee, { .robot = Robot::MrBee }},
@@ -198,6 +199,10 @@ void RobotManager::loop(){
 		}
 
 		if(Robots::isGame(rob)){
+			if(isNew){
+				FSLVGL::menuChange();
+			}
+
 			sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Facility::Games);
 		}else if(Robots::isTheme(rob)){
 			sendEvent(Event { .action = Event::Inserted, .rob = rob, .isNew = isNew }, Facility::Themes);

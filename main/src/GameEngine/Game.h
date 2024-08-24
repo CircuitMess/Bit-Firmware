@@ -18,6 +18,7 @@
 #include "RoboCtrl/RobotDriver.h"
 #include "Services/RobotManager.h"
 #include "Services/AchievementSystem.h"
+#include "Services/Allocator.h"
 
 class Game {
 
@@ -26,7 +27,7 @@ class Game {
 public:
 	virtual ~Game();
 
-	void load();
+	void load(Allocator* alloc = nullptr);
 	bool isLoaded() const;
 
 	void start();
@@ -96,6 +97,7 @@ private:
 
 	std::set<GameObjPtr> objects;
 
+	Allocator* alloc = nullptr;
 	void loadFunc();
 
 	AchievementSystem* achievementSystem;

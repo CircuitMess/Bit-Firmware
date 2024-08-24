@@ -112,28 +112,17 @@ void GameSplashScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
+	lv_obj_set_size(bg, 128, 128);
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
+	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
 
-	auto top = lv_obj_create(*this);
-	lv_obj_set_size(top, 128, 42);
-	lv_obj_set_flex_flow(top, LV_FLEX_FLOW_ROW);
-	lv_obj_set_flex_align(top, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);\
+	auto title = lv_img_create(*this);
+	lv_obj_set_size(title, 128, 40);
+	lv_img_set_src(title, (gameUIPath + "title.bin").c_str());
 
-	auto img = lv_img_create(top);
-	lv_img_set_src(img, (gameUIPath + "title.bin").c_str());
-	lv_obj_set_align(img, LV_ALIGN_CENTER);
-	lv_obj_set_style_pad_top(img, 8, 0);
-
-	auto rest = lv_obj_create(*this);
-	lv_obj_set_size(rest, 128, 86);
-	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
-	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-	lv_obj_set_style_pad_all(rest, 4, 0);
-
-	auto instructionsImg = lv_img_create(rest);
-	lv_img_set_src(instructionsImg, (gameUIPath + "char.bin").c_str());
-	lv_obj_set_align(instructionsImg, LV_ALIGN_CENTER);
+	auto splash = lv_img_create(*this);
+	lv_obj_set_size(splash, 128, 88);
+	lv_img_set_src(splash, (gameUIPath + "char.bin").c_str());
 }
 
 void GameSplashScreen::loop(){
@@ -372,10 +361,10 @@ const std::unordered_map<Games, std::function<MelodyPlayer*()>> IntroSounds = {
 				toneFlat(NOTE_A4, 1), toneNone(1),
 				toneFlat(NOTE_C5, 1), toneNone(1),
 
-				toneSlide(NOTE_E4, NOTE_D5, 1), toneNone(1),
+				/*toneSlide(NOTE_E4, NOTE_D5, 1), toneNone(1),
 				toneFlat(NOTE_C5, 1), toneNone(1),
 				toneFlat(NOTE_A4, 1), toneNone(1),
-				toneFlat(NOTE_C5, 1), toneNone(1),
+				toneFlat(NOTE_C5, 1), toneNone(1),*/
 
 				toneSlide(NOTE_C5, NOTE_C4, 1), toneFlat(NOTE_C4, 3)
 			});

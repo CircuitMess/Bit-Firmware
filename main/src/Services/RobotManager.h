@@ -127,9 +127,9 @@ static constexpr const char* RobotNames[] = {
 // Ordered by game (enum Game)
 static constexpr const char* GameIcons[] = {
 		"Blocks",
-		"Bonk",
+		"Pong",
 		"Snake",
-		"WackyStacky",
+		"Stacky",
 		"Arte",
 		"Bee",
 		"Bob",
@@ -143,7 +143,7 @@ static constexpr const char* GameIcons[] = {
 		"Frank",
 		"Charlie",
 		"Fred",
-		"Plank",
+		"Planck",
 		"Dusty",
 		"Sparkly"
 		/*TODO add new game icons content*/

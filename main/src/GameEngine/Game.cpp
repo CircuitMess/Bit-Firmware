@@ -28,14 +28,15 @@ Game::~Game(){
 
 }
 
-void Game::load(){
+void Game::load(Allocator* alloc){
 	if(loaded || loadTask.running()) return;
 
+	this->alloc = alloc;
 	loadTask.start();
 }
 
 void Game::loadFunc(){
-	resMan.load(resources);
+	resMan.load(resources, alloc);
 	onLoad();
 	loaded = true;
 	loadTask.stop(0);

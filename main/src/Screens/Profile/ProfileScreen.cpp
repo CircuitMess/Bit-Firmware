@@ -14,6 +14,9 @@
 #include "Modals/UpdateRobot.h"
 
 ProfileScreen::ProfileScreen() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
+	auto settings = (Settings*) Services.get(Service::Settings);
+	oldTheme = settings ? settings->get().theme : Theme::Theme1;
+
 	setupThemes();
 	buildUI();
 }
@@ -37,6 +40,10 @@ void ProfileScreen::onStop(){
 	saved.pet = characterSection.getPet() == Pet::COUNT ? -1 : (int8_t) characterSection.getPet();
 	settings->set(saved);
 	settings->store();
+
+	if(saved.theme != oldTheme){
+		FSLVGL::themeChange();
+	}
 }
 
 void ProfileScreen::loop(){

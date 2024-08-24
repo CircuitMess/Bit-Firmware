@@ -99,7 +99,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
+	lv_img_set_src(bg, THEMED_FILE(PausedBg, settings->get().theme));
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);

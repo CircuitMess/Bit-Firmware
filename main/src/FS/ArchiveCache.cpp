@@ -7,7 +7,7 @@ ArchiveCache::ArchiveCache(const std::vector<std::string>& paths) : paths(paths)
 	archives.reserve(paths.size());
 }
 
-void ArchiveCache::load(){
+void ArchiveCache::load(Allocator* alloc){
 	if(loaded) return;
 	loaded = true;
 
@@ -20,12 +20,15 @@ void ArchiveCache::load(){
 			continue;
 		}
 
-		archives.emplace(path, FileArchive(file));
+		archives.emplace(path, FileArchive(file, alloc));
 	}
 }
 
 void ArchiveCache::unload(){
+	if(!loaded) return;
+	loaded = false;
 
+	archives.clear();
 }
 
 File ArchiveCache::open(const char* path){

@@ -25,7 +25,8 @@ namespace Filepath {
 		inline static constexpr const char* BarLong = "S:/Theme1/barLong.bin";
 		inline static constexpr const char* BarMedium = "S:/Theme1/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme1/barShort.bin";
-		inline static constexpr const char* Paused = "S:/Theme1/paused.bin";
+		inline static constexpr const char* Paused = "S:/Pause/title1.bin";
+		inline static constexpr const char* PausedBg = "S:/Pause/bg1.bin";
 		inline static constexpr const char* Settings = "S:/Theme1/settings.bin";
 
 		namespace Battery {
@@ -46,7 +47,8 @@ namespace Filepath {
 		inline static constexpr const char* BarLong = "S:/Theme2/barLong.bin";
 		inline static constexpr const char* BarMedium = "S:/Theme2/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme2/barShort.bin";
-		inline static constexpr const char* Paused = "S:/Theme2/paused.bin";
+		inline static constexpr const char* Paused = "S:/Pause/title2.bin";
+		inline static constexpr const char* PausedBg = "S:/Pause/bg2.bin";
 		inline static constexpr const char* Settings = "S:/Theme2/settings.bin";
 
 		namespace Battery {
@@ -67,7 +69,8 @@ namespace Filepath {
 		inline static constexpr const char* BarLong = "S:/Theme3/barLong.bin";
 		inline static constexpr const char* BarMedium = "S:/Theme3/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme3/barShort.bin";
-		inline static constexpr const char* Paused = "S:/Theme3/paused.bin";
+		inline static constexpr const char* Paused = "S:/Pause/title3.bin";
+		inline static constexpr const char* PausedBg = "S:/Pause/bg3.bin";
 		inline static constexpr const char* Settings = "S:/Theme3/settings.bin";
 
 		namespace Battery {
@@ -88,7 +91,8 @@ namespace Filepath {
 		inline static constexpr const char* BarLong = "S:/Theme4/barLong.bin";
 		inline static constexpr const char* BarMedium = "S:/Theme4/barMid.bin";
 		inline static constexpr const char* BarShort = "S:/Theme4/barShort.bin";
-		inline static constexpr const char* Paused = "S:/Theme4/paused.bin";
+		inline static constexpr const char* Paused = "S:/Pause/title4.bin";
+		inline static constexpr const char* PausedBg = "S:/Pause/bg4.bin";
 		inline static constexpr const char* Settings = "S:/Theme4/settings.bin";
 
 		namespace Battery {
@@ -180,62 +184,62 @@ constexpr const char* AchievementFiles[] = {
 };
 
 constexpr const char* AchievementFilesBW[] = {
-		"S:/AchiBW/artemis-friendly.bin",
-		"S:/AchiBW/artemis-sharp.bin",
-		"S:/AchiBW/bee-b.bin",
-		"S:/AchiBW/bee-crow.bin",
-		"S:/AchiBW/bee-g.bin",
-		"S:/AchiBW/bee-s.bin",
-		"S:/AchiBW/blocks-4lines.bin",
-		"S:/AchiBW/blocks-b.bin",
-		"S:/AchiBW/blocks-clear.bin",
-		"S:/AchiBW/blocks-g.bin",
-		"S:/AchiBW/blocks-s.bin",
-		"S:/AchiBW/bob-bombs.bin",
-		"S:/AchiBW/bob-green.bin",
-		"S:/AchiBW/bob-yellow.bin",
-		"S:/AchiBW/bonk-5.bin",
-		"S:/AchiBW/bonk-comeback.bin",
-		"S:/AchiBW/buttons-triple.bin",
-		"S:/AchiBW/buttons-win.bin",
-		"S:/AchiBW/capacitron-b.bin",
-		"S:/AchiBW/capacitron-fire.bin",
-		"S:/AchiBW/capacitron-g.bin",
-		"S:/AchiBW/capacitron-s.bin",
-		"S:/AchiBW/charlie-nomercy.bin",
-		"S:/AchiBW/charlie-yesmercy.bin",
-		"S:/AchiBW/dusty-rat.bin",
-		"S:/AchiBW/dusty-shovel.bin",
-		"S:/AchiBW/fred-copper.bin",
-		"S:/AchiBW/fred-detective.bin",
-		"S:/AchiBW/fred-veteran.bin",
-		"S:/AchiBW/hertz-3.bin",
-		"S:/AchiBW/marv-5.bin",
-		"S:/AchiBW/marv-life.bin",
-		"S:/AchiBW/marv-newspapers.bin",
-		"S:/AchiBW/planck-b.bin",
-		"S:/AchiBW/planck-chauffeur.bin",
-		"S:/AchiBW/planck-g.bin",
-		"S:/AchiBW/planck-juice.bin",
-		"S:/AchiBW/planck-nobrake.bin",
-		"S:/AchiBW/planck-s.bin",
-		"S:/AchiBW/resistron-b.bin",
-		"S:/AchiBW/resistron-deflect.bin",
-		"S:/AchiBW/resistron-g.bin",
-		"S:/AchiBW/resistron-s.bin",
-		"S:/AchiBW/robby-asteroid.bin",
-		"S:/AchiBW/robby-sharp.bin",
-		"S:/AchiBW/snake-b.bin",
-		"S:/AchiBW/snake-fill.bin",
-		"S:/AchiBW/snake-g.bin",
-		"S:/AchiBW/snake-s.bin",
-		"S:/AchiBW/sparkly-nobrake.bin",
-		"S:/AchiBW/sparkly-overtake.bin",
-		"S:/AchiBW/sparkly-road.bin",
-		"S:/AchiBW/stacky-5.bin",
-		"S:/AchiBW/stacky-highrise.bin",
-		"S:/AchiBW/stacky-skyscrapper.bin",
-		"S:/AchiBW/stacky-super.bin"
+		"S:/Achi/BW/artemis-friendly.bin",
+		"S:/Achi/BW/artemis-sharp.bin",
+		"S:/Achi/BW/bee-b.bin",
+		"S:/Achi/BW/bee-crow.bin",
+		"S:/Achi/BW/bee-g.bin",
+		"S:/Achi/BW/bee-s.bin",
+		"S:/Achi/BW/blocks-4lines.bin",
+		"S:/Achi/BW/blocks-b.bin",
+		"S:/Achi/BW/blocks-clear.bin",
+		"S:/Achi/BW/blocks-g.bin",
+		"S:/Achi/BW/blocks-s.bin",
+		"S:/Achi/BW/bob-bombs.bin",
+		"S:/Achi/BW/bob-green.bin",
+		"S:/Achi/BW/bob-yellow.bin",
+		"S:/Achi/BW/bonk-5.bin",
+		"S:/Achi/BW/bonk-comeback.bin",
+		"S:/Achi/BW/buttons-triple.bin",
+		"S:/Achi/BW/buttons-win.bin",
+		"S:/Achi/BW/capacitron-b.bin",
+		"S:/Achi/BW/capacitron-fire.bin",
+		"S:/Achi/BW/capacitron-g.bin",
+		"S:/Achi/BW/capacitron-s.bin",
+		"S:/Achi/BW/charlie-nomercy.bin",
+		"S:/Achi/BW/charlie-yesmercy.bin",
+		"S:/Achi/BW/dusty-rat.bin",
+		"S:/Achi/BW/dusty-shovel.bin",
+		"S:/Achi/BW/fred-copper.bin",
+		"S:/Achi/BW/fred-detective.bin",
+		"S:/Achi/BW/fred-veteran.bin",
+		"S:/Achi/BW/hertz-3.bin",
+		"S:/Achi/BW/marv-5.bin",
+		"S:/Achi/BW/marv-life.bin",
+		"S:/Achi/BW/marv-newspapers.bin",
+		"S:/Achi/BW/planck-b.bin",
+		"S:/Achi/BW/planck-chauffeur.bin",
+		"S:/Achi/BW/planck-g.bin",
+		"S:/Achi/BW/planck-juice.bin",
+		"S:/Achi/BW/planck-nobrake.bin",
+		"S:/Achi/BW/planck-s.bin",
+		"S:/Achi/BW/resistron-b.bin",
+		"S:/Achi/BW/resistron-deflect.bin",
+		"S:/Achi/BW/resistron-g.bin",
+		"S:/Achi/BW/resistron-s.bin",
+		"S:/Achi/BW/robby-asteroid.bin",
+		"S:/Achi/BW/robby-sharp.bin",
+		"S:/Achi/BW/snake-b.bin",
+		"S:/Achi/BW/snake-fill.bin",
+		"S:/Achi/BW/snake-g.bin",
+		"S:/Achi/BW/snake-s.bin",
+		"S:/Achi/BW/sparkly-nobrake.bin",
+		"S:/Achi/BW/sparkly-overtake.bin",
+		"S:/Achi/BW/sparkly-road.bin",
+		"S:/Achi/BW/stacky-5.bin",
+		"S:/Achi/BW/stacky-highrise.bin",
+		"S:/Achi/BW/stacky-skyscrapper.bin",
+		"S:/Achi/BW/stacky-super.bin"
 };
 
 constexpr const char* AchivementFile(Achievement achievement){

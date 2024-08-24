@@ -41,7 +41,7 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Dusty,   [](Sprite& canvas){ return std::make_unique<DustyGame::DustyGame>(canvas); } }
 };
 
-GameRunner::GameRunner(Display& display) : display(display){
+GameRunner::GameRunner(Display& display, Allocator* alloc) : display(display), alloc(alloc){
 
 }
 
@@ -60,7 +60,7 @@ void GameRunner::startGame(Games game){
 
 	auto inst = launcher(display.getCanvas());
 
-	inst->load();
+	inst->load(alloc);
 	while(!inst->isLoaded() || (millis() - startTime) < 2000){
 		delayMillis(100);
 	}
@@ -75,6 +75,9 @@ void GameRunner::endGame(){
 	if(!currentGame) return;
 	currentGame->stop();
 	currentGame.reset();
+	if(alloc){
+		alloc->reset();
+	}
 	currentGameEnum = Games::COUNT;
 }
 

@@ -69,6 +69,11 @@ AchievementSystem::AchievementSystem() : achievementProgress((size_t) Achievemen
 	load();
 }
 
+bool AchievementSystem::isUnlocked(Achievement achi){
+	const auto& data = achievementProgress[(size_t) achi];
+	return data.progress >= data.goal;
+}
+
 void AchievementSystem::getAll(std::vector<AchievementData>& unlockedList) const{
 	unlockedList.resize((size_t) Achievement::COUNT);
 

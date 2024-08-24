@@ -34,6 +34,7 @@
 #include "driver/rtc_io.h"
 #include "Services/LEDService/LEDService.h"
 #include "Services/TwinkleService.h"
+#include "Services/Allocator.h"
 
 BacklightBrightness* bl;
 
@@ -53,6 +54,8 @@ void shutdown(){
 }
 
 void init(){
+	auto alloc = new Allocator(86 * 1024);
+
 	gpio_config_t cfg = {
 			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
 			.mode = GPIO_MODE_INPUT
@@ -133,9 +136,9 @@ void init(){
 
 	auto lvgl = new LVGL(*disp);
 	auto lvInput = new InputLVGL();
-	auto lvFS = new FSLVGL('S');
+	auto lvFS = new FSLVGL('S', alloc);
 
-	auto gamer = new GameRunner(*disp);
+	auto gamer = new GameRunner(*disp, alloc);
 
 	if(settings->get().sound){
 		audio->play({
@@ -152,7 +155,6 @@ void init(){
 		});
 	}
 
-	lvFS->loadArchives();
 	lvFS->loadCache();
 
 	auto ui = new UIThread(*lvgl, *gamer, *lvFS);

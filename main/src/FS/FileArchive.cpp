@@ -2,7 +2,9 @@
 #include "FileArchive.h"
 #include "FS/RamFile.h"
 
-FileArchive::FileArchive(File file){
+static const char* TAG = "FileArchive";
+
+FileArchive::FileArchive(File file, Allocator* alloc, const std::unordered_set<std::string>& excluded){
 	file.seek(0);
 	uint32_t count = 0;
 	file.read((uint8_t*) &count, 4);
@@ -33,20 +35,52 @@ FileArchive::FileArchive(File file){
 		uint32_t size = 0;
 		file.read((uint8_t*) &size, 4);
 
-		totalSize += size;
+		if(!excluded.contains(name)){
+			totalSize += size;
+		}
+
 		tmp.emplace_back(Entry { name, size, 0 });
 	}
 
-	data.resize(totalSize, 0);
+	if(alloc){
+		data = (uint8_t*) alloc->malloc(totalSize);
+		if(data == nullptr){
+			ESP_LOGW(TAG, "Failed allocating %zu B using allocator. Reverting to malloc", totalSize);
+			data = (uint8_t*) malloc(totalSize);
+			externalData = false;
+		}else{
+			externalData = true;
+		}
+	}else{
+		data = (uint8_t*) malloc(totalSize);
+		externalData = false;
+	}
+
+	if(data == nullptr){
+		ESP_LOGW(TAG, "Failed allocating data buffer of %zu B", totalSize);
+		return;
+	}
+
 	size_t offset = 0;
 
 	for(auto& entry : tmp){
-		file.read(data.data() + offset, entry.size);
+		if(excluded.contains(entry.name)){
+			file.seek(entry.size, SeekMode::SeekCur);
+			continue;
+		}
+
+		file.read(data + offset, entry.size);
 		entry.offset = offset;
 
 		offset += entry.size;
 
 		entries.insert(std::make_pair(entry.name, std::move(entry)));
+	}
+}
+
+FileArchive::~FileArchive(){
+	if(!externalData){
+		free(data);
 	}
 }
 
@@ -58,6 +92,6 @@ File FileArchive::get(const char* file, const char* name){
 		name = file;
 	}
 
-	auto f = std::make_shared<RamFile>(data.data() + it->second.offset, it->second.size, name);
+	auto f = std::make_shared<RamFile>(data + it->second.offset, it->second.size, name);
 	return File(f);
 }

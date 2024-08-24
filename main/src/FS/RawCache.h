@@ -6,15 +6,18 @@
 
 class RawCache : public FileCache {
 public:
+	explicit RawCache();
 	explicit RawCache(const std::vector<std::string>& paths);
 
-	void load() override;
+	void setPaths(const std::vector<std::string>& paths);
+
+	void load(Allocator* alloc = nullptr) override;
 	void unload() override;
 
 	File open(const char* path) override;
 
 private:
-	const std::vector<std::string> paths;
+	std::vector<std::string> paths;
 
 	bool loaded = false;
 	std::unordered_map<std::string, File> files;

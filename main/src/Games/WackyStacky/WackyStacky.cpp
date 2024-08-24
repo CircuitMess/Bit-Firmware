@@ -78,7 +78,7 @@ void WackyStacky::WackyStacky::onLoad(){
 	spawnRobot();
 
 	for(size_t i = 0; i < ActiveCloudCount; ++i){
-		const uint8_t cloudIndex = rand() % CloudCount;
+		const uint8_t cloudIndex = esp_random() % CloudCount;
 
 		clouds[i] = std::make_shared<GameObject>(
 				std::make_unique<StaticRC>(getFile(CloudPaths[cloudIndex]), CloudDims[cloudIndex]),
@@ -86,7 +86,7 @@ void WackyStacky::WackyStacky::onLoad(){
 		);
 
 		clouds[i]->getRenderComponent()->setLayer(0);
-		clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, (rand() % 200) - 100.0f });
+		clouds[i]->setPos(glm::vec2{ (esp_random() % 110) - 10.0f, (esp_random() % 200) - 100.0f });
 
 		addObject(clouds[i]);
 	}
@@ -153,10 +153,10 @@ void WackyStacky::WackyStacky::scrollAnim(float dt){
 			continue;
 		}
 
-		clouds[i]->setPos(clouds[i]->getPos() + glm::vec2{ 0.0f, 0.5f + (rand() % 6) * 0.05f } * move * 0.2f);
+		clouds[i]->setPos(clouds[i]->getPos() + glm::vec2{ 0.0f, 0.5f + (esp_random() % 6) * 0.05f } * move * 0.2f);
 
 		if(clouds[i]->getPos().y >= 128.0f){
-			clouds[i]->setPos(glm::vec2{ (rand() % 110) - 10.0f, -(rand() % 100) -30.0f });
+			clouds[i]->setPos(glm::vec2{ (esp_random() % 110) - 10.0f, -(esp_random() % 100) -30.0f });
 		}
 	}
 
