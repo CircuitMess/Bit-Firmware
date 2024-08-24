@@ -30,7 +30,6 @@
 #include "Filepaths.hpp"
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
-#include "Screens/Game/GameMenuScreen.h"
 #include "driver/rtc_io.h"
 #include "Services/LEDService/LEDService.h"
 #include "Services/TwinkleService.h"
@@ -166,7 +165,7 @@ void init(){
 
 	bl->fadeOut();
 	ui->start();
-	ui->startScreen([](){ return std::make_unique<GameMenuScreen>(Games::Sparkly); });
+	ui->startScreen([](){ return std::make_unique<MainMenu>(true); });
 	delayMillis(200);
 	bl->fadeIn();
 
