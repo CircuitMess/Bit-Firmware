@@ -2,6 +2,8 @@
 #define BIT_FIRMWARE_SPARKLY_H
 
 #include "GameEngine/Game.h"
+#include "RaceTime.h"
+#include "Util/stdafx.h"
 
 namespace Sparkly {
 class Sparkly : public Game {
@@ -9,11 +11,14 @@ public:
 	explicit Sparkly(Sprite& canvas);
 
 	inline virtual uint32_t getXP() const override {
-		return 0;
+		if(finishTime <= 0.0f){
+			return 0;
+		}
+
+		return (1.0f - map(finishTime, 20.0f, 180.0f, 0.0f, 1.0f)) * 45 + 5;
 	}
 
-	// TODO need a UI element for the time and UI element for the place in the race
-	// TODO how are we going to make the opponents? how are they going to drive?
+	inline virtual uint32_t getScore() const override { return (uint32_t) std::max(180.0f - finishTime, 0.0f); }
 
 protected:
 	virtual void onLoad() override;
@@ -27,11 +32,14 @@ private:;
 	glm::mat4 vpMat; // view-projection matrix
 	glm::mat4 vpInv; // inverted view-projection matrix
 
-	float spd = 0; // Forward/backward
-	float spdZ = 0; // Left/right
-	float rotZ = -78;
+	float acceleration = 0.0f;
+	float spd = 0.0f; // Forward/backward
+	float spdZ = 0.0f; // Left/right
+	float rotZ = -90.0f;
 
 	File skybox;
+
+	static constexpr const float Friction = 0.2f;
 
 	static constexpr const float CameraAngle = 15.0f;
 
@@ -61,29 +69,53 @@ private:;
 	};
 
 	static constexpr const char* DRAM_ATTR BillboardAssets[] = {
-			""
+			"/Bush1.raw",
+			"/Bush2.raw",
+			"/Poster1.raw",
+			"/Poster2.raw",
+			"/Tree1.raw",
+			"/Tree2.raw",
 	};
 
-	static constexpr glm::vec2 DRAM_ATTR Billboards[] = {
-			/*{ 1.0f, 1.0f },
-			{ 1.0f, -0.75f },
-			{ 1.0f, -0.5f },
-			{ 1.0f, -0.25f },
-			{ 1.0f, -0.0f },
-			{ 1.0f, 1.0f },
-			{ 1.0f, 0.75f },
-			{ 1.0f, 0.5f },
-			{ 1.0f, 0.25f },
+	static constexpr PixelDim DRAM_ATTR BillboardAssetDims[] = {
+			{ 32, 28 },
+			{ 24, 21 },
+			{ 66, 65 },
+			{ 66, 65 },
+			{ 45, 47 },
+			{ 31, 52 },
+	};
 
-			{ 0.0f, -1.0f },
-			{ 0.0f, -0.75f },
-			{ 0.0f, -0.5f },
-			{ 0.0f, -0.25f },
-			{ 0.0f, -0.0f },
-			{ 0.0f, 1.0f },
-			{ 0.0f, 0.75f },
-			{ 0.0f, 0.5f },
-			{ 0.0f, 0.25f },*/
+	struct BillboardInfo{
+		glm::vec2 position;
+		size_t assetId;
+	};
+
+	static constexpr BillboardInfo DRAM_ATTR Billboards[] = {
+			// TODO myb add in the future
+	};
+
+	struct EnemyMovementPoint{
+		float timestamp = 0.0f;
+		glm::vec2 pos = glm::vec2{ 0.0f };
+		float rotation = 0.0f;
+	};
+
+	static constexpr const EnemyMovementPoint EnemyMovementPoints[] = {
+			{.timestamp = 0.0f, .pos = { -7.5f, 1.0f }, .rotation = -90.0f},
+			{.timestamp = 6.0f, .pos = { -7.0f, -5.15f }, .rotation = -90.0f},
+			{.timestamp = 8.0f, .pos = { -4.5f, -4.25f }, .rotation = 35.0f},
+			{.timestamp = 11.0f, .pos = { -1.2f, -0.66f }, .rotation = 47.0f},
+			{.timestamp = 15.0f, .pos = { 1.25f, -0.75f }, .rotation = -27.0f},
+			{.timestamp = 18.0f, .pos = { 0.5f, -4.0f }, .rotation = -125.0f},
+			{.timestamp = 22.0f, .pos = { 3.5f, -7.3f }, .rotation = -0.0f},
+			{.timestamp = 27.0f, .pos = { 6.5f, -2.5f }, .rotation = 90.0f},
+			{.timestamp = 31.0f, .pos = { 6.5f, 4.7f }, .rotation = 90.0f},
+			{.timestamp = 35.0f, .pos = { 5.5f, 7.0f }, .rotation = 175.0f},
+			{.timestamp = 38.0f, .pos = { 3.0f, 6.0f }, .rotation = 220.0f},
+			{.timestamp = 44.0f, .pos = { -0.5f, 6.3f }, .rotation = 150.0f},
+			{.timestamp = 50.0f, .pos = { -4.8f, 8.3f }, .rotation = 180.0f},
+			{.timestamp = 58.0f, .pos = { -8.0f, -2.0f }, .rotation = 280.0f},
 	};
 
 	const glm::mat4 Proj;
@@ -91,6 +123,15 @@ private:;
 	std::vector<GameObjPtr> billboardGameObjs;
 
 	GameObjPtr playerCar;
+	GameObjPtr enemyCar;
+	GameObjPtr startCountdown;
+	GameObjPtr speedLine;
+	std::unique_ptr<RaceTime> raceTimeElement;
+
+	glm::vec3 enemyPos = { -7.5f, 0.5f, 0.0f };
+	glm::vec3 enemyForward = { 1.0f, 0.0f, 0.0f };
+	float enemyAngle = -90;
+	size_t enemyTargetStep = 1;
 
 	static constexpr const glm::vec<2, int> CarTopLeft = { 50, 79 };
 	static constexpr const glm::vec<2, int> CarTopRight = { 79, 79 };
@@ -107,6 +148,16 @@ private:;
 	CollisionInfo TopRightCollision;
 	CollisionInfo BttmLeftCollision;
 	CollisionInfo BttmRightCollision;
+
+	bool inputEnabled = false;
+	float timeSinceGameStart = 0.0f;
+	float timeSinceRaceStart = 0.0f;
+	float finishTime = 0.0f;
+	int finishCrossings = 0;
+	bool inFinish = false;
+
+	Input::Data::Action lastA = Input::Data::Release;
+	Input::Data::Action lastB = Input::Data::Release;
 
 private:
 	void sampleGround(Sprite& canvas);

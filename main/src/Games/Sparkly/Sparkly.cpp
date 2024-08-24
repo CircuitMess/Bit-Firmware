@@ -1,18 +1,12 @@
 #include "Sparkly.h"
 #include <gtx/rotate_vector.hpp>
 #include <esp_random.h>
-#include "Util/Services.h"
 #include "GameEngine/Rendering/StaticRC.h"
 
 Sparkly::Sparkly::Sparkly(Sprite& canvas) : Game(canvas, Games::Sparkly, "/Games/Sparkly", {
-		{ "/Tilemap.raw", {}, true },
 		{ esp_random() % 2 == 0 ? "/Landscape2.raw" : "/Landscape1.raw", {}, true },
-		{ "/Arrow-l.raw", {}, true },
-		{ "/Arrow-r.raw", {}, true },
-		{ "/Bush1.raw", {}, true },
-		{ "/Bush2.raw", {}, true },
-		{ "/Light-l.raw", {}, true },
-		{ "/Light-r.raw", {}, true },
+		{ "/Tiles-top.raw", {}, true },
+		{ "/Tiles-bttm.raw", {}, true },
 		{ "/Opponent1.raw", {}, true },
 		{ "/Opponent2.raw", {}, true },
 		{ "/Opponent3.raw", {}, true },
@@ -21,18 +15,15 @@ Sparkly::Sparkly::Sparkly(Sprite& canvas) : Game(canvas, Games::Sparkly, "/Games
 		{ "/Opponent6.raw", {}, true },
 		{ "/Opponent7.raw", {}, true },
 		{ "/Opponent8.raw", {}, true },
-		{ "/Poster1.raw", {}, true },
-		{ "/Poster2.raw", {}, true },
 		{ "/Sparkly1.raw", {}, true },
 		{ "/Sparkly2.raw", {}, true },
 		{ "/Sparkly3.raw", {}, true },
-		{ "/Speed-circle.raw", {}, true },
-		{ "/Speed-line.raw", {}, true },
-		{ "/Start1.raw", {}, true },
-		{ "/Start2.raw", {}, true },
-		{ "/Start3.raw", {}, true },
-		{ "/Start4.raw", {}, true },
-		{ "/Tree2.raw", {}, false },
+		{ "/Speed-circle.raw", {}, false },
+		{ "/Speed-line.raw", {}, false },
+		{ "/Start1.raw", {}, false },
+		{ "/Start2.raw", {}, false },
+		{ "/Start3.raw", {}, false },
+		{ "/Start4.raw", {}, false },
 }), Proj(glm::perspective(glm::radians(90.0f), 1.0f, 0.01f, 20.0f)){
 	forward = glm::rotateY(forward, glm::radians(CameraAngle));
 	const glm::mat4 view = glm::lookAt(camPos, camPos + forward, Up);
@@ -48,14 +39,22 @@ void Sparkly::Sparkly::onLoad(){
 		skybox = getFile("/Landscape2.raw");
 	}
 
-	for(glm::vec2 board : Billboards){
+	for(const BillboardInfo& board : Billboards){
 		GameObjPtr obj = std::make_shared<GameObject>(
-				std::make_unique<StaticRC>(getFile("/Bush1.raw"), PixelDim{ 32, 28 }),
+				std::make_unique<StaticRC>(getFile(BillboardAssets[board.assetId]), BillboardAssetDims[board.assetId]),
 				nullptr
 		);
 		addObject(obj);
 		billboardGameObjs.emplace_back(obj);
 	}
+
+	enemyCar = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/Opponent1.raw"), PixelDim{79, 29}),
+			nullptr
+	);
+	addObject(enemyCar);
+	enemyCar->getRenderComponent()->setLayer(billboardGameObjs.size() - 1);
+	billboardGameObjs.emplace_back(enemyCar);
 
 	playerCar = std::make_shared<GameObject>(
 			std::make_unique<StaticRC>(getFile("/Sparkly2.raw"), PixelDim{50, 28}),
@@ -63,13 +62,144 @@ void Sparkly::Sparkly::onLoad(){
 	);
 	addObject(playerCar);
 	playerCar->setPos(64.0f - 25.0f, 70.0f); // 39, 70
-	playerCar->getRenderComponent()->setLayer(billboardGameObjs.size() - 1);
+	playerCar->getRenderComponent()->setLayer(billboardGameObjs.size());
+
+	startCountdown = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/Start1.raw"), PixelDim{50, 25}),
+			nullptr
+	);
+	addObject(startCountdown);
+	startCountdown->setPos(64.0f - 25.0f, 15.0f);
+	startCountdown->getRenderComponent()->setLayer(100);
+
+	speedLine = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/Speed-line.raw"), PixelDim{10, 1}),
+			nullptr
+	);
+	addObject(speedLine);
+	speedLine->setPos(112.0f, 115.0f);
+	speedLine->setRot(-90.0f);
+	speedLine->getRenderComponent()->setLayer(100);
+
+	GameObjPtr speedCircle = std::make_shared<GameObject>(
+			std::make_unique<StaticRC>(getFile("/Speed-circle.raw"), PixelDim{14, 14}),
+			nullptr
+	);
+	addObject(speedCircle);
+	speedCircle->setPos(110.0f, 110.0f);
+	speedCircle->getRenderComponent()->setLayer(100);
+
+	raceTimeElement = std::make_unique<RaceTime>();
+	addObject(raceTimeElement->getGO());
+	raceTimeElement->getGO()->setPos({ 2, 2 });
+	raceTimeElement->getGO()->getRenderComponent()->setLayer(billboardGameObjs.size());
 }
 
 void Sparkly::Sparkly::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
-	movement(deltaTime);
+	if(speedLine){
+		speedLine->setRot(map(glm::abs(spd), 0.0f, 4.0f, -90.0f, 180.0f));
+	}
+
+	if(inputEnabled){
+		timeSinceRaceStart += deltaTime;
+	}
+
+	if(raceTimeElement){
+		raceTimeElement->setTime(timeSinceRaceStart);
+	}
+
+	timeSinceGameStart += deltaTime;
+
+	// Enemy movement
+	{
+		enemyTargetStep = glm::clamp(enemyTargetStep, (size_t) 0, (size_t) 14);
+
+		float timeInStep = timeSinceRaceStart;
+		timeInStep -= EnemyMovementPoints[enemyTargetStep - 1].timestamp;
+
+		const float timePercent = glm::min(glm::pow(timeInStep / (EnemyMovementPoints[enemyTargetStep].timestamp - EnemyMovementPoints[enemyTargetStep - 1].timestamp), 2.0f), 1.0f);
+
+		const glm::vec2 newPos = EnemyMovementPoints[enemyTargetStep - 1].pos + timePercent * (EnemyMovementPoints[enemyTargetStep].pos - EnemyMovementPoints[enemyTargetStep - 1].pos);
+
+		enemyPos = glm::vec3(newPos, 0.0f);
+		enemyAngle = EnemyMovementPoints[enemyTargetStep - 1].rotation + timePercent * (EnemyMovementPoints[enemyTargetStep].rotation - EnemyMovementPoints[enemyTargetStep - 1].rotation);
+		enemyForward = glm::rotateZ(glm::vec3{1.0f, 0.0f, 0.0f}, glm::radians(enemyAngle));
+
+		if(timePercent >= 0.99f){
+			timeInStep = timeSinceRaceStart;
+
+			enemyTargetStep++;
+		}
+	}
+
+	// Start UI changes
+	{
+		StaticRC* rc = nullptr;
+		if(startCountdown){
+			rc = (StaticRC*) startCountdown->getRenderComponent().get();
+		}
+
+		if(timeSinceGameStart >= 4.0f && startCountdown){
+			removeObject(startCountdown);
+			startCountdown.reset();
+		}else if(timeSinceGameStart >= 3.0f){
+			inputEnabled = true;
+
+			if(rc != nullptr){
+				rc->setFile(getFile("/Start4.raw"));
+			}
+		}else if(timeSinceGameStart >= 2.0f && rc != nullptr){
+			rc->setFile(getFile("/Start3.raw"));
+		}else if(timeSinceGameStart >= 1.0f && rc != nullptr){
+			rc->setFile(getFile("/Start2.raw"));
+		}
+	}
+
+	const glm::vec3 fw2 = glm::rotateZ(glm::vec3(1.0f, 0, 0), glm::radians(rotZ)); // Forward vector disregarding up/down rotation
+	const glm::vec3 startingForward = glm::rotateZ(glm::vec3(1.0f, 0, 0), glm::radians(-90.0f));
+
+	if(TopLeftCollision.spriteIndex == 28 ||
+		TopLeftCollision.spriteIndex == 29 ||
+		TopLeftCollision.spriteIndex == 17 ||
+		TopRightCollision.spriteIndex == 28 ||
+		TopRightCollision.spriteIndex == 29 ||
+		TopRightCollision.spriteIndex == 17){
+		if(!inFinish){
+			inFinish = true;
+
+			if(glm::dot(fw2, startingForward) > 0.0f && spd > 0.0f){
+				++finishCrossings;
+			}else{
+				--finishCrossings;
+			}
+		}
+	}else{
+		inFinish = false;
+	}
+
+	if(finishCrossings >= 2){
+		inputEnabled = false;
+		acceleration = 0.0f;
+		spdZ = 0.0f;
+		finishTime = timeSinceRaceStart;
+	}
+
+	if(finishTime > 0.0f && timeSinceGameStart - finishTime >= 4.5f){
+		exit();
+		return;
+	}
+
+	if(isColliding() > 0){
+		spd = 0.0f;
+	}
+
+	if(finishTime > 0.0f && timeSinceGameStart > finishTime){
+		movement(0.25f * deltaTime);
+	}else{
+		movement(deltaTime);
+	}
 }
 
 void Sparkly::Sparkly::preRender(Sprite& canvas){
@@ -77,19 +207,73 @@ void Sparkly::Sparkly::preRender(Sprite& canvas){
 
 	sampleGround(canvas);
 	positionBillboards();
+
+	const glm::vec3 enemyRight = glm::cross(enemyForward, Up);
+	const glm::vec3 camToEnemy = glm::normalize(enemyPos - glm::vec3{ camPos.x, camPos.y, 0.0f });
+
+	const float forwardDot = glm::dot(forward, enemyForward);
+	const float rightDot = glm::dot(enemyRight, camToEnemy);
+
+	float angle = glm::degrees(glm::acos(forwardDot));
+
+	if(angle >= 22.5f && angle <= 157.5){
+		angle *= SIGN(rightDot);
+	}
+
+	File carFile;
+	if(glm::abs(angle) < 22.5f){
+		carFile = getFile("/Opponent5.raw");
+	}else if(glm::abs(angle) > 157.5f){
+		carFile = getFile("/Opponent1.raw");
+	}else if(angle >= 22.5f && angle < 67.5f){ // These are on the left side of the car
+		carFile = getFile("/Opponent6.raw");
+	}else if(angle >= 67.5f && angle < 112.5f){
+		carFile = getFile("/Opponent7.raw");
+	}else if(angle >= 112.5f && angle <= 157.5f){
+		carFile = getFile("/Opponent8.raw");
+	}else if(angle <= -22.5f && angle > -67.5f){ // These are on the right side of the car
+		carFile = getFile("/Opponent4.raw");
+	}else if(angle <= -67.5f && angle > -112.5f){
+		carFile = getFile("/Opponent3.raw");
+	}else if(angle <= -112.5f && angle >= -157.5f){
+		carFile = getFile("/Opponent2.raw");
+	}
+
+	if(!carFile){
+		return;
+	}
+
+	StaticRC* rc = (StaticRC*) enemyCar->getRenderComponent().get();
+	if(rc == nullptr){
+		return;
+	}
+
+	if(rc->getFile() == carFile){
+		return;
+	}
+
+	rc->setFile(carFile);
 }
 
 void Sparkly::Sparkly::handleInput(const Input::Data& data){
 	Game::handleInput(data);
 
-	if(data.btn == Input::A){
-		spd += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
-	}else if(data.btn == Input::B){
-		spd += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
-	}else if(data.btn == Input::Left){
-		spdZ += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
-	}else if(data.btn == Input::Right){
-		spdZ += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
+	if(inputEnabled){
+		if(data.btn == Input::A && data.action != lastA){
+			acceleration += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
+		}else if(data.btn == Input::B && data.action != lastB){
+			acceleration += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
+		}else if(data.btn == Input::Left){
+			spdZ += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
+		}else if(data.btn == Input::Right){
+			spdZ += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
+		}
+
+		if(data.btn == Input::A){
+			lastA = data.action;
+		}else if(data.btn == Input::B){
+			lastB = data.action;
+		}
 	}
 
 	if(!playerCar){
@@ -123,7 +307,8 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 		return;
 	}
 
-	File tilemap = getFile("/Tilemap.raw");
+	File tilemapTop = getFile("/Tiles-top.raw");
+	File tilemapBttm = getFile("/Tiles-bttm.raw");
 
 	if(camPos.z < 0.01f) return; // Camera is below the ground plane
 
@@ -169,7 +354,7 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 			const int spriteY = spriteIndex * 0.142858f;
 			const int spriteX = spriteIndex - spriteY * 7;
 
-			// Start pixel coords of needed sprite inside sprite-sheet [96x96]
+			// Start pixel coords of needed sprite inside sprite-sheet [224x192]
 			const int spriteStartX = spriteX * 32;
 			const int spriteStartY = spriteY * 32;
 
@@ -201,12 +386,14 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 
 			const int index = (spriteStartX + spritePixelX) + (spriteStartY + spritePixelY) * 224;
 
-			if(!tilemap.seek(index * 2)){
-				continue;
-			}
-
 			uint16_t color;
-			tilemap.read((uint8_t*) &color, 2);
+			if(spriteIndex <= 20){
+				tilemapTop.seek(index * 2);
+				tilemapTop.read((uint8_t*) &color, 2);
+			}else{
+				tilemapBttm.seek((index - 21504) * 2);
+				tilemapBttm.read((uint8_t*) &color, 2);
+			}
 
 			canvas.drawPixel(x, y, color);
 		}
@@ -261,7 +448,10 @@ void Sparkly::Sparkly::movement(float dt){
 	const glm::vec3 fw2 = glm::rotateZ(glm::vec3(1.0f, 0, 0), glm::radians(rotZ)); // Forward vector disregarding up/down rotation
 
 	const uint16_t collisionPoints = isColliding();
-	const float collisionFactor = collisionPoints > 0 ? 2.5f : 1.0f;
+	const float collisionFactor = collisionPoints > 0 ? 5.0f : 1.0f;
+
+	spd += acceleration * dt * collisionFactor - SIGN(spd) * Friction * dt;
+	spd = glm::clamp(spd, -4.0f, 4.0f);
 
 	if(spd != 0.0f){
 		rotZ += (spd > 0 ? 1.0f : -1.0f) * spdZ * dt * 50.0f * collisionFactor;
@@ -309,8 +499,38 @@ void Sparkly::Sparkly::positionBillboards(){
 	std::vector<std::pair<float, size_t>> billboardSortedIndexes;
 	billboardSortedIndexes.reserve(billboardGameObjs.size());
 
-	for(size_t i = 0; i < billboardGameObjs.size(); ++i){
-		const glm::vec3 origin(Billboards[i], 0.0f);
+	{
+		const glm::vec3 origin(enemyPos.x, enemyPos.y, 0.0f);
+
+		// Projecting the origin onto the forward vector. T indicates where the projected origin lies on the vector
+		const glm::vec3 B = origin - camPos;
+		const float t = glm::dot(B, forward);
+		billboardSortedIndexes.emplace_back(t, billboardGameObjs.size() - 1);
+
+		if(t >= 0.0f && t <= 20.0f){
+			const glm::vec4 originH = glm::vec4(origin, 1.0f);
+			const auto screenPos = vpMat * originH;
+			auto screenCoords = (glm::vec2(screenPos) / screenPos.w) * glm::vec2(64.0f, 64.0f) + glm::vec2(64.0f, -64.0f);
+
+			const glm::vec4 posB = originH + glm::vec4(Right, 0.0f);
+			const auto screenPosB = vpMat * posB;
+			const float scale = glm::abs(screenPos.x / screenPos.w - screenPosB.x / screenPosB.w) * 0.65f;
+
+			screenCoords.x -= (float) 79.0f * 0.5f * scale;
+			screenCoords.y += (float) 29.0f * scale;
+
+			screenCoords.y = -screenCoords.y;
+
+			enemyCar->setPos(screenCoords);
+
+			if(StaticRC* rc = (StaticRC*) enemyCar->getRenderComponent().get()){
+				rc->setScale(glm::vec2{scale});
+			}
+		}
+	}
+
+	for(size_t i = 0; i < billboardGameObjs.size() - 1; ++i){
+		const glm::vec3 origin(Billboards[i].position, 0.0f);
 
 		// Projecting the origin onto the forward vector. T indicates where the projected origin lies on the vector
 		const glm::vec3 B = origin - camPos;
@@ -327,8 +547,8 @@ void Sparkly::Sparkly::positionBillboards(){
 		const auto screenPosB = vpMat * posB;
 		const float scale = glm::abs(screenPos.x / screenPos.w - screenPosB.x / screenPosB.w) * 1.0f;
 
-		screenCoords.x -= (float) 32.0f * 0.5f * scale;
-		screenCoords.y += (float) 28.0f * scale;
+		screenCoords.x -= (float) BillboardAssetDims[Billboards[i].assetId].x * 0.5f * scale;
+		screenCoords.y += (float) BillboardAssetDims[Billboards[i].assetId].y * scale;
 
 		screenCoords.y = -screenCoords.y;
 
@@ -489,10 +709,6 @@ Sparkly::Sparkly::CollisionInfo Sparkly::Sparkly::getCollision(int x, int y) con
 	// Location of sprite inside sprite-sheet [7x6]
 	const int spriteY = spriteIndex * 0.142858f;
 	const int spriteX = spriteIndex - spriteY * 7;
-
-	// Start pixel coords of needed sprite inside sprite-sheet [96x96]
-	const int spriteStartX = spriteX * 32;
-	const int spriteStartY = spriteY * 32;
 
 	// Pixel pos inside needed sprite [0x1]
 	const float pixelX = planeX - (float) planeXfloor;
