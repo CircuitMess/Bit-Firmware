@@ -11,14 +11,29 @@ public:
 	explicit Sparkly(Sprite& canvas);
 
 	inline virtual uint32_t getXP() const override {
+		return getScore();
+	}
+
+	inline virtual uint32_t getScore() const override {
 		if(finishTime <= 0.0f){
 			return 0;
 		}
 
-		return (1.0f - map(finishTime, 20.0f, 180.0f, 0.0f, 1.0f)) * 45 + 5;
-	}
+		static constexpr float AvgTime = 45.0f;
+		static constexpr float AvgScore = 100;
 
-	inline virtual uint32_t getScore() const override { return (uint32_t) std::max(180.0f - finishTime, 0.0f); }
+		int score = AvgScore;
+
+		if(finishTime >= AvgTime){
+			const float diff = std::min(AvgTime - 5, finishTime - AvgTime);
+			score -= (int) std::round(AvgScore * diff / AvgTime);
+		}else{
+			const float diff = std::min(AvgTime / 2.0f, AvgTime - finishTime);
+			score += (int) std::round(AvgScore * diff / (AvgTime / 2.0f));
+		}
+
+		return score;
+	}
 
 protected:
 	virtual void onLoad() override;
