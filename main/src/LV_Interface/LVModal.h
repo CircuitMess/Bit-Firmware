@@ -13,6 +13,8 @@ public:
 protected:
 	lv_group_t* inputGroup;
 
+	void setBg(const char* src);
+
 private:
 	static LVModal* current;
 

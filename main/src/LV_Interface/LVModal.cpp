@@ -46,3 +46,7 @@ LVModal::~LVModal(){
 	lv_group_del(inputGroup);
 	current = nullptr;
 }
+
+void LVModal::setBg(const char* src){
+	lv_obj_set_style_bg_img_src(container, src, 0);
+}
