@@ -10,7 +10,6 @@
 
 class AchievementView : public LVSelectable {
 public:
-	AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height, std::vector<AchievementData>& unlockedData);
 	AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height);
 	void setReturnFunc(std::function<void()> returnFunc);
 

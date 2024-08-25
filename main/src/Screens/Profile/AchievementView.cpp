@@ -5,13 +5,6 @@
 #include "Util/Services.h"
 #include "Screens/Profile/AchievementModal.h"
 
-AchievementView::AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height, std::vector<AchievementData>& unlockedData) :
-		LVSelectable(parent), screen(screen), RowWidth(rows), width(width), height(height), achievementsVector(std::move(unlockedData)){
-
-	initStyles();
-	buildUI();
-}
-
 AchievementView::AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height) :
 		LVSelectable(parent), screen(screen), RowWidth(rows), width(width), height(height){
 	auto achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
