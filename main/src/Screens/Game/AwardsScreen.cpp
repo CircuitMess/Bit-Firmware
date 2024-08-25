@@ -238,7 +238,7 @@ void AwardsScreen::setAwardMode(Award award){
 
 		lv_group_set_editing(inputGroup, true);
 
-		achView = new AchievementView(rest, 4, 90, 27, achievements);
+		achView = new AchievementView(this, rest, 4, 90, 27, achievements);
 		lv_obj_set_pos(*achView, 17, 78);
 
 		lv_group_add_obj(inputGroup, *achView);

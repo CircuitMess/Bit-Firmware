@@ -3,16 +3,17 @@
 #include "Filepaths.hpp"
 #include "../GrayscaleImageElement.h"
 #include "Util/Services.h"
+#include "Screens/Profile/AchievementModal.h"
 
-AchievementView::AchievementView(lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height, std::vector<AchievementData>& unlockedData) :
-		LVSelectable(parent), RowWidth(rows), width(width), height(height), achievementsVector(std::move(unlockedData)){
+AchievementView::AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height, std::vector<AchievementData>& unlockedData) :
+		LVSelectable(parent), screen(screen), RowWidth(rows), width(width), height(height), achievementsVector(std::move(unlockedData)){
 
 	initStyles();
 	buildUI();
 }
 
-AchievementView::AchievementView(lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height) :
-		LVSelectable(parent), RowWidth(rows), width(width), height(height){
+AchievementView::AchievementView(LVScreen* screen, lv_obj_t* parent, uint8_t rows, uint16_t width, uint16_t height) :
+		LVSelectable(parent), screen(screen), RowWidth(rows), width(width), height(height){
 	auto achievementSystem = (AchievementSystem*) Services.get(Service::Achievements);
 	achievementSystem->getAll(achievementsVector);
 
@@ -78,10 +79,23 @@ void AchievementView::buildUI(){
 				lv_group_focus_next(group);
 			}
 		}else if(key == LV_KEY_ESC){
+			delete ach->modal;
+			ach->modal = nullptr;
+
 			ach->deselect();
 		}
 	};
 
+	auto onPress = [](lv_event_t* e){
+		const uint32_t index = lv_obj_get_index(e->target);
+
+		AchievementView* view = (AchievementView*) e->user_data;
+		if(view == nullptr || view->screen == nullptr){
+			return;
+		}
+
+		view->modal = new AchievementModal(view->screen, view->achievementsVector[index]);
+	};
 
 	for(size_t i = 0; i < achievementsVector.size(); ++i){
 		auto base = lv_obj_create(obj);
@@ -98,6 +112,7 @@ void AchievementView::buildUI(){
 		lv_obj_center(*img);
 
 		lv_obj_add_event_cb(base, onKey, LV_EVENT_KEY, this);
+		lv_obj_add_event_cb(base, onPress, LV_EVENT_PRESSED, this);
 		lv_obj_add_event_cb(base, [](lv_event_t* e){
 			lv_obj_set_style_bg_img_src(lv_event_get_target(e), "S:/Ach/bgSelected.bin", LV_STATE_FOCUSED);
 		}, LV_EVENT_FOCUSED, nullptr);

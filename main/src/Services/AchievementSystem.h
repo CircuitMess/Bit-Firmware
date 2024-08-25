@@ -7,7 +7,6 @@
 #include <array>
 #include <unordered_map>
 
-// TODO needs to be filled out
 enum class Achievement : uint32_t {
 	Artemis_friendly,
 	Artemis_sharp,
