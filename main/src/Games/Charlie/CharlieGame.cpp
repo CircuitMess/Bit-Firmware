@@ -150,6 +150,8 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 	rollingFly = nullptr;
 	chrl->setRoll(false);
 
+	cacoons++;
+
 	// TODO: fly rolled sound
 }
 
@@ -194,6 +196,8 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 				}
 
 				// TODO: fly rescued sound (before dmg call)
+
+				escapes++;
 
 				dmg();
 			});
@@ -308,6 +312,10 @@ void CharlieGame::CharlieGame::gameOver(){
 	flies.iterate([](Fly* fly){
 		fly->goAway();
 	});
+
+	if(escapes == cacoons - cacs.count()){
+		addAchi(Achievement::Charlie_yesmercy, 1);
+	}
 
 	cacs.iterate([this](Cacoon* cac){
 		removeObject(cac->go);

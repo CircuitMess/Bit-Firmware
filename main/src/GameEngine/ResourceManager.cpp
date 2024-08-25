@@ -49,7 +49,7 @@ void IRAM_ATTR ResourceManager::load(const std::vector<ResDescriptor>& descripto
 				if(alloc){
 					auto buf = (uint8_t*) alloc->malloc(original.size());
 					if(buf == nullptr){
-						ESP_LOGE("GameLoader", "Failed allocating %zu B from allocator. Reverting to RamFile", original.size());
+						ESP_LOGW("GameLoader", "Failed allocating %zu B from allocator. Reverting to RamFile", original.size());
 						file = RamFile::open(original);
 					}else{
 						original.read(buf, original.size());

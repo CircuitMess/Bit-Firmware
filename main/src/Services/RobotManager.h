@@ -161,42 +161,10 @@ static constexpr const char* PetIcons[] = {
 
 // Ordered by theme (enum Theme)
 static constexpr const char* ThemeIcons[] = {
-	"S:/ThemeIcons/Theme1.bin",
-	"S:/ThemeIcons/Theme2.bin",
-	"S:/ThemeIcons/Theme3.bin",
-	"S:/ThemeIcons/Theme4.bin"
-};
-
-struct ButtonsUsage {
-	bool up: 1;
-	bool down: 1;
-	bool left: 1;
-	bool right: 1;
-	bool a: 1;
-	bool b: 1;
-};
-
-static constexpr ButtonsUsage GameButtonsUsed[(uint32_t) Games::COUNT] = {
-		{ true,  true,  true,  true,  true,  false }, //Blocks
-		{ true,  true,  false, false, false, false }, //Bonk
-		{ true,  true,  true,  true,  false, false }, //Snake
-		{ false, false, false, false, true,  false }, //WackyStacky
-		{ true,  true,  true,  true,  true,  false }, //Artemis
-		{ false, false, false, false, true,  false }, //MrBee
-		{ false, false, true,  true,  false, false }, //Bob
-		{ true,  false, true,  true,  false, false }, //Buttons
-		{ false, false, true,  true,  false, false }, //Capacitron
-		{ false, false, false, false, true,  false }, //Hertz
-		{ true,  true,  false, false, false, false }, //Marv
-		{ false, false, true,  true,  true,  false }, //Resistron
-		{ false, false, true,  true,  true,  false }, //Robby
-		{ true,  true,  true,  true,  false, false }, //Harald
-		{}, //Frank
-		{ true,  true,  true,  true,  true,  false }, //Charlie
-		{ true,  true,  true,  true,  false, false }, //Fred
-		{ false, false, true,  true,  true,  true }, //Planck
-		{ false, false, false, false, true,  false }, //Dusty
-		{ false, false, true,  true,  true,  true } //Sparkly
+	"S:/Profile/theme-01-icon.bin",
+	"S:/Profile/theme-02-icon.bin",
+	"S:/Profile/theme-03-icon.bin",
+	"S:/Profile/theme-04-icon.bin"
 };
 
 class RobotManager : private Threaded {

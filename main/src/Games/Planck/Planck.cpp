@@ -622,6 +622,9 @@ void Planck::Planck::onBatteryUp(){
 	}
 
 	setBattery(battery + 0.5f);
+
+	batteries++;
+	setAchiIfBigger(Achievement::Planck_juice, batteries);
 }
 
 void Planck::Planck::onPickup(){

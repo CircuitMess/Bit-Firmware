@@ -2,8 +2,7 @@
 #define BIT_FIRMWARE_CAPACITRON_H
 
 #include "RobotDriver.h"
-
-class LEDService;
+#include "LEDService/RoboLEDService.h"
 
 namespace RoboCtrl {
 
@@ -24,7 +23,7 @@ protected:
 	void deinit() override;
 
 private:
-	LEDService* ledService;
+	RoboLEDService ledService;
 
 	bool leftRightAnim = false;
 	uint32_t leftRightTime = 0;

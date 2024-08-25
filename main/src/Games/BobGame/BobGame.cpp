@@ -167,13 +167,16 @@ void BobGame::BobGame::collisionHandler(Item item){
 			audio.play(s);
 			player->filled(this);
 			state = Win;
+
+			if(lives == 3){
+				addAchi(Achievement::Bob_bombs, 1);
+			}
 		}else{
 			robot->blink();
 			audio.play({ { 250, 200, 50 },
 						 { 400, 700, 50 } });
 		}
 	}else{
-		flashAll();
 //		RGB.blink(Pixel::Red);
 		lives--;
 		if(lives > 0){

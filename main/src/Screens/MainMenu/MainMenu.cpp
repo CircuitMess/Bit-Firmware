@@ -18,7 +18,6 @@
 #include "Screens/Game/GameSplashScreen.h"
 #include "Filepaths.hpp"
 #include "../Profile/ProfileScreen.h"
-#include "Services/TwinkleService.h"
 
 uint8_t MainMenu::lastCursor = 0;
 

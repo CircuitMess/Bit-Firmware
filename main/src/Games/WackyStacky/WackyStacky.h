@@ -30,6 +30,7 @@ private:
 	uint8_t currentRobot = 0;
 	uint16_t score = 0;
 	float deadTimer = 0;
+	int perfectCount = 0;
 
 	float swingT = 0.0f;
 	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f };

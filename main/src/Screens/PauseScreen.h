@@ -28,7 +28,6 @@ private:
 	SliderElement* blSlider;
 
 	void buildUI();
-	void addUsedLEDs();
 
 	void onStart() override;
 	void onStop() override;

@@ -253,7 +253,6 @@ void Snake::moveSnake(glm::vec2 speed){
 }
 
 void Snake::gameOver(){
-	flashAll();
 	state = State::GameOver;
 	const uint16_t duration = std::clamp((int) score * 100, 400, 1400);
 	audio.play({ { 100, 80,  100 },
@@ -277,6 +276,8 @@ void Snake::foodEaten(bool initial){
 
 		scoreElement->setScore(++score);
 		addSegment();
+
+		checkAchi();
 
 		if(score >= GridDim.x * GridDim.y){
 			gameWinCounter = 0;
@@ -320,4 +321,14 @@ void Snake::foodEaten(bool initial){
 	pos -= ((Foods[foodIndex].dim - TileDim) / (short) 2);
 	food->setPos(pos);
 
+}
+
+void Snake::checkAchi(){
+	setAchiIfBigger(Achievement::Snake_b, score);
+	setAchiIfBigger(Achievement::Snake_s, score);
+	setAchiIfBigger(Achievement::Snake_g, score);
+
+	if(score >= GridDim.x * GridDim.y - 20){
+		setAchiIfBigger(Achievement::Snake_fill, 1);
+	}
 }

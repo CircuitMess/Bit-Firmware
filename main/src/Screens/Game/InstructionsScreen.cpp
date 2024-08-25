@@ -6,10 +6,7 @@
 #include "GameMenuScreen.h"
 #include "Periph/NVSFlash.h"
 #include "Services/RobotManager.h"
-#include "Settings/Settings.h"
-#include "Filepaths.hpp"
-#include "Services/TwinkleService.h"
-#include "Util/stdafx.h"
+#include "Services/LEDService.h"
 
 InstructionsScreen::InstructionsScreen(Games current, bool launch) : evts(6), currentGame(current), instrElement(obj, currentGame), launch(launch){
 	const Input* input = (Input*) Services.get(Service::Input);
@@ -23,40 +20,23 @@ InstructionsScreen::InstructionsScreen(Games current, bool launch) : evts(6), cu
 }
 
 void InstructionsScreen::onStart(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->stop();
-	}
-	if(auto led = (LEDService*) Services.get(Service::LED)){
-		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
-		if(buttons.up){
-			led->on(LED::Up);
-		}
-		if(buttons.down){
-			led->on(LED::Down);
-		}
-		if(buttons.left){
-			led->on(LED::Left);
-		}
-		if(buttons.right){
-			led->on(LED::Right);
-		}
-		if(buttons.a){
-			led->on(LED::A);
-		}
-		if(buttons.b){
-			led->on(LED::B);
-		}
-	}
-
 	if(!launch){
 		Events::listen(Facility::Input, &evts);
 		InputLVGL::getInstance()->setVertNav(true);
 	}
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->ctrls(currentGame);
 }
 
 void InstructionsScreen::onStop(){
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
+
+	if(!launch){
+		auto led = (LEDService*) Services.get(Service::LED);
+		led->twinkle();
+	}
 }
 
 void InstructionsScreen::loop(){

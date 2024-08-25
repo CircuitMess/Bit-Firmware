@@ -493,4 +493,15 @@ void WackyStacky::WackyStacky::dropped(){
 	}else{
 		audio.play({ { 400, 600, 75 } });
 	}
+
+	if(perfectHit){
+		perfectCount++;
+		setAchiIfBigger(Achievement::Stacky_5, perfectCount);
+	}else{
+		perfectCount = 0;
+	}
+
+	setAchiIfBigger(Achievement::Stacky_highrise, score);
+	setAchiIfBigger(Achievement::Stacky_skyscraper, score);
+	setAchiIfBigger(Achievement::Stacky_super, score);
 }

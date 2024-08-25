@@ -124,130 +124,15 @@ namespace Filepath {
 	}
 }
 
-constexpr const char* AchievementFiles[] = {
-		"S:/Achi/artemis-friendly.bin",
-		"S:/Achi/artemis-sharp.bin",
-		"S:/Achi/bee-b.bin",
-		"S:/Achi/bee-crow.bin",
-		"S:/Achi/bee-g.bin",
-		"S:/Achi/bee-s.bin",
-		"S:/Achi/blocks-4lines.bin",
-		"S:/Achi/blocks-b.bin",
-		"S:/Achi/blocks-clear.bin",
-		"S:/Achi/blocks-g.bin",
-		"S:/Achi/blocks-s.bin",
-		"S:/Achi/bob-bombs.bin",
-		"S:/Achi/bob-green.bin",
-		"S:/Achi/bob-yellow.bin",
-		"S:/Achi/bonk-5.bin",
-		"S:/Achi/bonk-comeback.bin",
-		"S:/Achi/buttons-triple.bin",
-		"S:/Achi/buttons-win.bin",
-		"S:/Achi/capacitron-b.bin",
-		"S:/Achi/capacitron-fire.bin",
-		"S:/Achi/capacitron-g.bin",
-		"S:/Achi/capacitron-s.bin",
-		"S:/Achi/charlie-nomercy.bin",
-		"S:/Achi/charlie-yesmercy.bin",
-		"S:/Achi/dusty-rat.bin",
-		"S:/Achi/dusty-shovel.bin",
-		"S:/Achi/fred-copper.bin",
-		"S:/Achi/fred-detective.bin",
-		"S:/Achi/fred-veteran.bin",
-		"S:/Achi/hertz-3.bin",
-		"S:/Achi/marv-5.bin",
-		"S:/Achi/marv-life.bin",
-		"S:/Achi/marv-newspapers.bin",
-		"S:/Achi/planck-b.bin",
-		"S:/Achi/planck-chauffeur.bin",
-		"S:/Achi/planck-g.bin",
-		"S:/Achi/planck-juice.bin",
-		"S:/Achi/planck-nobrake.bin",
-		"S:/Achi/planck-s.bin",
-		"S:/Achi/resistron-b.bin",
-		"S:/Achi/resistron-deflect.bin",
-		"S:/Achi/resistron-g.bin",
-		"S:/Achi/resistron-s.bin",
-		"S:/Achi/robby-asteroid.bin",
-		"S:/Achi/robby-sharp.bin",
-		"S:/Achi/snake-b.bin",
-		"S:/Achi/snake-fill.bin",
-		"S:/Achi/snake-g.bin",
-		"S:/Achi/snake-s.bin",
-		"S:/Achi/sparkly-nobrake.bin",
-		"S:/Achi/sparkly-overtake.bin",
-		"S:/Achi/sparkly-road.bin",
-		"S:/Achi/stacky-5.bin",
-		"S:/Achi/stacky-highrise.bin",
-		"S:/Achi/stacky-skyscrapper.bin",
-		"S:/Achi/stacky-super.bin"
+struct AchiFile {
+	const char* unlocked;
+	const char* locked;
 };
 
-constexpr const char* AchievementFilesBW[] = {
-		"S:/Achi/BW/artemis-friendly.bin",
-		"S:/Achi/BW/artemis-sharp.bin",
-		"S:/Achi/BW/bee-b.bin",
-		"S:/Achi/BW/bee-crow.bin",
-		"S:/Achi/BW/bee-g.bin",
-		"S:/Achi/BW/bee-s.bin",
-		"S:/Achi/BW/blocks-4lines.bin",
-		"S:/Achi/BW/blocks-b.bin",
-		"S:/Achi/BW/blocks-clear.bin",
-		"S:/Achi/BW/blocks-g.bin",
-		"S:/Achi/BW/blocks-s.bin",
-		"S:/Achi/BW/bob-bombs.bin",
-		"S:/Achi/BW/bob-green.bin",
-		"S:/Achi/BW/bob-yellow.bin",
-		"S:/Achi/BW/bonk-5.bin",
-		"S:/Achi/BW/bonk-comeback.bin",
-		"S:/Achi/BW/buttons-triple.bin",
-		"S:/Achi/BW/buttons-win.bin",
-		"S:/Achi/BW/capacitron-b.bin",
-		"S:/Achi/BW/capacitron-fire.bin",
-		"S:/Achi/BW/capacitron-g.bin",
-		"S:/Achi/BW/capacitron-s.bin",
-		"S:/Achi/BW/charlie-nomercy.bin",
-		"S:/Achi/BW/charlie-yesmercy.bin",
-		"S:/Achi/BW/dusty-rat.bin",
-		"S:/Achi/BW/dusty-shovel.bin",
-		"S:/Achi/BW/fred-copper.bin",
-		"S:/Achi/BW/fred-detective.bin",
-		"S:/Achi/BW/fred-veteran.bin",
-		"S:/Achi/BW/hertz-3.bin",
-		"S:/Achi/BW/marv-5.bin",
-		"S:/Achi/BW/marv-life.bin",
-		"S:/Achi/BW/marv-newspapers.bin",
-		"S:/Achi/BW/planck-b.bin",
-		"S:/Achi/BW/planck-chauffeur.bin",
-		"S:/Achi/BW/planck-g.bin",
-		"S:/Achi/BW/planck-juice.bin",
-		"S:/Achi/BW/planck-nobrake.bin",
-		"S:/Achi/BW/planck-s.bin",
-		"S:/Achi/BW/resistron-b.bin",
-		"S:/Achi/BW/resistron-deflect.bin",
-		"S:/Achi/BW/resistron-g.bin",
-		"S:/Achi/BW/resistron-s.bin",
-		"S:/Achi/BW/robby-asteroid.bin",
-		"S:/Achi/BW/robby-sharp.bin",
-		"S:/Achi/BW/snake-b.bin",
-		"S:/Achi/BW/snake-fill.bin",
-		"S:/Achi/BW/snake-g.bin",
-		"S:/Achi/BW/snake-s.bin",
-		"S:/Achi/BW/sparkly-nobrake.bin",
-		"S:/Achi/BW/sparkly-overtake.bin",
-		"S:/Achi/BW/sparkly-road.bin",
-		"S:/Achi/BW/stacky-5.bin",
-		"S:/Achi/BW/stacky-highrise.bin",
-		"S:/Achi/BW/stacky-skyscrapper.bin",
-		"S:/Achi/BW/stacky-super.bin"
-};
+extern const std::unordered_map<Achievement, AchiFile> AchievementFiles;
 
-constexpr const char* AchivementFile(Achievement achievement){
-	return AchievementFiles[(uint32_t) achievement];
-}
+const char* AchivementFile(Achievement achievement);
 
-constexpr const char* AchivementFileBW(Achievement achievement){
-	return AchievementFilesBW[(uint32_t) achievement];
-}
+const char* AchivementFileBW(Achievement achievement);
 
 #endif //BIT_FIRMWARE_FILEPATHS_HPP

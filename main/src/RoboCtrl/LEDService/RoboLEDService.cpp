@@ -1,19 +1,21 @@
-#include "LEDService.h"
+#include "RoboLEDService.h"
 #include <esp_log.h>
-#include "Devices/SinglePwmLED.h"
 #include "LEDBlinkFunction.h"
-#include "LEDBreatheFunction.h"
-#include "Pins.hpp"
-#include "LEDBreatheToFunction.h"
+#include "Util/stdafx.h"
 
 static const char* TAG = "LEDService";
 
-LEDService::LEDService() : Threaded("LEDService", 4096, 4, 1), instructionQueue(25){
+RoboLEDService::RoboLEDService() : Threaded("LEDService", 4096, 4, 1), instructionQueue(25){
 
 	start();
 }
 
-LEDService::~LEDService(){
+RoboLEDService::~RoboLEDService(){
+	stop(0);
+	while(running()){
+		delayMillis(10);
+	}
+
 	ledFunctions.clear();
 
 	for(auto led: ledDevices){
@@ -21,7 +23,7 @@ LEDService::~LEDService(){
 	}
 }
 
-void LEDService::remove(LED led){
+void RoboLEDService::remove(LED led){
 	if(ledFunctions.contains(led)){
 		ledFunctions.erase(led);
 	}
@@ -32,7 +34,7 @@ void LEDService::remove(LED led){
 	}
 }
 
-void LEDService::on(LED led, bool interrupt){
+void RoboLEDService::on(LED led, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
 			.instruction = On,
@@ -42,7 +44,7 @@ void LEDService::on(LED led, bool interrupt){
 	instructionQueue.post(instruction);
 }
 
-void LEDService::off(LED led, bool interrupt){
+void RoboLEDService::off(LED led, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
 			.instruction = Off,
@@ -52,7 +54,7 @@ void LEDService::off(LED led, bool interrupt){
 	instructionQueue.post(instruction);
 }
 
-void LEDService::blink(LED led, uint32_t count /*= 1*/, uint32_t period /*= 1000*/){
+void RoboLEDService::blink(LED led, uint32_t count /*= 1*/, uint32_t period /*= 1000*/){
 	LEDInstructionInfo instruction{
 			.led = led,
 			.instruction = Blink,
@@ -63,18 +65,7 @@ void LEDService::blink(LED led, uint32_t count /*= 1*/, uint32_t period /*= 1000
 	instructionQueue.post(instruction);
 }
 
-void LEDService::breathe(LED led, uint32_t count /*= 0*/, uint32_t period /*= 1000*/){
-	LEDInstructionInfo instruction{
-			.led = led,
-			.instruction = Breathe,
-			.count = count,
-			.period = period
-	};
-
-	instructionQueue.post(instruction);
-}
-
-void LEDService::set(LED led, float percent, bool interrupt){
+void RoboLEDService::set(LED led, float percent, bool interrupt){
 	LEDInstructionInfo instruction{
 			.led = led,
 			.instruction = Set,
@@ -85,18 +76,7 @@ void LEDService::set(LED led, float percent, bool interrupt){
 	instructionQueue.post(instruction);
 }
 
-void LEDService::breatheTo(LED led, float targetPercent, uint32_t duration){
-	LEDInstructionInfo instruction{
-			.led = led,
-			.instruction = BreatheTo,
-			.period = duration,
-			.targetPercent = std::clamp(targetPercent, 0.0f, 100.0f)
-	};
-
-	instructionQueue.post(instruction);
-}
-
-void LEDService::loop(){
+void RoboLEDService::loop(){
 	for(LEDInstructionInfo instructionInfo; instructionQueue.get(instructionInfo, 10);){
 		if(instructionInfo.instruction == On){
 			if(ledFunctions.contains(instructionInfo.led) && !instructionInfo.interrupt){
@@ -112,10 +92,6 @@ void LEDService::loop(){
 			}
 		}else if(instructionInfo.instruction == Blink){
 			blinkInternal(instructionInfo.led, instructionInfo.count, instructionInfo.period);
-		}else if(instructionInfo.instruction == Breathe){
-			breatheInternal(instructionInfo.led, instructionInfo.count, instructionInfo.period);
-		}else if(instructionInfo.instruction == BreatheTo){
-			breatheToInternal(instructionInfo.led, instructionInfo.targetPercent, instructionInfo.period);
 		}else if(instructionInfo.instruction == Set){
 			if(ledFunctions.contains(instructionInfo.led) && !instructionInfo.interrupt){
 				ledFunctions[instructionInfo.led]->setExitValue(instructionInfo.targetPercent * 0xFF);
@@ -138,7 +114,7 @@ void LEDService::loop(){
 	}
 }
 
-void LEDService::onInternal(LED led){
+void RoboLEDService::onInternal(LED led){
 	if(ledFunctions.contains(led)){
 		ledFunctions.erase(led);
 	}
@@ -154,7 +130,7 @@ void LEDService::onInternal(LED led){
 	ledDevices[led]->setValue(0xFF);
 }
 
-void LEDService::offInternal(LED led){
+void RoboLEDService::offInternal(LED led){
 	if(ledFunctions.contains(led)){
 		ledFunctions.erase(led);
 	}
@@ -170,7 +146,7 @@ void LEDService::offInternal(LED led){
 	ledDevices[led]->setValue(0);
 }
 
-void LEDService::blinkInternal(LED led, uint32_t count, uint32_t period){
+void RoboLEDService::blinkInternal(LED led, uint32_t count, uint32_t period){
 	if(ledFunctions.contains(led)){
 		ledFunctions.erase(led);
 	}
@@ -183,20 +159,7 @@ void LEDService::blinkInternal(LED led, uint32_t count, uint32_t period){
 	ledFunctions[led] = std::make_unique<LEDBlinkFunction>(*ledDevices[led], count, period);
 }
 
-void LEDService::breatheInternal(LED led, uint32_t count, uint32_t period){
-	if(ledFunctions.contains(led)){
-		ledFunctions.erase(led);
-	}
-
-	if(!ledDevices.contains(led)){
-		ESP_LOGW(TAG, "LED %d is set to breathe, but does not exist.", (uint8_t) led);
-		return;
-	}
-
-	ledFunctions[led] = std::make_unique<LEDBreatheFunction>(*ledDevices[led], count, period);
-}
-
-void LEDService::setInternal(LED led, float percent){
+void RoboLEDService::setInternal(LED led, float percent){
 	if(ledFunctions.contains(led)){
 		ledFunctions.erase(led);
 	}
@@ -210,17 +173,4 @@ void LEDService::setInternal(LED led, float percent){
 	}
 
 	ledDevices[led]->setValue(0xFF * percent);
-}
-
-void LEDService::breatheToInternal(LED led, float targetPercent, uint32_t duration){
-	if(ledFunctions.contains(led)){
-		ledFunctions.erase(led);
-	}
-
-	if(!ledDevices.contains(led)){
-		ESP_LOGW(TAG, "LED %d is set to breathe to value, but does not exist.", (uint8_t) led);
-		return;
-	}
-
-	ledFunctions[led] = std::make_unique<LEDBreatheToFunction>(*ledDevices[led], targetPercent, duration);
 }

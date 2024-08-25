@@ -159,6 +159,11 @@ void MarvGame::MarvGame::onLoop(float deltaTime){
 
 			duck->win();
 			speed = 0;
+
+			if(life == 3){
+				addAchi(Achievement::Marv_life, 1);
+				addAchi(Achievement::Marv_5, 1);
+			}
 		}
 	}else{
 		spawnValue += deltaTime;
@@ -262,14 +267,13 @@ void MarvGame::MarvGame::spawn(){
 void MarvGame::MarvGame::duckHit(){
 //	RGB.blinkTwice(Pixel::Red);
 
-	flashAll();
-
 	life--;
 	hearts->setLives(life);
 	if(life == 0){
 		speed = 0.0f;
 		spawnRate = 10000.0f;
 		duck->death();
+		resetAchi(Achievement::Marv_5);
 		audio.play({ { 300, 400, 100 },
 					 { 400, 300, 100 },
 					 { 200, 300, 100 },

@@ -214,7 +214,11 @@ void DustyGame::DustyGame::spawnItems(){
 
 	const auto points = randPoints(MaxItems);
 	for(int i = 0; i < MaxItems; i++){
-		const int id = esp_random() % ItemCount;
+		int id = esp_random() % ItemCount;
+		if(id == 1 && (esp_random() % 100) > 20){ // Battery
+			id = esp_random() % ItemCount;
+		}
+
 		const auto& ItemData = ItemsData[id];
 
 		const glm::vec2 randPos = glm::vec2 { 2, 45 } + points[i] * (glm::vec2 { 128 - 2*2, 128 - 45 - 2 } - glm::vec2 { ItemData.size.x, ItemData.size.y });
@@ -388,6 +392,10 @@ void DustyGame::DustyGame::ratHitItem(Rat* rat, Item* item){
 	auto ratItem = new RatItem(rat, new CaughtItem(caught.item, caught.item->go->getPos() - rat->go->getPos()));
 	caught = {};
 	ratItems.add(ratItem);
+
+	if(item->id == 1){ // Battery
+		addAchi(Achievement::Dusty_rat, 1);
+	}
 
 	state = Retracting;
 }

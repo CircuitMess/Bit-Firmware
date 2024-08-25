@@ -45,7 +45,7 @@ FileArchive::FileArchive(File file, Allocator* alloc, const std::unordered_set<s
 	if(alloc){
 		data = (uint8_t*) alloc->malloc(totalSize);
 		if(data == nullptr){
-			ESP_LOGW(TAG, "Failed allocating %zu B using allocator. Reverting to malloc", totalSize);
+			ESP_LOGW(TAG, "Failed allocating %zu B using allocator (%s). Reverting to malloc", totalSize, file.name());
 			data = (uint8_t*) malloc(totalSize);
 			externalData = false;
 		}else{

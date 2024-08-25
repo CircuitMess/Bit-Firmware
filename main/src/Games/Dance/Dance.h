@@ -97,6 +97,9 @@ private:
 
 	File goToAnim;
 	glm::vec2 goToPos;
+
+	uint32_t noteGoal = 0;
+	uint32_t notesHit = 0;
 };
 
 

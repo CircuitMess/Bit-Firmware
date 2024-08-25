@@ -204,11 +204,11 @@ void FSLVGL::loadAchis(){
 	excluded.reserve((int) Achievement::COUNT);
 
 	auto achiMan = (AchievementSystem*) Services.get(Service::Achievements);
-	for(int i = 0; i < (int) Achievement::COUNT; i++){
-		if(achiMan->isUnlocked((Achievement) i)){
-			excluded.emplace(AchievementFilesBW[i] + 7);
+	for(const auto& files : AchievementFiles){
+		if(achiMan->isUnlocked(files.first)){
+			excluded.emplace(files.second.locked + 7);
 		}else{
-			excluded.emplace(AchievementFiles[i] + 7);
+			excluded.emplace(files.second.unlocked + 7);
 		}
 	}
 

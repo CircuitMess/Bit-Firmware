@@ -181,6 +181,10 @@ void Invaders::Invaders::shoot(){
 
 				audio.play(InvaderDeathSounds[type]);
 
+				setAchiIfBigger(Achievement::Resistron_b, score);
+				setAchiIfBigger(Achievement::Resistron_g, score);
+				setAchiIfBigger(Achievement::Resistron_s, score);
+
 			}else{
 				audio.play({ { 80, 80, 80 } });
 			}
@@ -193,6 +197,8 @@ void Invaders::Invaders::shoot(){
 			playerBullet.reset();
 			removeObject(enemyBullet);
 			enemyBullet.reset();
+
+			addAchi(Achievement::Resistron_deflect, 1);
 		});
 	}
 }
@@ -314,6 +320,10 @@ Invaders::Invaders::Invader& Invaders::Invaders::spawnInvader(uint8_t type, uint
 				score += hp;
 				scoreDisplay->setScore(score);
 				audio.play(InvaderDeathSounds[type]);
+
+				setAchiIfBigger(Achievement::Resistron_b, score);
+				setAchiIfBigger(Achievement::Resistron_g, score);
+				setAchiIfBigger(Achievement::Resistron_s, score);
 			}else{
 				audio.play({ { 80, 80, 80 } });
 			}

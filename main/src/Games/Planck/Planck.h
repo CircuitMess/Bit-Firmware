@@ -99,6 +99,8 @@ private:
 	//hole needs to be generated after each ramp
 	bool holePending[HorizontalTiles] = { 0 };
 
+	int batteries = 0;
+
 private:
 	void generateRoad();
 	bool onCollision();

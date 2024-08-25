@@ -11,27 +11,22 @@
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
 #include "Filepaths.hpp"
-#include "Services/TwinkleService.h"
-#include "Devices/SinglePwmLED.h"
 #include "InstructionsElement.h"
+#include "Services/LEDService.h"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
 void PauseScreen::onStart(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->start();
-	}
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->twinkle();
 }
 
 void PauseScreen::onStop(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->stop();
-	}
-
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
@@ -189,85 +184,28 @@ void PauseScreen::buildUI(){
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
 }
 
-void PauseScreen::addUsedLEDs(){
-	if(auto led = (LEDService*) Services.get(Service::LED)){
-		const auto& buttons = GameButtonsUsed[(uint8_t) currentGame];
-		uint8_t channel = 3;
-		if(buttons.up){
-			auto pwmInfo = PwmMappings.at(LED::Up);
-			led->add<SinglePwmLED>(LED::Up, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-		if(buttons.down){
-			auto pwmInfo = PwmMappings.at(LED::Down);
-			led->add<SinglePwmLED>(LED::Down, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-		if(buttons.left){
-			auto pwmInfo = PwmMappings.at(LED::Left);
-			led->add<SinglePwmLED>(LED::Left, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-		if(buttons.right){
-			auto pwmInfo = PwmMappings.at(LED::Right);
-			led->add<SinglePwmLED>(LED::Right, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-		if(buttons.a){
-			auto pwmInfo = PwmMappings.at(LED::A);
-			led->add<SinglePwmLED>(LED::A, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-		if(buttons.b){
-			auto pwmInfo = PwmMappings.at(LED::B);
-			led->add<SinglePwmLED>(LED::B, pwmInfo.pin, (ledc_channel_t) channel++, pwmInfo.limit);
-		}
-	}
-}
-
 void PauseScreen::showControls(){
 	state = State::IgnoreInput;
-
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->stop();
-	}
-	addUsedLEDs();
-
-	if(auto led = (LEDService*) Services.get(Service::LED)){
-		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
-		if(buttons.up){
-			led->on(LED::Up);
-		}
-		if(buttons.down){
-			led->on(LED::Down);
-		}
-		if(buttons.left){
-			led->on(LED::Left);
-		}
-		if(buttons.right){
-			led->on(LED::Right);
-		}
-		if(buttons.a){
-			led->on(LED::A);
-		}
-		if(buttons.b){
-			led->on(LED::B);
-		}
-	}
 
 	lv_obj_clean(*this);
 	lv_obj_invalidate(*this);
 
 	new InstructionsElement(*this, currentGame);
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->ctrls(currentGame);
 }
 
 void PauseScreen::exitControls(){
 	state = State::Pause;
-
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->start();
-	}
 
 	lv_timer_handler();
 
 	lv_obj_clean(*this);
 	lv_obj_invalidate(*this);
 
-
 	buildUI();
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->twinkle();
 }

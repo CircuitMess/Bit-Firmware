@@ -5,7 +5,6 @@
 #include "Periph/NVSFlash.h"
 #include "Services/RobotManager.h"
 #include "Settings/Settings.h"
-#include "Services/TwinkleService.h"
 #include "Util/stdafx.h"
 #include "Screens/Game/GameMenuScreen.h"
 #include "Util/Notes.h"
@@ -135,28 +134,6 @@ void GameSplashScreen::loop(){
 
 void GameSplashScreen::onStart(){
 	startTime = millis();
-
-	if(auto led = (LEDService*) Services.get(Service::LED)){
-		auto buttons = GameButtonsUsed[(uint8_t) currentGame];
-		if(buttons.up){
-			led->on(LED::Up);
-		}
-		if(buttons.down){
-			led->on(LED::Down);
-		}
-		if(buttons.left){
-			led->on(LED::Left);
-		}
-		if(buttons.right){
-			led->on(LED::Right);
-		}
-		if(buttons.a){
-			led->on(LED::A);
-		}
-		if(buttons.b){
-			led->on(LED::B);
-		}
-	}
 
 	const auto settings = (Settings*) Services.get(Service::Settings);
 	if(settings->get().sound && IntroSounds.contains(currentGame)){

@@ -29,11 +29,11 @@ const std::map<LED, PwmMappingInfo> PwmMappings = {
 		{ LED::Menu,  { (gpio_num_t) LED_MENU,  0x10 }}
 };
 
-class LEDService : private Threaded {
+class RoboLEDService : private Threaded {
 public:
-	explicit LEDService();
+	explicit RoboLEDService();
 
-	virtual ~LEDService();
+	virtual ~RoboLEDService();
 
 	template<typename T, typename... Args>
 	void add(LED led, Args&& ... args){
@@ -50,11 +50,7 @@ public:
 
 	void blink(LED led, uint32_t count = 1, uint32_t period = 1000);
 
-	void breathe(LED led, uint32_t count = 0, uint32_t period = 1000);
-
 	void set(LED led, float percent, bool interrupt = true);
-
-	void breatheTo(LED led, float targetPercent, uint32_t duration = 250);
 
 	inline bool isRegistered(LED led) const{
 		return ledDevices.contains(led);
@@ -68,9 +64,7 @@ private:
 		On,
 		Off,
 		Blink,
-		Breathe,
-		Set,
-		BreatheTo
+		Set
 	};
 
 	struct LEDInstructionInfo {
@@ -93,11 +87,7 @@ private:
 
 	void blinkInternal(LED led, uint32_t count, uint32_t period);
 
-	void breatheInternal(LED led, uint32_t count, uint32_t period);
-
 	void setInternal(LED led, float percent);
-
-	void breatheToInternal(LED led, float targetPercent, uint32_t duration);
 };
 
 #endif //PERSE_ROVER_LEDSERVICE_H

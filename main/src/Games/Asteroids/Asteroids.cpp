@@ -154,6 +154,14 @@ void Asteroids::Asteroids::onLoop(float deltaTime){
 				player.getObj()->setPos(player.getObj()->getPos() + direction * winAcceleration * (float) pow(winTimer - 1.0f, 2));
 			}
 			if(winTimer >= winTime){
+				if(noMiss){
+					addAchi(Achievement::Robby_sharp, 1);
+				}
+
+				if(life == 3){
+					addAchi(Achievement::Robby_asteroid, 1);
+				}
+
 				exit();
 			}
 			break;
@@ -247,6 +255,7 @@ void Asteroids::Asteroids::shootBullet(){
 	collision.wallsAll(*bullet, [this, b](){
 		bulletPool.erase(std::remove(bulletPool.begin(), bulletPool.end(), b), bulletPool.end());
 		removeObject(b.gObj);
+		noMiss = false;
 	});
 }
 
@@ -359,8 +368,6 @@ void Asteroids::Asteroids::updateInvincibility(float delta){
 
 void Asteroids::Asteroids::playerHit(){
 //	RGB.blinkTwice(Pixel::Red);
-
-	flashAll();
 
 	life--;
 	hearts->setLives(life);

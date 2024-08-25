@@ -28,6 +28,7 @@ LVModal::LVModal(LVScreen* parent) : LVObject((lv_obj_t*) *parent), parentScreen
 
 	lv_obj_set_size(container, 102, 92);
 	lv_obj_set_style_pad_all(container, 8, 0);
+	lv_obj_set_style_pad_left(container, 6, 0);
 	lv_obj_set_style_bg_img_src(container, THEMED_FILE(Popup, settings->get().theme), 0);
 	lv_obj_set_style_bg_img_opa(container, LV_OPA_COVER, 0);
 

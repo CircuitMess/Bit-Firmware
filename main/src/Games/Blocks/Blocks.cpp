@@ -171,7 +171,6 @@ void Blocks::onStop(){
 }
 
 void Blocks::gameOver(){
-	flashAll();
 	state = State::GameOver;
 	audio.play({ { 800, 100, 700 },
 				 { 0,   0,   100 },
@@ -345,6 +344,24 @@ void Blocks::checkLineClear(){
 	linesCleared += multipleLinesCleared;
 	if(linesCleared >= (level + 1) * 10){
 		level++;
+	}
+
+	setAchiIfBigger(Achievement::Blocks_b, score);
+	setAchiIfBigger(Achievement::Blocks_s, score);
+	setAchiIfBigger(Achievement::Blocks_g, score);
+
+	bool empty = true;
+	for(int y = 0; empty && y < GridDim.y; ++y){
+		for(int x = 0; x < GridDim.x; ++x){
+			if(blocksMatrix[x][y]){
+				empty = false;
+				break;
+			}
+		}
+	}
+
+	if(empty){
+		addAchi(Achievement::Blocks_clear, 1);
 	}
 }
 

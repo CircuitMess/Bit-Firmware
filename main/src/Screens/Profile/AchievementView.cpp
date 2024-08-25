@@ -1,7 +1,6 @@
 #include "AchievementView.h"
 #include "Services/AchievementSystem.h"
 #include "Filepaths.hpp"
-#include "Services/AchievementTextData.hpp"
 #include "../GrayscaleImageElement.h"
 #include "Util/Services.h"
 

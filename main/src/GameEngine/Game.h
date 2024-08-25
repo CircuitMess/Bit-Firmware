@@ -57,6 +57,8 @@ protected:
 	void removeObjects(std::initializer_list<const GameObjPtr> objs);
 
 	void addAchi(Achievement ID, int32_t increment);
+	void setAchiIfBigger(Achievement ID, int32_t value);
+	void resetAchi(Achievement ID);
 
 	CollisionSystem collision;
 
@@ -70,11 +72,6 @@ protected:
 	virtual uint32_t getXP() const = 0;
 
 	inline virtual uint32_t getScore() const { return 0; }
-
-	/**
-	 * Flashes all used LEDs. Used when taking damage, etc.
-	 */
-	void flashAll();
 
 	inline static bool exited = false; // yolo
 	// Exit is going to get called in the game's onLoop, and when exit is called, the Game object
@@ -104,13 +101,6 @@ private:
 
 	std::shared_ptr<RoboCtrl::RobotDriver> robot;
 
-	ButtonsUsage buttons;
-	class LEDService* ledService;
-
-	void handleLEDs(const Input::Data& data);
-
-	static constexpr uint32_t FlashPeriod = 350; //ms
-	static constexpr uint8_t FlashCount = 4;
 };
 
 

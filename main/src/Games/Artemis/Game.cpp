@@ -207,6 +207,10 @@ void ArtemisGame::PewPew::onPos(){
 		   Chirp { 800, 1000, 200 },
 		});
 
+		if(lives == 3){
+			addAchi(Achievement::Artemis_sharp, 1);
+		}
+
 		finish();
 		return;
 	}
@@ -222,11 +226,11 @@ void ArtemisGame::PewPew::onPos(){
 void ArtemisGame::PewPew::onNeg(){
 	if(done) return;
 
-	flashAll();
-
 	shootHit = true;
 	lives--;
 	hearts->setLives(lives);
+
+	addAchi(Achievement::Artemis_friendly, 1);
 
 	roboFastT = 0.001;
 	robot->setSpeed(0);

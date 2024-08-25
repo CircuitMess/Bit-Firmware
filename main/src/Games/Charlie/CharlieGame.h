@@ -70,6 +70,9 @@ private:
 	void gameOver();
 	void updateOver(float dt);
 
+	int cacoons = 0;
+	int escapes = 0;
+
 };
 
 };
