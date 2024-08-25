@@ -100,7 +100,7 @@ void Game::addAchi(Achievement id, int32_t increment){
 }
 
 void Game::setAchiIfBigger(Achievement ID, int32_t value){
-	const auto current = achievementSystem->get(ID);
+	const auto current = achievementSystem->get(ID).progress;
 	if(value <= current) return;
 	achievementSystem->increment(ID, value - current);
 }
