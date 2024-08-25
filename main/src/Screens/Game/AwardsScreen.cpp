@@ -29,10 +29,10 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp, std::
 
 	if(xp > 0){
 		setAwardMode(Award::XP);
-	}else if(!this->achievements.empty()){
-		setAwardMode(Award::Achievement);
 	}else if(hsm->isHighScore(currentGame, highScore)){
 		setAwardMode(Award::HighScore);
+	}else if(!this->achievements.empty()){
+		setAwardMode(Award::Achievement);
 	}else{
 		exit();
 	}
@@ -327,11 +327,11 @@ void AwardsScreen::loop(){
 				exit();
 				return;
 			}else if(data->btn == Input::A){
-				if(awardMode < Award::Achievement && !achievements.empty()){
-					setAwardMode(Award::Achievement);
-				}else if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
+				if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
 					setAwardMode(Award::HighScore);
-				}else{
+				}else if(awardMode < Award::Achievement && !achievements.empty()){
+					setAwardMode(Award::Achievement);
+				}else if(awardMode != Award::Achievement){
 					free(e.data);
 					exit();
 					return;

@@ -79,9 +79,6 @@ void AchievementView::buildUI(){
 				lv_group_focus_next(group);
 			}
 		}else if(key == LV_KEY_ESC){
-			delete ach->modal;
-			ach->modal = nullptr;
-
 			ach->deselect();
 		}
 	};

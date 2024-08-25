@@ -19,8 +19,8 @@ private:
 		None,
 		XP,
 		LevelUp,
-		Achievement,
-		HighScore
+		HighScore,
+		Achievement
 	};
 
 	uint32_t highScore;
