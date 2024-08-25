@@ -95,6 +95,14 @@ void Sparkly::Sparkly::onLoad(){
 	raceTimeElement->getGO()->getRenderComponent()->setLayer(billboardGameObjs.size());
 }
 
+void Sparkly::Sparkly::onStop(){
+	acceleration = 0;
+	spdZ = 0;
+	lPressed = rPressed = false;
+	lastA = Input::Data::Release;
+	lastB = Input::Data::Release;
+}
+
 void Sparkly::Sparkly::onLoop(float deltaTime){
 	Game::onLoop(deltaTime);
 
@@ -258,23 +266,29 @@ void Sparkly::Sparkly::preRender(Sprite& canvas){
 void Sparkly::Sparkly::handleInput(const Input::Data& data){
 	Game::handleInput(data);
 
-	if(inputEnabled){
-		if(data.btn == Input::A && data.action != lastA){
-			acceleration += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
-		}else if(data.btn == Input::B && data.action != lastB){
-			acceleration += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
-		}else if(data.btn == Input::Left){
+	if(data.btn == Input::A && data.action != lastA){
+		acceleration += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
+	}else if(data.btn == Input::B && data.action != lastB){
+		acceleration += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
+	}else if(data.btn == Input::Left){
+		if(data.action == Input::Data::Press || (data.action == Input::Data::Release && lPressed)){
 			spdZ += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
-		}else if(data.btn == Input::Right){
+			lPressed = true;
+		}
+	}else if(data.btn == Input::Right){
+		if(data.action == Input::Data::Press || (data.action == Input::Data::Release && rPressed)){
+			rPressed = true;
 			spdZ += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
 		}
-
-		if(data.btn == Input::A){
-			lastA = data.action;
-		}else if(data.btn == Input::B){
-			lastB = data.action;
-		}
 	}
+
+	if(data.btn == Input::A){
+		lastA = data.action;
+	}else if(data.btn == Input::B){
+		lastB = data.action;
+	}
+
+	if(!inputEnabled) return;
 
 	if(!playerCar){
 		return;
@@ -450,8 +464,10 @@ void Sparkly::Sparkly::movement(float dt){
 	const uint16_t collisionPoints = isColliding();
 	const float collisionFactor = collisionPoints > 0 ? 5.0f : 1.0f;
 
-	spd += acceleration * dt * collisionFactor - SIGN(spd) * Friction * dt;
-	spd = glm::clamp(spd, -4.0f, 4.0f);
+	if(inputEnabled){
+		spd += acceleration * dt * collisionFactor - SIGN(spd) * Friction * dt;
+		spd = glm::clamp(spd, -4.0f, 4.0f);
+	}
 
 	if(spd != 0.0f){
 		rotZ += (spd > 0 ? 1.0f : -1.0f) * spdZ * dt * 50.0f * collisionFactor;

@@ -22,6 +22,7 @@ public:
 
 protected:
 	virtual void onLoad() override;
+	virtual void onStop() override;
 	virtual void onLoop(float deltaTime) override;
 	virtual void preRender(Sprite& canvas) override;
 	virtual void handleInput(const Input::Data& data) override;
@@ -158,6 +159,9 @@ private:;
 
 	Input::Data::Action lastA = Input::Data::Release;
 	Input::Data::Action lastB = Input::Data::Release;
+
+	bool lPressed = false;
+	bool rPressed = false;
 
 private:
 	void sampleGround(Sprite& canvas);
