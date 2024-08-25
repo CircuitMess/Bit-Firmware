@@ -195,12 +195,21 @@ void Sparkly::Sparkly::onLoop(float deltaTime){
 	}
 
 	if(finishTime > 0.0f && timeSinceGameStart - finishTime >= 4.5f){
+		if(!braked){
+			addAchi(Achievement::Sparkly_nobrake, 1);
+		}
+
+		if(!hitBarrier){
+			addAchi(Achievement::Sparkly_road, 1);
+		}
+
 		exit();
 		return;
 	}
 
 	if(isColliding() > 0){
 		spd = 0.0f;
+		hitBarrier = true;
 	}
 
 	if(finishTime > 0.0f && timeSinceGameStart > finishTime){
@@ -269,6 +278,10 @@ void Sparkly::Sparkly::handleInput(const Input::Data& data){
 	if(data.btn == Input::A && data.action != lastA){
 		acceleration += (data.action == Input::Data::Press) ? 1.0f : -1.0f;
 	}else if(data.btn == Input::B && data.action != lastB){
+		if(inputEnabled && data.action == Input::Data::Press && spd > 0){
+			braked = true;
+		}
+
 		acceleration += (data.action == Input::Data::Press) ? -1.0f : 1.0f;
 	}else if(data.btn == Input::Left){
 		if(data.action == Input::Data::Press || (data.action == Input::Data::Release && lPressed)){

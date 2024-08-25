@@ -178,6 +178,9 @@ private:;
 	bool lPressed = false;
 	bool rPressed = false;
 
+	bool braked = false;
+	bool hitBarrier = false;
+
 private:
 	void sampleGround(Sprite& canvas);
 	uint16_t sampleSkybox(int x, int y);

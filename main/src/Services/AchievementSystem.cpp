@@ -55,7 +55,7 @@ static constexpr const AchievementData DefaultAchievementData[(uint32_t) Achieve
 		{ Achievement::Snake_g,           200,  0 },
 		{ Achievement::Snake_s,           100,  0 },
 		{ Achievement::Sparkly_nobrake,   1,    0 },
-		{ Achievement::Sparkly_overtake,  1,    0 },
+		// { Achievement::Sparkly_overtake,  1,    0 },
 		{ Achievement::Sparkly_road,      1,    0 },
 		{ Achievement::Stacky_5,          5,    0 },
 		{ Achievement::Stacky_highrise,   50,   0 },

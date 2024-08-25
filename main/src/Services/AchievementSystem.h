@@ -59,7 +59,7 @@ enum class Achievement : uint32_t {
 	Snake_g,
 	Snake_s,
 	Sparkly_nobrake,
-	Sparkly_overtake,
+	// Sparkly_overtake,
 	Sparkly_road,
 	Stacky_5,
 	Stacky_highrise,
