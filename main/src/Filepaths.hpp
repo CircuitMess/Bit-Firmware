@@ -17,6 +17,7 @@ namespace Filepath {
 	inline static constexpr const char* RobotPopup = "S:/ModalBg2.bin";
 	inline static constexpr const char* Splash = "/spiffs/Splash.bmp";
 	inline static constexpr const char* SplashWithBackground = "/spiffs/bgSplash.bmp";
+	inline static constexpr const char* Modal = "S:/ModalBg.bin";
 
 	namespace Theme1 {
 		inline static constexpr const char* Background = "S:/Theme1/bg.bin";
@@ -111,7 +112,6 @@ namespace Filepath {
 	}
 
 	namespace Award {
-		inline static constexpr const char* BackgroundSmall = "S:/Award/BG-small.bin";
 		inline static constexpr const char* LeveledUp = "S:/Award/leveledup.bin";
 		inline static constexpr const char* AchievementsUnlocked = "S:/Award/achievements.bin";
 		inline static constexpr const char* XpFrame = "S:/Award/XP-frame.bin";

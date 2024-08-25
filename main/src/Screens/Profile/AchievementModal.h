@@ -6,10 +6,8 @@
 
 class AchievementModal : public LVModal {
 public:
-	AchievementModal(LVScreen* parent, AchievementData data);
+	AchievementModal(LVScreen* parent, Achievement achi);
 
-private:
-	void buildUI(AchievementData data);
 };
 
 

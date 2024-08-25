@@ -13,7 +13,7 @@
 #include "Util/Notes.h"
 #include "Settings/Settings.h"
 #include "Filepaths.hpp"
-#include "Screens/Profile/AchievementView.h"
+#include "Screens/AchievementElement.h"
 
 AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp, std::vector<AchievementData>& achievements) :
 		highScore(highScore), xp(xp), achievements(std::move(achievements)), evts(6), currentGame(current), start(millis()){
@@ -29,10 +29,10 @@ AwardsScreen::AwardsScreen(Games current, uint32_t highScore, uint32_t xp, std::
 
 	if(xp > 0){
 		setAwardMode(Award::XP);
-	}else if(hsm->isHighScore(currentGame, highScore)){
-		setAwardMode(Award::HighScore);
 	}else if(!this->achievements.empty()){
 		setAwardMode(Award::Achievement);
+	}else if(hsm->isHighScore(currentGame, highScore)){
+		setAwardMode(Award::HighScore);
 	}else{
 		exit();
 	}
@@ -83,18 +83,24 @@ void AwardsScreen::setAwardMode(Award award){
 	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
 
 	auto bgSmall = lv_img_create(*this);
-	lv_img_set_src(bgSmall, Filepath::Award::BackgroundSmall);
+	lv_img_set_src(bgSmall, Filepath::Modal);
 	lv_obj_align(bgSmall, LV_ALIGN_CENTER, 0, 0);
+	lv_obj_add_flag(bgSmall, LV_OBJ_FLAG_FLOATING);
+	lv_obj_center(bgSmall);
+
 
 	rest = lv_obj_create(*this);
-	lv_obj_set_size(rest, 108, 82);
+	lv_obj_set_size(rest, 102, 92);
+	lv_obj_set_style_pad_all(rest, 8, 0);
+	lv_obj_set_style_pad_left(rest, 5, 0);
+	lv_obj_set_style_pad_bottom(rest, 5, 0);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
 	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 	lv_obj_set_align(rest, LV_ALIGN_CENTER);
+	lv_obj_add_flag(rest, LV_OBJ_FLAG_FLOATING);
+	lv_obj_center(rest);
 
 	if(award == Award::HighScore){
-		lv_obj_set_style_pad_all(rest, 3, 0);
-
 		lv_style_set_width(itemStyle, lv_pct(86));
 		lv_style_set_height(itemStyle, 16);
 		lv_style_set_border_width(itemStyle, 1);
@@ -145,8 +151,6 @@ void AwardsScreen::setAwardMode(Award award){
 		InputLVGL::getInstance()->setVertNav(true);
 
 	}else if(award == Award::XP){
-		lv_obj_set_style_pad_all(rest, 6, 0);
-
 		lv_style_set_width(itemStyle, lv_pct(86));
 		lv_style_set_height(itemStyle, 16);
 		lv_style_set_radius(itemStyle, 2);
@@ -176,7 +180,6 @@ void AwardsScreen::setAwardMode(Award award){
 		mkLabel(("+" + std::to_string(xp) + "XP").c_str());
 
 		auto lvl = mkLabel(("Level " + std::to_string(xpSystem->getLevel())).c_str());
-		lv_obj_set_style_pad_top(lvl, -3, 0);
 
 		auto bar = lv_img_create(rest);
 		lv_img_set_src(bar, Filepath::Award::XpFrame);
@@ -191,8 +194,6 @@ void AwardsScreen::setAwardMode(Award award){
 
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::LevelUp){
-		lv_obj_set_style_pad_all(rest, 6, 0);
-
 		lv_style_set_width(itemStyle, lv_pct(86));
 		lv_style_set_height(itemStyle, 16);
 		lv_style_set_radius(itemStyle, 2);
@@ -230,19 +231,9 @@ void AwardsScreen::setAwardMode(Award award){
 		xpBar = new XPBar(XPBarLength::Long, bar, 0.0f);
 		lv_obj_set_align(*xpBar, LV_ALIGN_CENTER);
 	}else if(award == Award::Achievement){
-		lv_obj_set_style_pad_top(rest, 3, 0);
-
 		auto img = lv_img_create(rest);
 		lv_img_set_src(img, Filepath::Award::AchievementsUnlocked);
-		lv_obj_set_align(img, LV_ALIGN_TOP_MID);
-
-		lv_group_set_editing(inputGroup, true);
-
-		achView = new AchievementView(this, rest, 4, 90, 27, achievements);
-		lv_obj_set_pos(*achView, 17, 78);
-
-		lv_group_add_obj(inputGroup, *achView);
-		achView->select();
+		lv_obj_set_align(img, LV_ALIGN_CENTER);
 	}else{
 		exit();
 	}
@@ -255,9 +246,7 @@ void AwardsScreen::setAwardMode(Award award){
 void AwardsScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
 
-	if(awardMode == Award::Achievement){
-		achView->select();
-	}else if(awardMode == Award::HighScore){
+	if(awardMode == Award::HighScore){
 		InputLVGL::getInstance()->setVertNav(true);
 	}
 }
@@ -322,16 +311,17 @@ void AwardsScreen::loop(){
 
 		auto data = (Input::Data*) e.data;
 		if(data->action == Input::Data::Release){
-			if(data->btn == Input::Menu || data->btn == Input::B){
-				free(e.data);
-				exit();
-				return;
-			}else if(data->btn == Input::A){
-				if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
-					setAwardMode(Award::HighScore);
+			if(data->btn == Input::A || data->btn == Input::B){
+				if(awardMode == Award::Achievement && !achievements.empty()){
+					const auto achi = achievements.back().achievementID;
+					achievements.pop_back();
+					lv_obj_clean(rest);
+					new AchievementElement(rest, achi);
 				}else if(awardMode < Award::Achievement && !achievements.empty()){
 					setAwardMode(Award::Achievement);
-				}else if(awardMode != Award::Achievement){
+				}else if(awardMode < Award::HighScore && hsm->isHighScore(currentGame, highScore)){
+					setAwardMode(Award::HighScore);
+				}else{
 					free(e.data);
 					exit();
 					return;

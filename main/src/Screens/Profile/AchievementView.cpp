@@ -91,7 +91,9 @@ void AchievementView::buildUI(){
 			return;
 		}
 
-		view->modal = new AchievementModal(view->screen, view->achievementsVector[index]);
+		auto achi = view->achievementsVector[index].achievementID;
+
+		view->modal = new AchievementModal(view->screen, achi);
 	};
 
 	for(size_t i = 0; i < achievementsVector.size(); ++i){

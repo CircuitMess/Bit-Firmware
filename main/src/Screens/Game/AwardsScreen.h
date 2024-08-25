@@ -19,8 +19,8 @@ private:
 		None,
 		XP,
 		LevelUp,
-		HighScore,
-		Achievement
+		Achievement,
+		HighScore
 	};
 
 	uint32_t highScore;
@@ -40,8 +40,6 @@ private:
 	lv_obj_t* value;
 
 	class XPBar* xpBar = nullptr;
-
-	class AchievementView *achView;
 
 	LVStyle itemStyle;
 
