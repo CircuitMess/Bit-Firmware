@@ -175,6 +175,11 @@ void Pong::setCollision(){
 
 	collision.wallLeft(*ball, [this](){
 		enemyScore++;
+
+		if(enemyScore == ScoreLimit-1 && playerSpeed == 0){
+			possibleComeback = true;
+		}
+
 		scoreLabel->setText(std::to_string(playerScore) + " : " + std::to_string(enemyScore));
 		ballSpeed.x = abs(ballSpeed.x);
 		ballSpeed.y = (esp_random() % 2 == 1) ? BallBaseSpeed : -BallBaseSpeed;
@@ -189,8 +194,6 @@ void Pong::setCollision(){
 			ballSpeed.y = 0;
 			changeState(State::PressToStart);
 		}
-
-		flashAll();
 
 		audio.play({ { 400, 100, 200 },
 					 { 0,   0,   80 },
@@ -252,6 +255,17 @@ void Pong::changeState(Pong::State newState){
 		case State::End:
 			statusLabel->setText(std::string(playerScore > enemyScore ? "Player" : "Bit") + " wins!");
 			endCounter = 0;
+
+			if(playerScore > enemyScore){
+				addAchi(Achievement::Bonk_5, 1);
+
+				if(possibleComeback){
+					addAchi(Achievement::Bonk_comeback, 1);
+				}
+			}else{
+				resetAchi(Achievement::Bonk_5);
+			}
+
 			break;
 	}
 }

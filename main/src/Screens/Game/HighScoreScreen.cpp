@@ -121,25 +121,22 @@ void HighScoreScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
+	lv_obj_set_size(bg, 128, 128);
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
+	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
 
-	auto top = lv_obj_create(*this);
-	lv_obj_set_size(top, 128, 42);
-	lv_obj_set_flex_flow(top, LV_FLEX_FLOW_ROW);
-	lv_obj_set_flex_align(top, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-	auto img = lv_img_create(top);
-	lv_img_set_src(img, (gameUIPath + "title.bin").c_str());
+	auto title = lv_img_create(*this);
+	lv_obj_set_size(title, 128, 40);
+	lv_img_set_src(title, (gameUIPath + "title.bin").c_str());
 
 	auto rest = lv_obj_create(*this);
-	lv_obj_set_size(rest, 128, 86);
+	lv_obj_set_size(rest, 128, 88);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
 	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-	lv_obj_set_style_pad_all(rest, 4, 0);
+	lv_obj_set_style_pad_ver(rest, 4, 0);
 
 	lv_style_set_width(itemStyle, lv_pct(100));
-	lv_style_set_height(itemStyle, 16);
+	lv_style_set_height(itemStyle, 18);
 	lv_style_set_bg_img_opa(itemStyle, LV_OPA_100);
 	lv_style_set_bg_img_src(itemStyle, selectPath.c_str());
 
@@ -158,7 +155,7 @@ void HighScoreScreen::buildUI(){
 
 	if(const HighScoreManager* hsm = (HighScoreManager*) Services.get(Service::HighScore)){
 		if(hsm->hasHighScore(currentGame)){
-			const std::array<HighScore, 5>& highScores = hsm->getAll(currentGame);
+			const auto& highScores = hsm->getAll(currentGame);
 
 			for(const HighScore& highScore : highScores){
 				if(highScore.score > 0){

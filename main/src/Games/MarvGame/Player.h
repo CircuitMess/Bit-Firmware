@@ -62,6 +62,8 @@ private:
 	File ducked;
 	File unDucking;
 	File winAnim;
+
+	File goToAnim;
 };
 }
 

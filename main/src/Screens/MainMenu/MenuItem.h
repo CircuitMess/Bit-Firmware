@@ -17,7 +17,6 @@ public:
 
 private:
 	class GrayscaleImageElement* img;
-	lv_obj_t* border;
 	lv_obj_t* overlay;
 
 	LVStyle glow;

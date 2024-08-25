@@ -12,7 +12,7 @@
 #include "Devices/Input.h"
 #include "Devices/Battery.h"
 #include "Util/Notes.h"
-#include <esp_spiffs.h>
+#include "FS/SPIFFS.h"
 #include "UIThread.h"
 #include "Services/Robots.h"
 #include "Services/RobotManager.h"
@@ -31,8 +31,8 @@
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
 #include "driver/rtc_io.h"
-#include "Services/LEDService/LEDService.h"
-#include "Services/TwinkleService.h"
+#include "Services/LEDService.h"
+#include "Services/Allocator.h"
 
 BacklightBrightness* bl;
 
@@ -51,30 +51,9 @@ void shutdown(){
 	esp_deep_sleep_start();
 }
 
-bool initSPIFFS(){
-	esp_vfs_spiffs_conf_t conf = {
-			.base_path = "/spiffs",
-			.partition_label = "storage",
-			.max_files = 8,
-			.format_if_mount_failed = false
-	};
-
-	auto ret = esp_vfs_spiffs_register(&conf);
-	if(ret != ESP_OK){
-		if(ret == ESP_FAIL){
-			ESP_LOGE("FS", "Failed to mount or format filesystem");
-		}else if(ret == ESP_ERR_NOT_FOUND){
-			ESP_LOGE("FS", "Failed to find SPIFFS partition");
-		}else{
-			ESP_LOGE("FS", "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-		}
-		return false;
-	}
-
-	return true;
-}
-
 void init(){
+	auto alloc = new Allocator(86 * 1024);
+
 	gpio_config_t cfg = {
 			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
 			.mode = GPIO_MODE_INPUT
@@ -119,15 +98,10 @@ void init(){
 	}
 	Services.set(Service::Battery, battery);
 
-
 	auto led = new LEDService();
 	Services.set(Service::LED, led);
 
-	TwinkleService* twinkleService = new TwinkleService();
-	Services.set(Service::Twinkle, twinkleService);
-	twinkleService->start();
-
-	if(!initSPIFFS()) return;
+	if(!SPIFFS::init()) return;
 
 	auto disp = new Display();
 	Services.set(Service::Display, disp);
@@ -155,9 +129,9 @@ void init(){
 
 	auto lvgl = new LVGL(*disp);
 	auto lvInput = new InputLVGL();
-	auto lvFS = new FSLVGL('S');
+	auto lvFS = new FSLVGL('S', alloc);
 
-	auto gamer = new GameRunner(*disp);
+	auto gamer = new GameRunner(*disp, alloc);
 
 	if(settings->get().sound){
 		audio->play({
@@ -174,19 +148,18 @@ void init(){
 		});
 	}
 
-	FSLVGL::loadCache();
+	lvFS->loadCache();
 
-	auto ui = new UIThread(*lvgl, *gamer);
+	auto ui = new UIThread(*lvgl, *gamer, *lvFS);
 	Services.set(Service::UI, ui);
 
 	while(millis() - splashStart < 2000){
 		delayMillis(10);
 	}
 
-	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
-
 	bl->fadeOut();
 	ui->start();
+	ui->startScreen([](){ return std::make_unique<MainMenu>(true); });
 	delayMillis(200);
 	bl->fadeIn();
 

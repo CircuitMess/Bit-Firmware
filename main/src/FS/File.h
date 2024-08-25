@@ -9,37 +9,29 @@ class File {
 public:
 	File(FileImplPtr p = FileImplPtr());
 
-	size_t write(uint8_t);
-	size_t write(const uint8_t* buf, size_t size);
-	int available();
-	int read();
-	int peek();
-	void flush();
-	size_t read(uint8_t* buf, size_t size);
-
-	size_t readBytes(char* buffer, size_t length){
-		return read((uint8_t*) buffer, length);
-	}
-
-	bool seek(uint32_t pos, SeekMode mode);
-
-	bool seek(uint32_t pos){
-		return seek(pos, SeekMode::SeekSet);
-	}
-
-	size_t position() const;
-	size_t size() const;
-	void close();
 	operator bool() const;
-	time_t getLastWrite();
+	bool operator ==(const File& other) const;
+	bool open() const;
+
+	void close();
+
+	size_t size() const;
 	const char* name() const;
 
-	bool isDirectory(void);
-	File openNextFile(const char* mode = "r");
-	void rewindDirectory(void);
+	size_t read(uint8_t* buf, size_t size);
+	int read(); // Reads 1 byte. Returns -1 on fail. Not good
+	size_t write(const uint8_t* buf, size_t size);
+	size_t write(uint8_t);
+	void flush();
+
+	bool seek(int pos, SeekMode mode = SeekMode::SeekSet);
+	size_t position() const;
+
+	int available();
+	int peek();
 
 protected:
-	FileImplPtr _p;
+	FileImplPtr impl;
 
 
 };

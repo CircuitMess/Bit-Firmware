@@ -55,13 +55,16 @@ private:
 	void startAnim(Section section);
 	void stopAnim(Section section);
 
-	AchievementView achievementSection = AchievementView(*this);
+	AchievementView achievementSection = AchievementView(this, *this, 3, 71, 123);
 	ThemePicker* themeSection = new ThemePicker(*this);
 	CharacterPicker characterSection = CharacterPicker(*this);
 
 	lv_obj_t* achievementOverlay; //used for focus indication
 
 	class XPBar* xpBar = nullptr;
+
+	Theme oldTheme;
+	
 };
 
 #endif //BIT_FIRMWARE_PROFILESCREEN_H

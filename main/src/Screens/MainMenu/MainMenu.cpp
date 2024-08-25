@@ -18,7 +18,6 @@
 #include "Screens/Game/GameSplashScreen.h"
 #include "Filepaths.hpp"
 #include "../Profile/ProfileScreen.h"
-#include "Services/TwinkleService.h"
 
 uint8_t MainMenu::lastCursor = 0;
 
@@ -52,7 +51,7 @@ static constexpr Entry MenuEntries[] = {
 std::optional<RobotManager::Event> MainMenu::gmEvt = std::nullopt;
 std::atomic<bool> MainMenu::running = false;
 
-MainMenu::MainMenu() : events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
+MainMenu::MainMenu(bool delayed) : delayed(delayed), events(12), audio((ChirpSystem*) Services.get(Service::Audio)){
 	buildUI();
 }
 
@@ -72,10 +71,6 @@ void MainMenu::launch(Games game){
 		return;
 	}
 
-	if(Display* display = (Display*) Services.get(Service::Display)){
-		display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
-	}
-
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([game](){ return std::make_unique<GameSplashScreen>(game); });
 }
@@ -93,21 +88,13 @@ void MainMenu::onStart(){
 	Events::listen(Facility::Themes, &events);
 	Events::listen(Facility::Input, &events);
 
-	if(bg != nullptr){
-		bg->start();
-	}
-
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), nullptr);
 
-	lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
-	lv_obj_t* obj;
-	if(lastCursor == 0){
-		obj = menuHeader->operator lv_obj_t *();
+	if(!delayed){
+		lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
 	}else{
-		obj = lv_obj_get_child(itemCont, lastCursor-1);
+		startTime = millis();
 	}
-
-	lv_group_focus_obj(obj);
 
 	lv_obj_add_event_cb(*this, MainMenu::onScrollEnd, LV_EVENT_SCROLL_END, this);
 }
@@ -137,10 +124,6 @@ void MainMenu::onScrollEnd(lv_event_t* evt){
 }
 
 void MainMenu::onStop(){
-	if(bg != nullptr){
-		bg->stop();
-	}
-
 	Events::unlisten(&events);
 	lv_obj_remove_event_cb(*this, onScrollEnd);
 
@@ -158,7 +141,15 @@ void MainMenu::onStop(){
 void MainMenu::loop(){
 	batt->loop();
 
-	if(loopBlocked) return;
+	if(loopBlocked){
+		if(delayed && millis() - startTime > 100){
+			delayed = false;
+			startTime = 0;
+			lv_obj_scroll_to(*this, 0, 128, LV_ANIM_ON);
+		}
+
+		return;
+	}
 
 	Event evt{};
 	if(events.get(evt, 0)){
@@ -195,6 +186,7 @@ void MainMenu::handleGameInsert(const RobotManager::Event& evt){
 	}
 
 	if(isNew && robGames.count(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot)){
+		FSLVGL::reloadMenu();
 		MenuItem* item = robGames.at(rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot);
 		item->setLocked(false);
 	}
@@ -276,23 +268,17 @@ void MainMenu::buildUI(){
 
 	lv_obj_set_size(*this, 128, 128);
 
-	if(settings->get().theme == Theme::Theme1){
-		bg = new LVGIF(*this, "S:/bg");
-		lv_obj_add_flag(*bg, LV_OBJ_FLAG_FLOATING);
-		lv_obj_set_pos(*bg, 0, 0);
-	}else{
-		auto img = lv_img_create(*this);
-		lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
-		lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
-	}
+	auto img = lv_img_create(*this);
+	lv_img_set_src(img, THEMED_FILE(Background, settings->get().theme));
+	lv_obj_add_flag(img, LV_OBJ_FLAG_FLOATING);
 
 	padTop = lv_obj_create(*this);
 	lv_obj_set_size(padTop, 128, 128);
 
 	auto contentContainer = lv_obj_create(*this);
 	lv_obj_set_size(contentContainer, 128, 115);
-	lv_obj_set_style_pad_top(contentContainer, 5, 0);
-	lv_obj_set_style_pad_bottom(contentContainer, 5, 0);
+	lv_obj_set_style_pad_top(contentContainer, 3, 0);
+	lv_obj_set_style_pad_bottom(contentContainer, 3, 0);
 
 	itemCont = lv_obj_create(contentContainer);
 	lv_obj_set_size(itemCont, 128, LV_SIZE_CONTENT);
@@ -300,6 +286,7 @@ void MainMenu::buildUI(){
 	lv_obj_set_flex_align(itemCont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 	lv_obj_set_style_pad_gap(itemCont, 2, 0);
 	lv_obj_set_style_pad_hor(itemCont, 5, 0);
+	lv_obj_set_style_pad_ver(itemCont, 2, 0);
 
 	auto onClick = [](lv_event_t* e){
 		auto menu = (MainMenu*) e->user_data;
@@ -364,13 +351,8 @@ void MainMenu::buildUI(){
 
 	}, LV_EVENT_KEY, inputGroup);
 	lv_obj_add_event_cb(*menuHeader, [](lv_event_t* e){
-		if(Display* display = (Display*) Services.get(Service::Display)){
-			display->getLGFX().drawBmpFile(Filepath::SplashWithBackground);
-		}
-
 		auto ui = (UIThread*) Services.get(Service::UI);
 		ui->startScreen([](){ return std::make_unique<ProfileScreen>(); });
-
 	}, LV_EVENT_CLICKED, this);
 
 	auto games = (RobotManager*) Services.get(Service::RobotManager);
@@ -412,17 +394,25 @@ void MainMenu::buildUI(){
 
 	auto padBot = lv_obj_create(*this);
 	lv_obj_set_size(padBot, 128, lv_obj_get_height(itemCont));
+
+	lv_obj_t* obj;
+	if(lastCursor == 0){
+		obj = menuHeader->operator lv_obj_t *();
+	}else{
+		obj = lv_obj_get_child(itemCont, lastCursor-1);
+	}
+	lv_group_focus_obj(obj);
 }
 
 std::string MainMenu::imgFullPath(const char* game){
-	std::string path("S:/GameIcons/");
+	std::string path("S:/Menu/");
 	path.append(game);
 	path.append(".bin");
 	return path;
 }
 
 std::string MainMenu::imgGrayscalePath(const char* game){
-	std::string path("S:/GameIcons/bw/");
+	std::string path("S:/Menu/BW/");
 	path.append(game);
 	path.append(".bin");
 	return path;

@@ -38,16 +38,41 @@ RamFile::RamFile(File file, bool use32bAligned) : filePath(file.name()){
 	}
 
 	file.read(data, fileSize);
-	file.close();
+}
+
+RamFile::RamFile(uint8_t* data, size_t size, const char* name) : data(data), filePath(name), fileSize(size), borrowed(true){
+
 }
 
 RamFile::~RamFile(){
-	free(data);
+	if(!borrowed){
+		free(data);
+	}
 }
 
-size_t RamFile::write(const uint8_t* buf, size_t size){
-	//TODO - implement writing
-	return 0;
+RamFile::operator bool(){
+	return data != nullptr;
+}
+
+File RamFile::open(const File& file, bool use32bAligned){
+	auto f = std::make_shared<RamFile>(file, use32bAligned);
+	return { f };
+}
+
+void RamFile::close(){
+	delete data;
+
+	data = nullptr;
+	fileSize = 0;
+	filePath = "";
+}
+
+size_t RamFile::size() const{
+	return fileSize;
+}
+
+const char* RamFile::name() const{
+	return filePath.c_str();
 }
 
 size_t IRAM_ATTR RamFile::read(uint8_t* dest, size_t len){
@@ -61,63 +86,26 @@ size_t IRAM_ATTR RamFile::read(uint8_t* dest, size_t len){
 	return len;
 }
 
+size_t RamFile::write(const uint8_t* buf, size_t size){
+	//TODO - implement writing
+	return 0;
+}
+
 void RamFile::flush(){
 
 }
 
-bool RamFile::seek(uint32_t pos, SeekMode whence){
-	if(whence == SeekMode::SeekSet){
+bool RamFile::seek(int pos, int whence){
+	if(whence == SEEK_SET){
 		cursor = pos;
-	}else if(whence == SeekMode::SeekCur){
+	}else if(whence == SEEK_CUR){
 		cursor += pos;
-	}else if(whence == SeekMode::SeekEnd){
+	}else if(whence == SEEK_END){
 		cursor = fileSize - pos;
 	}
 	return true;
 }
 
-size_t RamFile::position() const{
+size_t RamFile::pos() const{
 	return cursor;
 }
-
-size_t RamFile::size() const{
-	return fileSize;
-}
-
-const char* RamFile::name() const{
-	return filePath.c_str();
-}
-
-void RamFile::close(){
-	delete data;
-
-	data = nullptr;
-	fileSize = 0;
-	filePath = "";
-}
-
-time_t RamFile::getLastWrite(){
-	return 0;
-}
-
-bool RamFile::isDirectory(){
-	return false;
-}
-
-FileImplPtr RamFile::openNextFile(const char* mode){
-	return FileImplPtr();
-}
-
-void RamFile::rewindDirectory(){
-
-}
-
-RamFile::operator bool(){
-	return data != nullptr;
-}
-
-File RamFile::open(const File& file, bool use32bAligned){
-	auto f = std::make_shared<RamFile>(file, use32bAligned);
-	return File(f);
-}
-

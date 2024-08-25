@@ -13,11 +13,15 @@ public:
 protected:
 	lv_group_t* inputGroup;
 
+	void setBg(const char* src);
+
 private:
 	static LVModal* current;
 
 	const LVScreen* parentScreen;
 	lv_obj_t* container;
+
+	lv_group_t* oldGroup;
 
 };
 

@@ -50,6 +50,8 @@ private:
 	void moveEnemy();
 
 	void changeState(State newState);
+
+	bool possibleComeback = false;
 };
 
 

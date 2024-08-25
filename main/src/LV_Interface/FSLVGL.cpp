@@ -1,294 +1,344 @@
 #include "FSLVGL.h"
-#include "FS/FSFileImpl.h"
 #include "FS/SPIFFS.h"
+#include "Util/stdafx.h"
+#include "Settings/Settings.h"
+#include "Util/Services.h"
+#include "Filepaths.hpp"
+#include "Services/RobotManager.h"
 #include <cstdio>
 #include <dirent.h>
 #include <esp_spiffs.h>
-#include <esp_log.h>
 #include <string>
-#include <algorithm>
 #include <unordered_map>
 
-static const char* Cached[] = {
-		"/bg/0.bin",
-		"/bg/1.bin",
-		"/bg/2.bin",
-		"/bg/3.bin",
-		"/GameIcons/Blocks.bin",
-		"/GameIcons/Pong.bin",
-		"/GameIcons/Snake.bin",
+std::initializer_list<std::string> GeneralCache = {
+		"/Ach/bg.bin",
+		"/Ach/bgSelected.bin",
 		"/Profile/bg.bin",
+		"/Profile/lock.bin",
 		"/Profile/barOutline.bin",
-		"/Profile/arrowUp.bin",
 		"/Profile/arrowDown.bin",
+		"/Profile/arrowUp.bin",
 		"/Profile/arrowLeft.bin",
 		"/Profile/arrowRight.bin",
-		"/Profile/lock.bin",
-		"/Profile/theme-outline.bin",
 		"/Profile/ach-border.bin",
+		"/Profile/ach-placeholder.bin",
 		"/Profile/theme-01-icon.bin",
 		"/Profile/theme-02-icon.bin",
 		"/Profile/theme-03-icon.bin",
 		"/Profile/theme-04-icon.bin",
-		"/Theme1/bg.bin",
-		"/Theme1/header.bin",
-		"/Theme1/paused.bin",
-		"/Theme1/settings.bin",
-		"/Theme2/bg.bin",
-		"/Theme2/header.bin",
-		"/Theme2/paused.bin",
-		"/Theme2/settings.bin",
-		"/Theme3/bg.bin",
-		"/Theme3/header.bin",
-		"/Theme3/paused.bin",
-		"/Theme3/settings.bin",
-		"/Theme4/bg.bin",
-		"/Theme4/header.bin",
-		"/Theme4/paused.bin",
-		"/Theme4/settings.bin",
+		"/Profile/theme-outline.bin"
 };
 
 const char* TAG = "FSLVGL";
-std::unordered_set<FSLVGL::FileResource, std::hash<File*>> FSLVGL::cache;
 
-FSLVGL::FSLVGL(char letter){
-	cache.reserve(sizeof(Cached) / sizeof(Cached[0]) + 16);
+FSLVGL* FSLVGL::instance = nullptr;
+bool FSLVGL::themeChanged = false;
+bool FSLVGL::menuChanged = false;
 
-	/*esp_vfs_spiffs_conf_t conf = {
-			.base_path = "/spiffs",
-			.partition_label = "storage",
-			.max_files = 8,
-			.format_if_mount_failed = false
-	};
+FSLVGL::FSLVGL(char letter, Allocator* alloc) : alloc(alloc){
+	lv_fs_drv_init(&drv);
 
-	auto ret = esp_vfs_spiffs_register(&conf);
-	if(ret != ESP_OK){
-		if(ret == ESP_FAIL){
-			ESP_LOGE(TAG, "Failed to mount or format filesystem");
-		}else if(ret == ESP_ERR_NOT_FOUND){
-			ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-		}else{
-			ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-		}
+	drv.letter = letter;
+	drv.ready_cb = [](struct _lv_fs_drv_t*){ return true; }; // Is the drive ready to use?
+	drv.open_cb = [](struct _lv_fs_drv_t* drv, const char* path, lv_fs_mode_t mode){ return ((FSLVGL*) drv->user_data)->lvOpen(path, mode);  };
+	drv.close_cb = [](struct _lv_fs_drv_t* drv, void* file){ return ((FSLVGL*) drv->user_data)->lvClose(file);  };
+	drv.read_cb = [](struct _lv_fs_drv_t* drv, void* file, void* buf, uint32_t btr, uint32_t* br){ return ((FSLVGL*) drv->user_data)->lvRead(file, buf, btr, br); };
+	drv.write_cb = [](struct _lv_fs_drv_t* drv, void* file, const void* buf, uint32_t btw, uint32_t* bw){ return ((FSLVGL*) drv->user_data)->lvWrite(file, buf, btw, bw); };
+	drv.seek_cb = [](struct _lv_fs_drv_t* drv, void* file, uint32_t pos, lv_fs_whence_t whence){ return ((FSLVGL*) drv->user_data)->lvSeek(file, pos, whence); };
+	drv.tell_cb = [](struct _lv_fs_drv_t* drv, void* file, uint32_t* pos){ return ((FSLVGL*) drv->user_data)->lvTell(file, pos); };
 
-		return;
-	}*/
+	drv.dir_open_cb = [](struct _lv_fs_drv_t* drv, const char* path){ return ((FSLVGL*) drv->user_data)->lvDirOpen(path); };
+	drv.dir_read_cb = [](struct _lv_fs_drv_t* drv, void* dir, char* fn){ return ((FSLVGL*) drv->user_data)->lvDirRead(dir, fn); };
+	drv.dir_close_cb = [](struct _lv_fs_drv_t* drv, void* dir){ return ((FSLVGL*) drv->user_data)->lvDirClose(dir); };
 
+	drv.user_data = this;
 
-	lv_fs_drv_init(&drv);                     /*Basic initialization*/
+	lv_fs_drv_register(&drv);
 
-	drv.letter = letter;                         /*An uppercase letter to identify the drive */
-	drv.ready_cb = ready_cb;               /*Callback to tell if the drive is ready to use */
-	drv.open_cb = open_cb;                 /*Callback to open a file */
-	drv.close_cb = close_cb;               /*Callback to close a file */
-	drv.read_cb = read_cb;                 /*Callback to read a file */
-	drv.write_cb = write_cb;               /*Callback to write a file */
-	drv.seek_cb = seek_cb;                 /*Callback to seek in a file (Move cursor) */
-	drv.tell_cb = tell_cb;                 /*Callback to tell the cursor position  */
-
-	drv.dir_open_cb = dir_open_cb;         /*Callback to open directory to read its content */
-	drv.dir_read_cb = dir_read_cb;         /*Callback to read a directory's content */
-	drv.dir_close_cb = dir_close_cb;       /*Callback to close a directory */
-
-	drv.user_data = this;             /*Any custom data if required*/
-
-	lv_fs_drv_register(&drv);                 /*Finally register the drive*/
+	instance = this;
 }
 
 FSLVGL::~FSLVGL(){
 	esp_vfs_spiffs_unregister("storage");
 }
 
-auto FSLVGL::findCache(const std::string& lvPath){
-	std::string path("/spiffs");
-	path.append(lvPath);
-
-	return std::find_if(cache.begin(), cache.end(), [&path](auto fileResource){
-		return fileResource.ramFile->name() == path;
-	});
+void FSLVGL::themeChange(){
+	themeChanged = true;
 }
 
-auto FSLVGL::findCache(void* ptr){
-	return std::find_if(cache.begin(), cache.end(), [ptr](auto fileResource){
-		return fileResource.ramFile == ptr;
-	});
+void FSLVGL::menuChange(){
+	menuChanged = true;
 }
 
-void FSLVGL::addToCache(const char* path, bool use32bAligned){
-	std::string p;
-	if(strchr(path, DriveSeparator) != nullptr){
-		p = std::string(path + 2);
-	}else{
-		p = path;
-	}
-
-	auto found = findCache(p);
-	if(found != cache.end()) return;
-
-	auto file = SPIFFS::open(p.c_str());
-	auto ram = new File();
-	*ram = RamFile::open(file, use32bAligned);
-	if(ram->size() == 0){
-		delete ram;
-		return;
-	}
-
-	FileResource r = { ram };
-	cache.insert(r);
-}
-
-void FSLVGL::removeFromCache(const char* path){
-	std::string p;
-	if(strchr(path, DriveSeparator) != nullptr){
-		p = std::string(path + 2);
-	}else{
-		p = path;
-	}
-
-	auto it = findCache(p);
-	if(it == cache.end()) return;
-
-	delete it->ramFile;
-	cache.erase(it);
+void FSLVGL::reloadMenu(){
+	instance->unloadMenu();
+	instance->loadMenu();
 }
 
 void FSLVGL::loadCache(){
-	for(const auto& path : Cached){
-		addToCache(path);
+	if(cacheLoaded && themeChanged){
+		unloadTheme();
+		loadTheme();
 	}
+
+	if(cacheLoaded && menuChanged){
+		unloadMenu();
+		loadMenu();
+	}
+
+	if(cacheLoaded) return;
+	cacheLoaded = true;
+
+	if(alloc){
+		archives.menu.allocBuf = alloc->malloc(MenuSize);
+		archives.theme.allocBuf = alloc->malloc(ThemeSize);
+		archives.achis.allocBuf = alloc->malloc(AchisSize);
+	}else{
+		archives.menu.allocBuf = malloc(MenuSize);
+		archives.theme.allocBuf = malloc(ThemeSize);
+		archives.achis.allocBuf = malloc(AchisSize);
+	}
+
+	cache.setPaths(getCacheFiles());
+	cache.load(alloc);
+
+	loadMenu();
+	loadTheme();
+	loadAchis();
 }
 
 void FSLVGL::unloadCache(){
-	for(const auto& path : Cached){
-		removeFromCache(path);
-	}
-}
+	if(!cacheLoaded) return;
+	cacheLoaded = false;
 
-bool FSLVGL::ready_cb(struct _lv_fs_drv_t* drv){
-	return true;
-}
+	unloadMenu();
+	unloadTheme();
+	unloadAchis();
 
-void* FSLVGL::open_cb(struct _lv_fs_drv_t* drv, const char* path, lv_fs_mode_t mode){
-	auto cached = findCache(path);
-	if(cached != cache.end()){
-		(*cached).ramFile->seek(0);
-		return (*cached).ramFile;
-	}
+	cache.unload();
 
-	const char* fsMode;
-
-	if(mode == LV_FS_MODE_WR){
-		fsMode = "w";
+	if(alloc){
+		alloc->reset();
 	}else{
-		fsMode = "r";
+		free(archives.menu.allocBuf);
+		free(archives.theme.allocBuf);
+		free(archives.achis.allocBuf);
 	}
 
-	auto fslvgl = (FSLVGL*) drv->user_data;
-	std::string p = fslvgl->Root + std::string(path);
-
-	return (void*) fopen(p.c_str(), fsMode);
+	archives.menu.allocBuf = nullptr;
+	archives.theme.allocBuf = nullptr;
+	archives.achis.allocBuf = nullptr;
 }
 
-lv_fs_res_t FSLVGL::close_cb(struct _lv_fs_drv_t* drv, void* file_p){
-	auto it = findCache(file_p);
-	if(it != cache.end()) return 0;
+void FSLVGL::loadMenu(){
+	if(archives.menu) return;
+	if(!cacheLoaded) return;
+	if(archives.menu.allocBuf == nullptr) return;
 
-	fclose((FILE*) file_p);
+	std::unordered_set<std::string> excluded;
+	excluded.reserve((int) Games::COUNT);
+
+	auto roboMan = (RobotManager*) Services.get(Service::RobotManager);
+	for(int i = 0; i < (int) Games::COUNT; i++){
+		if((Games) i == Games::Frank || (Games) i == Games::Fred) continue;
+
+		std::string path = "/";
+		if(roboMan->isUnlocked((Games) i)){
+			path += "BW/";
+		}
+		path += GameIcons[i];
+		path += ".bin";
+
+		excluded.emplace(std::move(path));
+	}
+
+	archives.menu.alloc = new Allocator(archives.menu.allocBuf, MenuSize);
+	archives.menu.archive = new FileArchive(SPIFFS::open("/Menu.sz"), archives.menu.alloc, excluded);
+
+	menuChanged = false;
+}
+
+void FSLVGL::unloadMenu(){
+	if(!archives.menu) return;
+
+	delete archives.menu.archive;
+	delete archives.menu.alloc;
+
+	archives.menu.archive = nullptr;
+	archives.menu.alloc = nullptr;
+}
+
+void FSLVGL::loadTheme(){
+	if(archives.theme) return;
+	if(!cacheLoaded) return;
+	if(archives.theme.allocBuf == nullptr) return;
+
+	auto settings = (Settings*) Services.get(Service::Settings);
+	const auto theme = settings ? settings->get().theme : Theme::Theme1;
+
+	static constexpr const char* ThemeArchives[] = { "/Theme1.sz", "/Theme2.sz", "/Theme3.sz", "/Theme4.sz" };
+
+	archives.theme.alloc = new Allocator(archives.theme.allocBuf, ThemeSize);
+	archives.theme.archive = new FileArchive(SPIFFS::open(ThemeArchives[(int) theme]), archives.theme.alloc);
+
+	themeChanged = false;
+}
+
+void FSLVGL::unloadTheme(){
+	if(!archives.theme) return;
+
+	delete archives.theme.archive;
+	delete archives.theme.alloc;
+
+	archives.theme.archive = nullptr;
+	archives.theme.alloc = nullptr;
+}
+
+void FSLVGL::loadAchis(){
+	if(archives.achis) return;
+	if(!cacheLoaded) return;
+	if(archives.achis.allocBuf == nullptr) return;
+
+	std::unordered_set<std::string> excluded;
+	excluded.reserve((int) Achievement::COUNT);
+
+	auto achiMan = (AchievementSystem*) Services.get(Service::Achievements);
+	for(const auto& files : AchievementFiles){
+		if(achiMan->isUnlocked(files.first)){
+			excluded.emplace(files.second.locked + 7);
+		}else{
+			excluded.emplace(files.second.unlocked + 7);
+		}
+	}
+
+	archives.achis.alloc = new Allocator(archives.achis.allocBuf, AchisSize);
+	archives.achis.archive = new FileArchive(SPIFFS::open("/Achi.sz"), archives.achis.alloc, excluded);
+}
+
+void FSLVGL::unloadAchis(){
+	if(!archives.achis) return;
+
+	delete archives.achis.archive;
+	delete archives.achis.alloc;
+
+	archives.achis.archive = nullptr;
+	archives.achis.alloc = nullptr;
+}
+
+std::vector<std::string> FSLVGL::getCacheFiles() const{
+	std::vector<std::string> paths;
+	paths.reserve(GeneralCache.size());
+
+	for(const auto& file : GeneralCache){
+		paths.emplace_back(file);
+	}
+
+	return paths;
+}
+
+void* FSLVGL::lvOpen(const char* path, lv_fs_mode_t mode){
+	File file;
+
+	static const auto mkPtr = [](File& file){
+		file.seek(0);
+		File* filePtr = new File();
+		*filePtr = std::move(file);
+		return filePtr;
+	};
+
+	file = cache.open(path);
+	if(file) return mkPtr(file);
+
+	if(archives.menu && std::string(path).starts_with("/Menu")){
+		file = archives.menu.archive->get(path + 5);
+		if(file) return mkPtr(file);
+	}
+
+	if(archives.theme && std::string(path).starts_with("/Theme")){
+		file = archives.theme.archive->get(path + 7);
+		if(file) return mkPtr(file);
+	}
+
+	if(archives.achis && std::string(path).starts_with("/Achi")){
+		file = archives.achis.archive->get(path + 5);
+		if(file) return mkPtr(file);
+	}
+
+	static const std::unordered_map<lv_fs_mode_t, const char*> Map = {
+			{ LV_FS_MODE_WR, "w" },
+			{ LV_FS_MODE_RD, "r" }
+	};
+
+	file = SPIFFS::open(path, Map.at(mode));
+	if(file) return mkPtr(file);
+
+	return nullptr;
+}
+
+lv_fs_res_t FSLVGL::lvClose(void* file){
+	File* filePtr = (File*) file;
+	delete filePtr;
 	return 0;
 }
 
-lv_fs_res_t FSLVGL::read_cb(struct _lv_fs_drv_t* drv, void* file_p, void* buf, uint32_t btr, uint32_t* br){
-	auto cached = findCache(file_p);
-	if(cached != cache.end()){
-		*br = (*cached).ramFile->read((uint8_t*) buf, btr);
-		return 0;
-	}
+lv_fs_res_t FSLVGL::lvRead(void* fp, void* buf, uint32_t btr, uint32_t* br){
+	File* file = getFile(fp);
+	if(!*file) return LV_FS_RES_NOT_EX;
 
-	if(ferror((FILE*) file_p)) return LV_FS_RES_NOT_EX;
-	*br = fread(buf, 1, btr, (FILE*) file_p);
+	*br = file->read((uint8_t*) buf, btr);
+
 	return 0;
 }
 
-lv_fs_res_t FSLVGL::write_cb(struct _lv_fs_drv_t* drv, void* file_p, const void* buf, uint32_t btw, uint32_t* bw){
-	auto cached = findCache(file_p);
-	if(cached != cache.end()){
-		*bw = 0;
-		return 0;
-	}
+lv_fs_res_t FSLVGL::lvWrite(void* fp, const void* buf, uint32_t btw, uint32_t* bw){
+	File* file = getFile(fp);
+	if(!*file) return LV_FS_RES_NOT_EX;
 
-	if(ferror((FILE*) file_p)) return LV_FS_RES_NOT_EX;
+	*bw = file->write((const uint8_t*) buf, btw);
 
-	*bw = fwrite((uint8_t*) buf, 1, btw, (FILE*) file_p);
 	return 0;
 }
 
-lv_fs_res_t FSLVGL::seek_cb(struct _lv_fs_drv_t* drv, void* file_p, uint32_t pos, lv_fs_whence_t whence){
-	auto cached = findCache(file_p);
-	if(cached != cache.end()){
-		static const std::unordered_map<lv_fs_whence_t, SeekMode> SeekMap = {
-				{ LV_FS_SEEK_SET, SeekMode::SeekSet },
-				{ LV_FS_SEEK_CUR, SeekMode::SeekCur },
-				{ LV_FS_SEEK_END, SeekMode::SeekEnd },
-		};
-		(*cached).ramFile->seek(pos, SeekMap.at(whence));
-		return 0;
-	}
+lv_fs_res_t FSLVGL::lvSeek(void* fp, uint32_t pos, lv_fs_whence_t whence){
+	File* file = getFile(fp);
+	if(!*file) return LV_FS_RES_NOT_EX;
 
-	if(ferror((FILE*) file_p)){
-		return LV_FS_RES_NOT_EX;
-	}
+	static const std::unordered_map<lv_fs_whence_t, SeekMode> Map = {
+			{ LV_FS_SEEK_SET, SeekMode::SeekSet },
+			{ LV_FS_SEEK_CUR, SeekMode::SeekCur },
+			{ LV_FS_SEEK_END, SeekMode::SeekEnd }
+	};
+	if(!Map.contains(whence)) return LV_FS_RES_INV_PARAM;
 
-	int mode;
-	switch(whence){
-		case LV_FS_SEEK_SET:
-			mode = SEEK_SET;
-			break;
-		case LV_FS_SEEK_CUR:
-			mode = SEEK_CUR;
-			break;
-		case LV_FS_SEEK_END:
-			mode = SEEK_END;
-			break;
-		default:
-			mode = SEEK_SET;
-	}
-	if(fseek((FILE*) file_p, pos, mode) != 0){
-		return LV_FS_RES_INV_PARAM;
-	}
-	return 0;
+	const auto success = file->seek(pos, Map.at(whence));
+	if(!success) return LV_FS_RES_INV_PARAM;
 
-}
-
-lv_fs_res_t FSLVGL::tell_cb(struct _lv_fs_drv_t* drv, void* file_p, uint32_t* pos_p){
-	auto cached = findCache(file_p);
-	if(cached != cache.end()){
-		*pos_p = (*cached).ramFile->position();
-		return 0;
-	}
-
-	if(ferror((FILE*) file_p)) return LV_FS_RES_NOT_EX;
-	auto val = ftell((FILE*) file_p);
-	if(val == -1) return LV_FS_RES_UNKNOWN;
-	*pos_p = val;
 	return 0;
 }
 
-void* FSLVGL::dir_open_cb(struct _lv_fs_drv_t* drv, const char* path){
-	auto fslvgl = (FSLVGL*) drv->user_data;
-	std::string p = fslvgl->Root + std::string(path);
+lv_fs_res_t FSLVGL::lvTell(void* fp, uint32_t* pos){
+	File* file = getFile(fp);
+	if(!*file) return LV_FS_RES_NOT_EX;
+
+	*pos = file->position();
+	return 0;
+}
+
+void* FSLVGL::lvDirOpen(const char* path){
+	std::string p = Root + std::string(path);
 	DIR* dir = opendir(p.c_str());
 	return dir;
-
 }
 
-lv_fs_res_t FSLVGL::dir_read_cb(struct _lv_fs_drv_t* drv, void* rddir_p, char* fn){
-	auto entry = readdir((DIR*) rddir_p);
+lv_fs_res_t FSLVGL::lvDirRead(void* dir, char* fn){
+	auto entry = readdir((DIR*) dir);
 	if(!entry) return LV_FS_RES_NOT_EX;
 	strncpy(fn, entry->d_name, 256);
 	return 0;
 }
 
-lv_fs_res_t FSLVGL::dir_close_cb(struct _lv_fs_drv_t* drv, void* rddir_p){
-	closedir((DIR*) rddir_p);
+lv_fs_res_t FSLVGL::lvDirClose(void* dir){
+	closedir((DIR*) dir);
 	return 0;
 }

@@ -88,6 +88,14 @@ void Dance::onLoad(){
 }
 
 void Dance::onLoop(float deltaTime){
+	if(goToAnim){
+		playerRC->setAnim(goToAnim);
+		playerRC->setLoopMode(GIF::Infinite);
+		playerRC->start();
+		player->setPos(goToPos);
+		goToAnim = File();
+	}
+
 	switch(state){
 		case Running:
 			beatTimer += deltaTime;
@@ -123,6 +131,7 @@ void Dance::onLoop(float deltaTime){
 			gameDoneTimer += deltaTime;
 			if(gameDoneTimer >= gameDonePause){
 				exit();
+				return;
 			}
 			break;
 
@@ -130,6 +139,13 @@ void Dance::onLoop(float deltaTime){
 			break;
 	}
 
+	if(goToAnim){
+		playerRC->setAnim(goToAnim);
+		playerRC->setLoopMode(GIF::Infinite);
+		playerRC->start();
+		player->setPos(goToPos);
+		goToAnim = File();
+	}
 }
 
 
@@ -185,6 +201,8 @@ void Dance::createNote(uint8_t track){
 
 	notes[track].push_back(note);
 	addObject(note);
+
+	noteGoal++;
 }
 
 void Dance::noteHit(uint8_t track){
@@ -227,15 +245,15 @@ void Dance::noteHit(uint8_t track){
 		playerRC->setAnim(getFile(danceGIFs[i].path));
 		player->setPos(PlayerPos + danceGIFs[i].offset);
 
-		playerRC->setLoopMode(GIF::LoopMode::Infinite);
+		playerRC->setLoopMode(GIF::LoopMode::Single);
 		playerRC->setLoopDoneCallback([this](uint32_t){
-			playerRC->setAnim((getFile("/idle.gif")));
-			player->setPos(PlayerPos + idleGIF.offset);
+			goToAnim = getFile("/idle.gif");
+			goToPos = PlayerPos + idleGIF.offset;
 		});
 
-	}else{
+		notesHit++;
 
-		flashAll();
+	}else{
 
 		robot->playBad();
 		audio.play({ { 300, 300, 50 },
@@ -258,10 +276,10 @@ void Dance::noteHit(uint8_t track){
 			player->setPos(PlayerPos + failGIF.offset);
 
 
-			playerRC->setLoopMode(GIF::LoopMode::Infinite);
+			playerRC->setLoopMode(GIF::LoopMode::Single);
 			playerRC->setLoopDoneCallback([this](uint32_t){
-				playerRC->setAnim((getFile("/idle.gif")));
-				player->setPos(PlayerPos + idleGIF.offset);
+				goToAnim = getFile("/idle.gif");
+				goToPos = PlayerPos + idleGIF.offset;
 			});
 
 		}
@@ -283,6 +301,13 @@ void Dance::gameDone(bool success){
 		playerRC->setAnim(getFile("/win.gif"));
 		player->setPos(PlayerPos + winGIF.offset);
 
+		if(life == 3){
+			addAchi(Achievement::Buttons_win, 1);
+		}
+
+		if(notesHit >= noteGoal-3){
+			// Achi: hit every single note
+		}
 	}else{
 		robot->playLose();
 		audio.play({ { 400, 300, 200 },

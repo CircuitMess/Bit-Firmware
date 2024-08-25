@@ -3,8 +3,8 @@
 
 #include "RobotDriver.h"
 #include "Services/ChirpSystem.h"
+#include "LEDService/RoboLEDService.h"
 
-class LEDService;
 
 namespace RoboCtrl {
 
@@ -23,7 +23,7 @@ protected:
 private:
 	PWM pwm;
 	ChirpSystem chirpSystem;
-	LEDService* ledService;
+	RoboLEDService ledService;
 };
 
 }

@@ -23,10 +23,15 @@ private:
 		GameObjPtr gameObj;
 	};
 
-	std::array<std::array<GameElement, 4>, 4> elements;
+	using Field = std::array<std::array<GameElement, 4>, 4>;
+	using IdField = std::array<std::array<uint8_t, 4>, 4>;
+
+	Field elements;
 	uint32_t score = 0;
 	std::unique_ptr<Score> scoreElement;
 	std::unique_ptr<Score> bestScoreElement;
+
+	std::vector<GameObjPtr> bgTiles;
 
 	inline static constexpr const char* Icons[] = {
 			"/Tile01.raw",
@@ -41,6 +46,58 @@ private:
 			"/Tile10.raw",
 			"/Tile11.raw",
 	};
+
+	struct TileMove {
+		glm::vec<2, uint8_t> source;
+		glm::vec<2, uint8_t> target;
+		bool combo;
+	};
+
+	struct TileMoveComp { bool operator()(const TileMove& a, const TileMove& b) const {
+		return ((int) a.source.x * 3 + (int) a.source.y * 7) < ((int) b.source.x * 3 + (int) b.source.y * 7);
+	} };
+	std::set<TileMove, TileMoveComp> tileMoves;
+	struct {
+		IdField field;
+		uint32_t score;
+	} moveResult;
+	float tileMoveT = 0;
+	static constexpr float TileMoveSpeed = 2.5f;
+
+	struct Puf {
+		GameObjPtr go;
+		float time = 0;
+	};
+	std::vector<Puf> pufs;
+
+	void findMoves(Input::Button dir);
+	void applyMove();
+	void spawnNew();
+
+	void tileMoveAnim(float dt);
+
+	static constexpr float PufDuration = 0.42f;
+	void checkPufs(float dt);
+
+	void checkLoseCondition();
+
+	void gameWin();
+	void gameLose();
+
+	bool exiting = false;
+	float exitT = 0;
+	bool won = false;
+	static constexpr float ExitPauseLose = 0.85f;
+	static constexpr float ExitPauseWin = 0.75f;
+	struct ExitObj {
+		GameObjPtr go;
+		glm::vec2 speed;
+	};
+	std::vector<ExitObj> exitObjs;
+	GameObjPtr floor;
+	void exitStart();
+	void exitAnim(float dt);
+
 };
 } // Harald
 

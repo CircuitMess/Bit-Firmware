@@ -104,6 +104,10 @@ void Flappy::onLoop(float deltaTime){
 			obstacle.passed = true;
 			scoreDisplay->setScore(score);
 
+			setAchiIfBigger(Achievement::Bee_b, score);
+			setAchiIfBigger(Achievement::Bee_g, score);
+			setAchiIfBigger(Achievement::Bee_s, score);
+
 			speedX += 1;
 		}
 	}
@@ -282,8 +286,6 @@ void Flappy::createObstaclePair(){
 void Flappy::die(){
 	if(state != Play) return;
 //	RGB.blinkTwice(Pixel::Red);
-
-	flashAll();
 
 	robot->blinkContinuousFast();
 	life--;

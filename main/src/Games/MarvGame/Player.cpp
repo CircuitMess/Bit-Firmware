@@ -12,6 +12,12 @@ MarvGame::Player::~Player(){
 }
 
 void MarvGame::Player::update(float deltaTime){
+	if(goToAnim){
+		animRc->setAnim(goToAnim);
+		animRc->setLoopMode(GIF::Infinite);
+		goToAnim = File();
+	}
+
 	updateInvincibility(deltaTime);
 	if(winFlag){
 		float x = gameObjectRc->getPos().x;
@@ -28,36 +34,49 @@ void MarvGame::Player::update(float deltaTime){
 			});
 		}
 	}
-	if(!isJumping) return;
-	float y = gameObjectRc->getPos().y;
-	y += velocity * deltaTime + 0.5f * gravity * pow(deltaTime, 2);
-	velocity += gravity * deltaTime * multiplier;
 
-	if(time < peakTime && !isDead){
-		time += deltaTime;
-	}else{
-		multiplier = 5;
+	if(isJumping){
+		float y = gameObjectRc->getPos().y;
+		y += velocity * deltaTime + 0.5f * gravity * pow(deltaTime, 2);
+		velocity += gravity * deltaTime * multiplier;
+
+		if(time < peakTime && !isDead){
+			time += deltaTime;
+		}else{
+			multiplier = 5;
+		}
+
+		gameObjectRc->setPos({ 5, y });
+		gameObjectCc->setPos({ 5, y });
+		if(y > startPosY){
+			gameObjectRc->setPos({ 5, startPosY });
+			gameObjectCc->setPos({ 5, startPosY });
+
+			multiplier = 1.0f;
+			isJumping = false;
+			time = 0.0f;
+			if(isDead){
+				if(goToAnim){
+					animRc->setAnim(goToAnim);
+					animRc->setLoopMode(GIF::Infinite);
+					goToAnim = File();
+				}
+				return;
+			}
+			if(duckHold){
+				duck();
+			}else{
+
+				animRc->setAnim(walking);
+				animRc->setLoopMode(GIF::Infinite);
+			}
+		}
 	}
 
-	gameObjectRc->setPos({ 5, y });
-	gameObjectCc->setPos({ 5, y });
-	if(y > startPosY){
-		gameObjectRc->setPos({ 5, startPosY });
-		gameObjectCc->setPos({ 5, startPosY });
-
-		multiplier = 1.0f;
-		isJumping = false;
-		time = 0.0f;
-		if(isDead){
-			return;
-		}
-		if(duckHold){
-			duck();
-		}else{
-
-			animRc->setAnim(walking);
-			animRc->setLoopMode(GIF::Infinite);
-		}
+	if(goToAnim){
+		animRc->setAnim(goToAnim);
+		animRc->setLoopMode(GIF::Infinite);
+		goToAnim = File();
 	}
 }
 
@@ -66,9 +85,9 @@ void MarvGame::Player::walk(){
 	isDucked = false;
 
 	animRc->setAnim(unDucking);
+	animRc->setLoopMode(GIF::Single);
 	animRc->setLoopDoneCallback([this](uint32_t){
-		animRc->setAnim(walking);
-		animRc->setLoopMode(GIF::Infinite);
+		goToAnim = walking;
 	});
 	gameObjectCc->setRot(0.0f);
 }
@@ -92,9 +111,9 @@ void MarvGame::Player::duck(){
 	isDucked = true;
 
 	animRc->setAnim(ducking);
+	animRc->setLoopMode(GIF::Single);
 	animRc->setLoopDoneCallback([this](uint32_t){
-		animRc->setAnim(ducked);
-		animRc->setLoopMode(GIF::Infinite);
+		goToAnim = ducked;
 	});
 	gameObjectCc->setRot(-90.0f);
 }

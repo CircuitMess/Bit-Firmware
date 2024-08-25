@@ -28,6 +28,8 @@ LVModal::LVModal(LVScreen* parent) : LVObject((lv_obj_t*) *parent), parentScreen
 
 	lv_obj_set_size(container, 102, 92);
 	lv_obj_set_style_pad_all(container, 8, 0);
+	lv_obj_set_style_pad_left(container, 5, 0);
+	lv_obj_set_style_pad_bottom(container, 5, 0);
 	lv_obj_set_style_bg_img_src(container, THEMED_FILE(Popup, settings->get().theme), 0);
 	lv_obj_set_style_bg_img_opa(container, LV_OPA_COVER, 0);
 
@@ -37,11 +39,16 @@ LVModal::LVModal(LVScreen* parent) : LVObject((lv_obj_t*) *parent), parentScreen
 	lv_obj_set_align(container, LV_ALIGN_CENTER);
 	lv_obj_add_flag(container, LV_OBJ_FLAG_FLOATING);
 
+	oldGroup = InputLVGL::getInstance()->getIndev()->group;
 	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), inputGroup);
 }
 
 LVModal::~LVModal(){
-	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), parentScreen->getInputGroup());
+	lv_indev_set_group(InputLVGL::getInstance()->getIndev(), oldGroup);
 	lv_group_del(inputGroup);
 	current = nullptr;
+}
+
+void LVModal::setBg(const char* src){
+	lv_obj_set_style_bg_img_src(container, src, 0);
 }

@@ -77,11 +77,10 @@ void NewRobot::click(){
 }
 
 void NewRobot::buildMain(){
-	std::string imgPath("S:/GameIcons/");
+	std::string imgPath("S:/Menu/");
 	imgPath += RobotIcons[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot];
 	imgPath += ".bin";
 	auto icon = lv_img_create(*this);
-	lv_obj_set_size(icon, 40, 40);
 	lv_img_set_src(icon, imgPath.c_str());
 
 	std::string text(RobotNames[rob.robot >= Robot::COUNT ? (uint8_t) Robot::COUNT + (uint8_t) rob.token : (uint8_t) rob.robot]);
@@ -96,9 +95,8 @@ void NewRobot::buildMain(){
 }
 
 void NewRobot::buildNew(){
-	if(isNew){
+	if(isNew && Robots::isGame(rob)){
 		auto icon = lv_img_create(*this);
-		lv_obj_set_size(icon, 22, 35);
 		lv_img_set_src(icon, Filepath::Unlocked);
 	}else if(Robots::isPet(rob)){
 		auto icon = lv_img_create(*this);

@@ -12,7 +12,7 @@
 
 class AwardsScreen : public LVScreen {
 public:
-	AwardsScreen(Games current, uint32_t highScore, uint32_t xp);
+	AwardsScreen(Games current, uint32_t highScore, uint32_t xp, std::vector<AchievementData>& achievements);
 
 private:
 	enum class Award : uint8_t {
@@ -25,6 +25,8 @@ private:
 
 	uint32_t highScore;
 	uint32_t xp;
+	std::vector<AchievementData> achievements;
+
 	EventQueue evts;
 	Games currentGame;
 

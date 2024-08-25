@@ -39,7 +39,7 @@ private:
 	float multiplier;
 	bool done = false;
 	float winCounter = 0;
-	static constexpr float WinPause = 2;
+	static constexpr float WinPause = 1.0f;
 
 	std::shared_ptr<AnimRC> duckAnim;
 	std::shared_ptr<GameObject> indicatorGO;
@@ -47,6 +47,9 @@ private:
 	std::shared_ptr<GameObject> barGO;
 	std::shared_ptr<GameObject> mainGO;
 	std::shared_ptr<GameObject> bg;
+
+	bool animResetQueued = false;
+
 };
 
 #endif //BIT_FIRMWARE_HERTZGAME_H

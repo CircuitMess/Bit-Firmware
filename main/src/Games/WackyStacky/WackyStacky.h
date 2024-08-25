@@ -12,12 +12,13 @@ namespace WackyStacky {
 class WackyStacky : public Game {
 public:
 	explicit WackyStacky(Sprite& base);
-	virtual ~WackyStacky();
 
 protected:
 	uint32_t getXP() const override;
+	uint32_t getScore() const override;
 	virtual void onLoad() override;
 	virtual void onLoop(float deltaTime) override;
+	void handleInput(const Input::Data& data) override;
 
 private:
 	std::unique_ptr<Score> scoreDisplay;
@@ -25,45 +26,52 @@ private:
 	GameObjPtr hook;
 	GameObjPtr floor;
 	GameObjPtr hookedRobot;
-	EventQueue queue;
-	float swingDir = 1.0f;
 	uint8_t lives = 3;
-	uint64_t lastDrop = 0;
 	uint8_t currentRobot = 0;
-	float moveDelta = 0;
 	uint16_t score = 0;
-	glm::vec2 towerSwingLimits;
+	float deadTimer = 0;
+	int perfectCount = 0;
 
+	float swingT = 0.0f;
+	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f };
+	inline static constexpr const float SwingSpeed = 1.5f;
+
+	float dropT = 0.0f;
+	bool dropping = false;
+	struct {
+		glm::vec2 pos;
+		float rot;
+	} dropStart;
+	glm::vec2 dropSpeed;
+	glm::vec2 dropPos;
+	bool falling = false;
+	float fallDir = 0;
+
+	float towSwingT = 0.0f;
+	inline static constexpr const float TowerSwingSpeed = 1.0f;
+
+	bool scrolling = false;
+	float scrollDelta = 0;
+	static constexpr float TargetHeight = 95;
 	inline static constexpr const uint8_t VisibleRobotCount = 3;
+	struct Robot {
+		GameObjPtr go;
+		glm::vec2 pos = { 0, 0 };
+		glm::vec2 posDiff = { 0, 0 };
 
-	std::array<GameObjPtr, VisibleRobotCount> visibleRobots;
+		operator bool() const{ return go.operator bool(); }
+	};
+	std::array<Robot, VisibleRobotCount> visibleRobots;
 
 	inline static constexpr const uint8_t CloudCount = 4;
-
 	inline static constexpr const uint8_t ActiveCloudCount = 6;
-
 	std::array<GameObjPtr, ActiveCloudCount> clouds;
-
-	inline static constexpr const glm::vec2 SwingLimits = { -40.0f, 40.0f};
-
-	inline static constexpr const float SwingSpeed = 55.0f;
-
-	inline static constexpr const float TowerSwingSpeed = 3.50f;
-
-	inline static constexpr const uint8_t TowerSwingCoordsCount = 4;
 
 	inline static constexpr PixelDim CloudDims[] {
 			{ 39, 15 },
 			{ 40, 22 },
 			{ 24, 9 },
 			{ 40, 10 }
-	};
-
-	inline static constexpr glm::vec2 TowerSwingCoords[] {
-			{ 20.0f, 100.0f },
-			{ 40.0f, 86.0f },
-			{ 60.0f, 116.0f },
-			{ 80.0f, 92.0f }
 	};
 
 	inline static constexpr const char* CloudPaths[] = {
@@ -84,10 +92,22 @@ private:
 	};
 
 private:
-	void rotateHook(float deg);
-	void attachRobot(uint8_t robot);
+	void swingAnim(float dt);
+	void applyHookRot(float deg);
+
+	void towerSwingAnim(float dt);
+
+	void drop();
+	void dropAnim(float dt);
+	void dropped();
+
+	bool scrollStart();
+	void scrollAnim(float dt);
+
+	void spawnRobot();
+	void updateRobotPos();
 	void miss();
-	void onCollision();
+	void robotFallen();
 
 	inline static constexpr std::string getRobotPath(uint8_t robot) {
 		if(robot > 6){
@@ -112,7 +132,7 @@ private:
 				return { 35, 26 };
 			}
 			case 4:{
-				return { 21, 20 };
+				return { 31, 20 };
 			}
 			case 5:{
 				return { 25, 26 };

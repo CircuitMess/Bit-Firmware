@@ -32,6 +32,7 @@ private:
 	const glm::vec2 collisionOffset = glm::vec2{ 38, 38 };
 	bool eating = false;
 	bool eatingBad = false;
+	bool eatDone = false;
 	Input::Button lastPressed = Input::Menu;
 
 	File eat;

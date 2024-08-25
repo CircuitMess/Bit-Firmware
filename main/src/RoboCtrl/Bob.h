@@ -2,8 +2,9 @@
 #define BIT_FIRMWARE_BOB_H
 
 #include "RobotDriver.h"
+#include "LEDService/RoboLEDService.h"
 
-class LEDService;
+class RoboLEDService;
 
 namespace RoboCtrl {
 
@@ -23,7 +24,7 @@ protected:
 	void deinit() override;
 
 private:
-	LEDService* ledService;
+	RoboLEDService ledService;
 };
 
 }

@@ -15,7 +15,7 @@
 
 class MainMenu : public LVScreen {
 public:
-	MainMenu();
+	MainMenu(bool delayed = false);
 	virtual ~MainMenu();
 
 	static void gameEvent(RobotManager::Event evt);
@@ -29,7 +29,6 @@ private:
 	std::vector<MenuItem*> items;
 	std::unordered_map<uint8_t , MenuItem*> robGames;
 	lv_obj_t* itemCont;
-	LVGIF* bg = nullptr;
 	lv_obj_t* padTop = nullptr;
 
 	void onStarting() override;
@@ -37,6 +36,8 @@ private:
 	void onStop() override;
 	static void onScrollEnd(lv_event_t*);
 	bool loopBlocked = true;
+	bool delayed = false;
+	uint32_t startTime;
 
 	static std::string imgFullPath(const char* game);
 	static std::string imgGrayscalePath(const char* game);

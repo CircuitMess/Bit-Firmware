@@ -72,6 +72,11 @@ void HertzGame::onLoop(float deltaTime){
 	}else{
 		indicator->move(deltaTime);
 	}
+
+	if(animResetQueued){
+		animResetQueued = false;
+		resetAnim();
+	}
 }
 
 void HertzGame::onStart(){
@@ -138,10 +143,15 @@ void HertzGame::addPoints(int difference){
 		duckAnim->setAnim(getFile("/win.gif"));
 		duckAnim->setLoopMode(GIF::Single);
 		done = true;
+
+		if(tries <= 3){
+			addAchi(Achievement::Hertz_3, 1);
+		}
 	}else{
 		duckAnim->setAnim(getFile("/blink.gif"));
+		duckAnim->setLoopMode(GIF::Single);
 		duckAnim->setLoopDoneCallback([this](uint32_t){
-			resetAnim();
+			animResetQueued = true;
 		});
 
 		if(indicator->getDifference() < 30){
@@ -152,7 +162,6 @@ void HertzGame::addPoints(int difference){
 						 { 1000, 80,   150 } });
 
 		}else if(indicator->getDifference() >= 30){
-			flashAll();
 			robo->playBad();
 			audio.play({ { 400, 200, 100 },
 						 { 0,   0,   100 },

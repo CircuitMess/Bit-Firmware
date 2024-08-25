@@ -17,7 +17,12 @@ uint8_t XPSystem::getLevel() const{
 }
 
 void XPSystem::increment(uint32_t xpGain){
-	xp = std::min(xp + xpGain, LevelupThresholds[MaxLevel-2]);
+	uint32_t maxXp = 0;
+	for(const auto threshold : LevelupThresholds){
+		maxXp += threshold;
+	}
+
+	xp = std::min(xp + xpGain, maxXp);
 	store();
 }
 

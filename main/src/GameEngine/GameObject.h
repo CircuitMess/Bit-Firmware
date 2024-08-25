@@ -26,6 +26,8 @@ public:
 	std::shared_ptr<RenderComponent> getRenderComponent() const;
 	std::shared_ptr<CollisionComponent> getCollisionComponent() const;
 
+	void setCollisionComponent(std::shared_ptr<CollisionComponent> collisionComponent);
+
 private:
 	glm::vec2 pos = { 0, 0 };
 	float rot = 0;

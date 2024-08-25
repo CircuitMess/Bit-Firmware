@@ -8,9 +8,6 @@
 #include "HighScoreScreen.h"
 #include "InstructionsScreen.h"
 #include "Services/HighScoreManager.h"
-#include "GameSplashScreen.h"
-#include "Services/TwinkleService.h"
-#include "Devices/SinglePwmLED.h"
 
 GameMenuScreen::GameMenuScreen(Games current) : evts(6), currentGame(current){
 	switch(currentGame){
@@ -114,24 +111,19 @@ void GameMenuScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
+	lv_obj_set_size(bg, 128, 128);
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
+	lv_img_set_src(bg, (gameUIPath + "bg.bin").c_str());
 
-	auto top = lv_obj_create(*this);
-	lv_obj_set_size(top, 128, 42);
-	lv_obj_set_flex_flow(top, LV_FLEX_FLOW_ROW);
-	lv_obj_set_flex_align(top, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-	auto img = lv_img_create(top);
-	lv_img_set_src(img, (gameUIPath + "title.bin").c_str());
-	lv_obj_set_align(img, LV_ALIGN_CENTER);
-	lv_obj_set_style_pad_top(img, 8, 0);
+	auto title = lv_img_create(*this);
+	lv_obj_set_size(title, 128, 40);
+	lv_img_set_src(title, (gameUIPath + "title.bin").c_str());
 
 	rest = lv_obj_create(*this);
-	lv_obj_set_size(rest, 128, 86);
+	lv_obj_set_size(rest, 128, 88);
 	lv_obj_set_flex_flow(rest, LV_FLEX_FLOW_COLUMN);
 	lv_obj_set_flex_align(rest, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-	lv_obj_set_style_pad_all(rest, 4, 0);
+	lv_obj_set_style_pad_ver(rest, 4, 0);
 
 	lv_style_set_width(itemStyle, lv_pct(94));
 	lv_style_set_height(itemStyle, 18);
@@ -163,11 +155,6 @@ void GameMenuScreen::buildUI(){
 		lv_async_call([](void* arg){
 			auto screen = (GameMenuScreen*) arg;
 
-			if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-				twinkle->stop();
-			}
-			screen->addUsedLEDs();
-
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
 				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame, true); });
 			}
@@ -196,11 +183,6 @@ void GameMenuScreen::buildUI(){
 		lv_async_call([](void* arg){
 			auto screen = (GameMenuScreen*) arg;
 
-			if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-				twinkle->stop();
-			}
-			screen->addUsedLEDs();
-
 			if(auto ui = (UIThread*) Services.get(Service::UI)){
 				ui->startScreen([screen](){ return std::make_unique<InstructionsScreen>(screen->currentGame, false); });
 			}
@@ -220,10 +202,6 @@ void GameMenuScreen::buildUI(){
 }
 
 void GameMenuScreen::onStart(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		if(!twinkle->running()) twinkle->start();
-	}
-
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 }
@@ -253,41 +231,6 @@ void GameMenuScreen::loop(){
 }
 
 void GameMenuScreen::exit(){
-	auto disp = (Display*) Services.get(Service::Display);
-	auto lgfx = disp->getLGFX();
-	lgfx.drawBmpFile(Filepath::SplashWithBackground);
-
 	auto ui = (UIThread*) Services.get(Service::UI);
 	ui->startScreen([](){ return std::make_unique<MainMenu>(); });
-}
-
-void GameMenuScreen::addUsedLEDs(){
-	if(auto led = (LEDService*) Services.get(Service::LED)){
-		const auto& buttons = GameButtonsUsed[(uint8_t) currentGame];
-		uint8_t channel = 3;
-		if(buttons.up){
-			auto pwmInfo = PwmMappings.at(LED::Up);
-			led->add<SinglePwmLED>(LED::Up, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-		if(buttons.down){
-			auto pwmInfo = PwmMappings.at(LED::Down);
-			led->add<SinglePwmLED>(LED::Down, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-		if(buttons.left){
-			auto pwmInfo = PwmMappings.at(LED::Left);
-			led->add<SinglePwmLED>(LED::Left, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-		if(buttons.right){
-			auto pwmInfo = PwmMappings.at(LED::Right);
-			led->add<SinglePwmLED>(LED::Right, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-		if(buttons.a){
-			auto pwmInfo = PwmMappings.at(LED::A);
-			led->add<SinglePwmLED>(LED::A, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-		if(buttons.b){
-			auto pwmInfo = PwmMappings.at(LED::B);
-			led->add<SinglePwmLED>(LED::B, pwmInfo.pin, (ledc_channel_t)channel++, pwmInfo.limit);
-		}
-	}
 }

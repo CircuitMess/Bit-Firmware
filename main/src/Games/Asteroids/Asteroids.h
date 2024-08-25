@@ -137,6 +137,8 @@ private:
 	static constexpr float MinAsteroidDistance = PlayerRadius;
 	static constexpr uint32_t WinLosePeriod = 200;
 	void updateRobotPeriod();
+
+	bool noMiss = true;
 };
 
 }

@@ -244,6 +244,10 @@ void CapacitronGame::CapacitronGame::createPad(float surface, bool powerupsEnabl
 				cameraShifting = true;
 				camShiftDistance = 128 - 8 - (*padObjs[1].begin())->getPos().y;
 				scoreDisplay->setScore(++score);
+
+				setAchiIfBigger(Achievement::Capacitron_b, score);
+				setAchiIfBigger(Achievement::Capacitron_s, score);
+				setAchiIfBigger(Achievement::Capacitron_g, score);
 			}
 		});
 	}
@@ -369,6 +373,8 @@ void CapacitronGame::CapacitronGame::spawnFireball(){
 
 				player->damage();
 			}
+		}else{
+			addAchi(Achievement::Capacitron_fire, 1);
 		}
 		removeObject(obj);
 

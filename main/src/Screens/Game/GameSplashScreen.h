@@ -28,7 +28,7 @@ private:
 	uint32_t startTime;
 	static constexpr uint32_t HoldTime = 2000;
 
-	MelodyPlayer* melody = nullptr;
+	std::unique_ptr<MelodyPlayer> melody;
 
 };
 

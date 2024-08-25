@@ -7,7 +7,7 @@
 
 ResourceManager::ResourceManager(const char* root) : root(root){}
 
-void IRAM_ATTR ResourceManager::load(const std::vector<ResDescriptor>& descriptors){
+void IRAM_ATTR ResourceManager::load(const std::vector<ResDescriptor>& descriptors, Allocator* alloc){
 //	uint8_t copyBuffer[1024];
 
 	for(auto descriptor : descriptors){
@@ -44,7 +44,22 @@ void IRAM_ATTR ResourceManager::load(const std::vector<ResDescriptor>& descripto
 				resources[descriptor.path] = output;*/
 			}else{
 				//copy file from SPIFFS to RAMFile
-				resources[descriptor.path] = RamFile::open(original);
+				File file;
+
+				if(alloc){
+					auto buf = (uint8_t*) alloc->malloc(original.size());
+					if(buf == nullptr){
+						ESP_LOGW("GameLoader", "Failed allocating %zu B from allocator. Reverting to RamFile", original.size());
+						file = RamFile::open(original);
+					}else{
+						original.read(buf, original.size());
+						file = { std::make_shared<RamFile>(buf, original.size(), original.name()) };
+					}
+				}else{
+					file = RamFile::open(original);
+				}
+
+				resources[descriptor.path] = file;
 			}
 
 		}else{

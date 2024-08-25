@@ -15,6 +15,9 @@ public:
 	PauseScreen(Games current);
 
 private:
+	enum class State {
+		Pause, Controls, IgnoreInput
+	} state = State::Pause;
 	EventQueue evts;
 	Games currentGame;
 
@@ -31,6 +34,7 @@ private:
 	void loop() override;
 
 	void showControls();
+	void exitControls();
 	void exit();
 };
 

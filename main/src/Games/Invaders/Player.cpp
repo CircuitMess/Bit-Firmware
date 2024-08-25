@@ -48,7 +48,6 @@ void Invaders::Player::btnReleased(Input::Button btn){
 void Invaders::Player::damage(){
 	if(state == State::Death) return;
 	gamePtr->robot->blinkTwice();
-	gamePtr->flashAll();
 	anim->reset();
 	anim->start();
 	anim->setLoopMode(GIF::Infinite);

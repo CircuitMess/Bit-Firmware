@@ -11,25 +11,22 @@
 #include "Settings/Settings.h"
 #include "Services/ChirpSystem.h"
 #include "Filepaths.hpp"
-#include "Services/TwinkleService.h"
+#include "InstructionsElement.h"
+#include "Services/LEDService.h"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
 }
 
 void PauseScreen::onStart(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->start();
-	}
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->twinkle();
 }
 
 void PauseScreen::onStop(){
-	if(auto twinkle = (TwinkleService*) Services.get(Service::Twinkle)){
-		twinkle->stop();
-	}
-
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
@@ -52,54 +49,21 @@ void PauseScreen::loop(){
 		}
 
 		auto data = (Input::Data*) e.data;
-		if((data->btn == Input::Menu || data->btn == Input::B) && data->action == Input::Data::Release){
+		if(state == State::Pause && (data->btn == Input::Menu || data->btn == Input::B) && data->action == Input::Data::Press){
 			auto ui = (UIThread*) Services.get(Service::UI);
 			ui->resumeGame();
 
 			free(e.data);
 			return;
+		}else if((data->btn == Input::Menu || data->btn == Input::B || data->btn == Input::A) && data->action == Input::Data::Release){
+			if(state == State::IgnoreInput){
+				state = State::Controls;
+			}else if(state == State::Controls){
+				exitControls();
+			}
 		}
 		free(e.data);
 	}
-}
-
-void PauseScreen::showControls(){
-	auto icon = GameIcons[(int) currentGame];
-	std::string instr("/spiffs/Splash/"); instr += icon; instr += "_instr.bmp";
-
-	auto disp = (Display*) Services.get(Service::Display);
-	auto lgfx = disp->getLGFX();
-	lgfx.drawBmpFile(instr.c_str());
-
-	evts.reset();
-	Events::listen(Facility::Battery, &evts);
-	for(;;){
-		Event evt{};
-		if(!evts.get(evt, portMAX_DELAY)) continue;
-
-		if(evt.facility == Facility::Input){
-			auto data = (Input::Data*) evt.data;
-			if(data->action == Input::Data::Release){
-				free(evt.data);
-				break;
-			}
-		}else if(evt.facility == Facility::Battery){
-			auto data = (Battery::Event*) evt.data;
-			if(data->action == Battery::Event::LevelChange && data->level == Battery::Critical){
-				free(evt.data);
-				Events::unlisten(&evts);
-				return;
-			}
-		}
-
-		free(evt.data);
-	}
-	Events::unlisten(&evts);
-
-	evts.reset();
-	Events::listen(Facility::Input, &evts);
-
-	lv_obj_invalidate(*this);
 }
 
 void PauseScreen::exit(){
@@ -130,7 +94,7 @@ void PauseScreen::buildUI(){
 	lv_obj_set_flex_flow(*this, LV_FLEX_FLOW_COLUMN);
 
 	auto bg = lv_img_create(*this);
-	lv_img_set_src(bg, THEMED_FILE(Background, settings->get().theme));
+	lv_img_set_src(bg, THEMED_FILE(PausedBg, settings->get().theme));
 	lv_obj_add_flag(bg, LV_OBJ_FLAG_FLOATING);
 
 	auto top = lv_obj_create(*this);
@@ -218,4 +182,30 @@ void PauseScreen::buildUI(){
 	}, LV_EVENT_PRESSED, this);
 
 	lv_group_focus_obj(lv_obj_get_child(rest, 0)); // TODO: move to onStarting if this is a persistent screen
+}
+
+void PauseScreen::showControls(){
+	state = State::IgnoreInput;
+
+	lv_obj_clean(*this);
+	lv_obj_invalidate(*this);
+
+	new InstructionsElement(*this, currentGame);
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->ctrls(currentGame);
+}
+
+void PauseScreen::exitControls(){
+	state = State::Pause;
+
+	lv_timer_handler();
+
+	lv_obj_clean(*this);
+	lv_obj_invalidate(*this);
+
+	buildUI();
+
+	auto led = (LEDService*) Services.get(Service::LED);
+	led->twinkle();
 }
