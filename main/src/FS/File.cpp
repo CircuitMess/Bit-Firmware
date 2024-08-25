@@ -25,6 +25,10 @@ size_t File::size() const{
 	return impl->size();
 }
 
+bool File::operator==(const File& other) const{
+	return std::string(name()) == other.name();
+}
+
 const char* File::name() const{
 	if(!open()) return nullptr;
 

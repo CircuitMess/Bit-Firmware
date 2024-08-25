@@ -13,6 +13,7 @@
 #include "Games/Dance/Dance.h"
 #include "Games/Asteroids/Asteroids.h"
 #include "Games/Artemis/Game.h"
+#include "Games/Sparkly/Sparkly.h"
 #include "Games/Harald/Harald.h"
 #include "Games/Planck/Planck.h"
 #include "Games/WackyStacky/WackyStacky.h"
@@ -29,12 +30,13 @@ static const std::unordered_map<Games, std::function<std::unique_ptr<Game>(Sprit
 		{ Games::Bob,        [](Sprite& canvas){ return std::make_unique<BobGame::BobGame>(canvas); } },
 		{ Games::Capacitron, [](Sprite& canvas){ return std::make_unique<CapacitronGame::CapacitronGame>(canvas); } },
 		{ Games::Resistron,  [](Sprite& canvas){ return std::make_unique<Invaders::Invaders>(canvas); } },
-		{ Games::Buttons,  [](Sprite& canvas){ return std::make_unique<Dance>(canvas); } },
+		{ Games::Buttons,	 [](Sprite& canvas){ return std::make_unique<Dance>(canvas); } },
 		{ Games::Robby,      [](Sprite& canvas){ return std::make_unique<Asteroids::Asteroids>(canvas); } },
 		{ Games::Artemis,    [](Sprite& canvas){ return std::make_unique<ArtemisGame::PewPew>(canvas); } },
 		{ Games::Harald,    [](Sprite& canvas){ return std::make_unique<Harald::Harald>(canvas); } },
 		{ Games::Planck,    [](Sprite& canvas){ return std::make_unique<Planck::Planck>(canvas); } },
 		{ Games::WackyStacky,   [](Sprite& canvas){ return std::make_unique<WackyStacky::WackyStacky>(canvas); } },
+		{ Games::Sparkly,	 [](Sprite& canvas){ return std::make_unique<Sparkly::Sparkly>(canvas); } },
 		{ Games::Charlie,   [](Sprite& canvas){ return std::make_unique<CharlieGame::CharlieGame>(canvas); } },
 		{ Games::Dusty,   [](Sprite& canvas){ return std::make_unique<DustyGame::DustyGame>(canvas); } }
 };

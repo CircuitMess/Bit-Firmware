@@ -215,7 +215,7 @@ void Planck::Planck::onLoop(float deltaTime){
 	if(lastAir != 0){
 		if(millis() - lastAir >= AirDuration){
 			lastAir = 0;
-			carRC->setScale(1.0);
+			carRC->setScale({ 1.0f, 1.0f });
 
 			if(input->isPressed(Input::Button::Right) && !input->isPressed(Input::Button::Left)){
 				direction = 1.0f;
@@ -236,7 +236,7 @@ void Planck::Planck::onLoop(float deltaTime){
 			const auto x = millis() - lastAir;
 			const auto carZoom = -(JumpMaxZoom - 1.0) / 2.0 * cos(2.0 * M_PI / (float) AirDuration * x) + 1 + (JumpMaxZoom - 1.0) / 2.0;
 
-			carRC->setScale(carZoom);
+			carRC->setScale({ carZoom, carZoom });
 		}
 	}
 

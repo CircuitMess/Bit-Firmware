@@ -46,6 +46,7 @@ protected:
 	virtual void onStop();
 	virtual void onLoad();
 	virtual void onLoop(float deltaTime);
+	virtual void preRender(Sprite& canvas);
 	virtual void onRender(Sprite& canvas);
 
 	File getFile(const std::string& path);

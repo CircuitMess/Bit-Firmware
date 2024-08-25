@@ -10,6 +10,7 @@ public:
 	File(FileImplPtr p = FileImplPtr());
 
 	operator bool() const;
+	bool operator ==(const File& other) const;
 	bool open() const;
 
 	void close();

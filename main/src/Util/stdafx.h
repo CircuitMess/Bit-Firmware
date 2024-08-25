@@ -28,4 +28,6 @@ void ramReport();
 void stackRep(const char* where = nullptr);
 void heapRep(const char* where = nullptr);
 
+#define SIGN(x) ((x) < 0.0f ? -1.0f : (x) > 0.0f ? 1.0f : 0.0f)
+
 #endif //BIT_FIRMWARE_STDAFX_H

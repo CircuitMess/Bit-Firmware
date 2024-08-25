@@ -51,7 +51,7 @@ const std::unordered_map<Achievement, AchiFile> AchievementFiles = {
 		{ Achievement::Snake_g,           { "S:/Achi/snake-g.bin",            "S:/Achi/BW/snake-g.bin" }},
 		{ Achievement::Snake_s,           { "S:/Achi/snake-s.bin",            "S:/Achi/BW/snake-s.bin" }},
 		{ Achievement::Sparkly_nobrake,   { "S:/Achi/sparkly-nobrake.bin",    "S:/Achi/BW/sparkly-nobrake.bin" }},
-		{ Achievement::Sparkly_overtake,  { "S:/Achi/sparkly-overtake.bin",   "S:/Achi/BW/sparkly-overtake.bin" }},
+		// { Achievement::Sparkly_overtake,  { "S:/Achi/sparkly-overtake.bin",   "S:/Achi/BW/sparkly-overtake.bin" }},
 		{ Achievement::Sparkly_road,      { "S:/Achi/sparkly-road.bin",       "S:/Achi/BW/sparkly-road.bin" }},
 		{ Achievement::Stacky_5,          { "S:/Achi/stacky-5.bin",           "S:/Achi/BW/stacky-5.bin" }},
 		{ Achievement::Stacky_highrise,   { "S:/Achi/stacky-highrise.bin",    "S:/Achi/BW/stacky-highrise.bin" }},

@@ -38,7 +38,7 @@ private:
 	static constexpr const char* BlobName = "XP";
 
 	static constexpr uint8_t MaxLevel = 5;
-	static constexpr uint32_t LevelupThresholds[MaxLevel - 1] = { 50, 200, 1000, 5000 };
+	static constexpr uint32_t LevelupThresholds[MaxLevel - 1] = { 200, 400, 1000, 2000 };
 };
 
 
