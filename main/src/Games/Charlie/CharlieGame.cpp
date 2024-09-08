@@ -10,7 +10,6 @@ CharlieGame::CharlieGame::CharlieGame(Sprite& base) : Game(base, Games::Charlie,
 		RES_GOBLET,
 		RES_HEART,
 		{ "/bg.raw", {}, true },
-		{ "/net.raw", {}, true },
 		{ "/cac.gif", {}, true },
 		{ "/puf.gif", {}, true },
 		{ "/ch_idle.gif", {}, true },
@@ -42,13 +41,6 @@ void CharlieGame::CharlieGame::onLoad(){
 	);
 	bg->getRenderComponent()->setLayer(-2);
 	addObject(bg);
-
-	auto net = std::make_shared<GameObject>(
-			std::make_unique<StaticRC>(getFile("/net.raw"), PixelDim{ 128, 128 }),
-			nullptr
-	);
-	net->getRenderComponent()->setLayer(-1);
-	addObject(net);
 
 	livesEl = std::make_unique<Hearts>(getFile(FILE_HEART));
 	livesEl->getGO()->setPos({ 2, 2 });
