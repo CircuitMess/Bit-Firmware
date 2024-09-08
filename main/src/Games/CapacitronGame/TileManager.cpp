@@ -1,14 +1,14 @@
 #include "TileManager.h"
 #include "GameEngine/Rendering/SpriteRC.h"
 #include "GameEngine/Collision/RectCC.h"
-#include <map>
 #include <set>
+#include <utility>
 #include "CapacitronGame.h"
 #include <esp_random.h>
 
 CapacitronGame::TileManager::TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs,
-										 std::vector<GameObjPtr>& powerupObjs) :
-		tileObjs(tileObjs), padObjs(padObjs), powerupObjs(powerupObjs){
+										 std::vector<GameObjPtr>& powerupObjs, std::function<void*(size_t)> allocatorFunc) :
+		tileObjs(tileObjs), padObjs(padObjs), powerupObjs(powerupObjs), allocatorFunc(std::move(allocatorFunc)){
 }
 
 void CapacitronGame::TileManager::addFiles(FileList bgFiles, FileList wallLFiles, FileList wallRFiles, FileList padFiles, FileList powerupFiles){
@@ -29,7 +29,7 @@ void CapacitronGame::TileManager::reset(uint8_t segmentIndex){
 void CapacitronGame::TileManager::createBg(){
 	for(int segID = 0; segID < SegmentCount; segID++){
 		auto setOfTiles = std::make_shared<GameObject>(
-				std::make_unique<SpriteRC>(PixelDim{ 128, BgTileDim }),
+				std::make_unique<SpriteRC>(PixelDim{ 128, BgTileDim }, (uint8_t*) (allocatorFunc ? allocatorFunc(128 * BgTileDim * 2) : nullptr)),
 				std::make_unique<RectCC>(glm::vec2{ 128, BgTileDim })
 		);
 		tileObjs.push_back(setOfTiles);

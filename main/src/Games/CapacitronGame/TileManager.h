@@ -21,7 +21,7 @@ struct Powerup {
 
 class TileManager {
 public:
-	TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs, std::vector<GameObjPtr>& powerupObjs);
+	TileManager(std::vector<GameObjPtr>& tileObjs, std::vector<std::set<GameObjPtr>>& padObjs, std::vector<GameObjPtr>& powerupObjs, std::function<void*(size_t)> allocatorFunc = {});
 	void addFiles(FileList bgFiles, FileList wallLFiles, FileList wallRFiles, FileList padFiles, FileList powerupFiles);
 	void reset(uint8_t segmentIndex);
 	void createBg();
@@ -60,6 +60,8 @@ private:
 
 	uint8_t getRandomWallIndex(); //takes into account distribution of random tiles
 	Powerup spawnRandomPowerup(uint8_t rate, bool powerupsEnabled); //returns empty object or powerup according to spawn rate
+
+	std::function<void*(size_t)> allocatorFunc;
 };
 
 }

@@ -27,10 +27,10 @@ CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, Ga
 		{ "/padL.raw", {}, true },
 		{ "/padR.raw", {}, true },
 
-		{ "/dead.gif", {}, false },
+		{ "/dead.gif", {}, true },
 		{ "/jump.gif", {}, true },
 		{ "/jumpGlow.gif", {}, true },
-		{ "/jumpPad.gif", {}, false },
+		{ "/jumpPad.gif", {}, true },
 		{ "/heart.gif", {}, true },
 		{ "/fireball.gif", {}, true },
 		{ "/potion.gif", {}, true },
@@ -43,7 +43,7 @@ CapacitronGame::CapacitronGame::CapacitronGame(Sprite& canvas) : Game(canvas, Ga
 
 void CapacitronGame::CapacitronGame::onLoad(){
 	///Tiles
-	tileManager = std::make_unique<TileManager>(tileObjs, padObjs, powerupObjs);
+	tileManager = std::make_unique<TileManager>(tileObjs, padObjs, powerupObjs, [this](size_t size){ printf("alloc func called\n"); return allocatePersistentMemory(size); });
 	tileManager->addFiles({ getFile("/bg1.raw"), getFile("/bg2.raw"), getFile("/bg3.raw"), getFile("/bg4.raw") },
 						  { getFile("/wallL1.raw"), getFile("/wallL2.raw"), getFile("/wallL3.raw") },
 						  { getFile("/wallR1.raw"), getFile("/wallR2.raw"), getFile("/wallR3.raw") },
