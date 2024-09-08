@@ -7,10 +7,8 @@ namespace CharlieGame {
 
 class Fly {
 public:
-	Fly(/*const std::function<void(const GameObjPtr& obj)> addObject, const std::function<void(const GameObjPtr& obj)> removeObject,*/
-		std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
+	Fly(std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
 		struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
-//	virtual ~Fly();
 
 	operator GameObjPtr();
 
@@ -28,12 +26,7 @@ public:
 	bool isRescuing();
 	bool isDone();
 
-//	glm::vec2 getCachedPos() const;
-
 private:
-//	const std::function<void(const GameObjPtr& obj)> addObject;
-//	const std::function<void(const GameObjPtr& obj)> removeObject;
-
 	std::shared_ptr<RenderComponent> flyRC;
 	std::shared_ptr<RenderComponent> plotRC;
 	std::shared_ptr<RenderComponent> unrollRC;
@@ -61,7 +54,6 @@ private:
 
 	std::shared_ptr<MultiRC> rc;
 
-//	glm::vec2 cachedPos{};
 
 };
 

@@ -126,8 +126,7 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	if(flies.count() < MaxFlies/2 && flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
-		auto fly = new Fly(/*[this](const GameObjPtr& obj){ return addObject(obj); }, [this](const GameObjPtr& obj){ return removeObject(obj); },*/
-						   ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), nullptr,
+		auto fly = new Fly(ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), nullptr,
 						   [this](Cacoon* cac){
 							   if(over) return;
 			audio->play({{ 600, 300, 200 },
@@ -167,7 +166,6 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 			nullptr
 	);
 	cacGo->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
-//	cacGo->setPos(rollingFly->getCachedPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
 	auto rc = (AnimRC*) cacGo->getRenderComponent().get();
 	rc->setLayer(0);
 	rc->start();
@@ -229,8 +227,7 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			cacs.rem(cac);
 			delete cac;
 		}else if(cac->beingRescued && cac->t >= CacoonTime/2.0f && cac->rescuer == nullptr){
-			auto fly = new Fly(/*[this](const GameObjPtr& obj){ return addObject(obj); }, [this](const GameObjPtr& obj){ return removeObject(obj); },*/
-							   ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), cac,
+			auto fly = new Fly(ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), cac,
 							   [this](Cacoon* cac){
 			   if(over) return;
 

@@ -4,10 +4,8 @@
 #include <gtx/vector_angle.hpp>
 #include <utility>
 
-CharlieGame::Fly::Fly(/*const std::function<void(const GameObjPtr& obj)> addObject, const std::function<void(const GameObjPtr& obj)> removeObject,*/
-					  std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
+CharlieGame::Fly::Fly(std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
 					  struct Cacoon* rescue, std::function<void(struct Cacoon*)> onRescued) :
-		/*addObject(addObject), removeObject(removeObject),*/
 		flyRC(std::move(flyRC)), plotRC(std::move(plotRC)),
 		unrollRC(std::move(unrollRC)), rescue(rescue),
 		onRescued(onRescued){
@@ -37,12 +35,6 @@ CharlieGame::Fly::Fly(/*const std::function<void(const GameObjPtr& obj)> addObje
 CharlieGame::Fly::operator GameObjPtr(){
 	return go;
 }
-
-//CharlieGame::Fly::~Fly(){
-//	if(go){
-//		removeObject(go);
-//	}
-//}
 
 bool CharlieGame::Fly::isPlotting(){
 	return state == Plotting;
@@ -116,45 +108,6 @@ void CharlieGame::Fly::update(float dt){
 }
 
 void CharlieGame::Fly::updateAnim(){
-/*
-	bool restorePrevPos = false;
-	glm::vec2 prevPos{};
-	float prevRot = 0;
-	if(go){
-		restorePrevPos = true;
-		prevPos = go->getPos();
-		prevRot = go->getRot();
-		removeObject(go);
-		go.reset();
-		cachedPos = prevPos;
-	}
-
-	if(state == FlyingIn || state == FlyingOut){
-		go = std::make_shared<GameObject>(
-				std::make_unique<MultiRC>(flyRC),
-				nullptr
-		);
-	}else if(state == Plotting){
-		go = std::make_shared<GameObject>(
-				std::make_unique<MultiRC>(plotRC),
-				nullptr
-		);
-	}else if(state == Rescuing){
-		go = std::make_shared<GameObject>(
-				std::make_unique<MultiRC>(unrollRC),
-				nullptr
-		);
-		prevRot = 0;
-	}else if(state == Cacoon || state == Done){
-		return;
-	}
-
-	addObject(go);
-	if(restorePrevPos){
-		go->setPos(prevPos);
-		go->setRot(prevRot);
-	}*/
-
 	if(state == FlyingIn || state == FlyingOut){
 		rc->setRC(flyRC);
 	}else if(state == Plotting){
@@ -184,12 +137,6 @@ void CharlieGame::Fly::goAway(){
 
 	if(state == FlyingOut) return;
 
-/*	if(go){
-		startPos = go->getPos();
-	}else{
-		startPos = getCachedPos();
-	}*/
-
 	startPos = go->getPos();
 	destPos = randPoint(120);
 
@@ -214,7 +161,3 @@ glm::vec2 CharlieGame::Fly::randPoint(float centerDistance){
 	const glm::vec2 dir = glm::rotate(glm::vec2 { 0, 1 }, randDir);
 	return center + dir * centerDistance;
 }
-
-/*glm::vec2 CharlieGame::Fly::getCachedPos() const{
-	return cachedPos;
-}*/
