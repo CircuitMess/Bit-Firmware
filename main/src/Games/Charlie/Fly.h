@@ -7,9 +7,11 @@ namespace CharlieGame {
 
 class Fly {
 public:
-	Fly(std::function<File(const char*)> getFile, struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
+	Fly(std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
+		struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
 
 	operator GameObjPtr();
+
 
 	void update(float dt);
 
@@ -25,7 +27,9 @@ public:
 	bool isDone();
 
 private:
-	const std::function<File(const char*)> getFile;
+	std::shared_ptr<RenderComponent> flyRC;
+	std::shared_ptr<RenderComponent> plotRC;
+	std::shared_ptr<RenderComponent> unrollRC;
 	GameObjPtr go;
 
 	enum State {
@@ -47,6 +51,9 @@ private:
 	void updateAnim();
 
 	static glm::vec2 randPoint(float centerDistance);
+
+	std::shared_ptr<MultiRC> rc;
+
 
 };
 

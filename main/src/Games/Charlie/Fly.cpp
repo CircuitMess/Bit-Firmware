@@ -1,13 +1,21 @@
 #include "Fly.h"
-#include "GameEngine/Rendering/AnimRC.h"
+#include "GameEngine/Rendering/MultiRC.h"
 #include <esp_random.h>
 #include <gtx/vector_angle.hpp>
+#include <utility>
 
-CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* rescue, std::function<void(struct Cacoon*)> onRescued) : getFile(getFile), rescue(rescue), onRescued(onRescued){
+CharlieGame::Fly::Fly(std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
+					  struct Cacoon* rescue, std::function<void(struct Cacoon*)> onRescued) :
+		flyRC(std::move(flyRC)), plotRC(std::move(plotRC)),
+		unrollRC(std::move(unrollRC)), rescue(rescue),
+		onRescued(onRescued){
+
 	go = std::make_shared<GameObject>(
-			std::make_unique<AnimRC>(getFile("/fly_fly.gif")),
+			std::make_unique<MultiRC>(flyRC),
 			nullptr
 	);
+
+	rc = std::static_pointer_cast<MultiRC>(go->getRenderComponent());
 
 	startPos = randPoint(120);
 	go->setPos(startPos);
@@ -21,8 +29,6 @@ CharlieGame::Fly::Fly(std::function<File(const char*)> getFile, struct Cacoon* r
 		} * (glm::vec2 { 128, 128 } - SpriteSize - glm::vec2 { 0, 10 });
 	}
 
-	auto rc = (AnimRC*) go->getRenderComponent().get();
-	rc->setLayer(2);
 	updateAnim();
 }
 
@@ -102,26 +108,19 @@ void CharlieGame::Fly::update(float dt){
 }
 
 void CharlieGame::Fly::updateAnim(){
-	auto rc = (AnimRC*) go->getRenderComponent().get();
-
 	if(state == FlyingIn || state == FlyingOut){
-		rc->setAnim(getFile("/fly_fly.gif"), true);
-		rc->setLayer(3);
+		rc->setRC(flyRC);
 	}else if(state == Plotting){
-		rc->setAnim(getFile("/fly_plot.gif"), true);
-		rc->setLayer(0);
+		rc->setRC(plotRC);
 	}else if(state == Rescuing){
-		rc->setAnim(getFile("/fly_unroll.gif"), true);
-		rc->setLayer(0);
+		rc->setRC(unrollRC);
 		go->setRot(0);
 	}else if(state == Cacoon || state == Done){
 		rc->setVisible(false);
-		rc->stop();
 		go->setRot(0);
 		return;
 	}
 
-	rc->start();
 	rc->setVisible(true);
 }
 

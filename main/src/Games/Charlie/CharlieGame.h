@@ -38,6 +38,9 @@ private:
 
 	static constexpr size_t MaxFlies = 8;
 	Storage<Fly, MaxFlies> flies;
+	GameObjPtr ogFlyFlying;
+	GameObjPtr ogFlyPlotting;
+	GameObjPtr ogFlyUnrolling;
 
 	static constexpr float FlySpawnRate = 4.0f;
 	float flySpawnT = 3.0f;
