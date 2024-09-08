@@ -203,3 +203,7 @@ void Game::onRender(Sprite& canvas){}
 void Game::setRobot(std::shared_ptr<RoboCtrl::RobotDriver> robot){
 	this->robot = robot;
 }
+
+void* Game::allocatePersistentMemory(size_t size){
+	return alloc->malloc(size);
+}

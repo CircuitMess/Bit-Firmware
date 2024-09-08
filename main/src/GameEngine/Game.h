@@ -78,6 +78,12 @@ protected:
 	// will get deleted. Once onLoop exits (in Game::loop), the object is already deleted. When that
 	// happens, the loop function should return immeidatelly after onLoop is done. Since the object
 	// is already deleted at that point, we can't store the exited variable inside the Game class.
+
+	/**
+	 * Uses global Allocator memory pool to reserve memory.
+	 * Memory cannot be freed until Game::exit() is called, so allocate responsibly!
+	 */
+	void* allocatePersistentMemory(size_t size);
 private:
 	const Games gameType;
 	Sprite& base;

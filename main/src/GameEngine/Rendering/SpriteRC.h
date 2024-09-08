@@ -8,7 +8,7 @@
 
 class SpriteRC : public RenderComponent {
 public:
-	explicit SpriteRC(PixelDim dim);
+	explicit SpriteRC(PixelDim dim, uint8_t* buffer = nullptr);
 	virtual ~SpriteRC() override = default;
 	std::shared_ptr<Sprite> getSprite() const;
 	void setScale(glm::vec2 value);

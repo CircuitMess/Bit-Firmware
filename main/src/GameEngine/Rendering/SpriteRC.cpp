@@ -1,8 +1,13 @@
 #include "SpriteRC.h"
+#include "Util/stdafx.h"
 
-SpriteRC::SpriteRC(PixelDim dim) : sprite(std::make_shared<Sprite>(nullptr)){
-	sprite->createSprite(dim.x, dim.y);
-	sprite->setColorDepth(lgfx::rgb565_2Byte);
+SpriteRC::SpriteRC(PixelDim dim, uint8_t* buffer) : sprite(std::make_shared<Sprite>(nullptr)){
+	if(buffer == nullptr){
+		sprite->createSprite(dim.x, dim.y);
+		sprite->setColorDepth(lgfx::rgb565_2Byte);
+	}else{
+		sprite->setBuffer(buffer, dim.x, dim.y, 16);
+	}
 }
 
 std::shared_ptr<Sprite> SpriteRC::getSprite() const{
