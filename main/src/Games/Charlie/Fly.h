@@ -7,9 +7,13 @@ namespace CharlieGame {
 
 class Fly {
 public:
-	Fly(std::function<File(const char*)> getFile, struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
+	Fly(/*const std::function<void(const GameObjPtr& obj)> addObject, const std::function<void(const GameObjPtr& obj)> removeObject,*/
+		std::shared_ptr<RenderComponent> flyRC, std::shared_ptr<RenderComponent> plotRC, std::shared_ptr<RenderComponent> unrollRC,
+		struct Cacoon* rescue = nullptr, std::function<void(struct Cacoon*)> onRescued = {});
+//	virtual ~Fly();
 
 	operator GameObjPtr();
+
 
 	void update(float dt);
 
@@ -24,8 +28,15 @@ public:
 	bool isRescuing();
 	bool isDone();
 
+//	glm::vec2 getCachedPos() const;
+
 private:
-	const std::function<File(const char*)> getFile;
+//	const std::function<void(const GameObjPtr& obj)> addObject;
+//	const std::function<void(const GameObjPtr& obj)> removeObject;
+
+	std::shared_ptr<RenderComponent> flyRC;
+	std::shared_ptr<RenderComponent> plotRC;
+	std::shared_ptr<RenderComponent> unrollRC;
 	GameObjPtr go;
 
 	enum State {
@@ -47,6 +58,10 @@ private:
 	void updateAnim();
 
 	static glm::vec2 randPoint(float centerDistance);
+
+	std::shared_ptr<MultiRC> rc;
+
+//	glm::vec2 cachedPos{};
 
 };
 

@@ -56,6 +56,37 @@ void CharlieGame::CharlieGame::onLoad(){
 
 	chrl = std::make_unique<Char>([this](const char* name){ return getFile(name); });
 	addObject(*chrl);
+
+	ogFlyFlying = std::make_shared<GameObject>(
+			std::make_unique<AnimRC>(getFile("/fly_fly.gif")),
+			nullptr
+	);
+	ogFlyFlying->setPos(-50, -50);
+	auto anim = std::static_pointer_cast<AnimRC>(ogFlyFlying->getRenderComponent());
+	anim->setLoopMode(GIF::Infinite);
+	anim->start();
+	anim->setLayer(3);
+	addObject(ogFlyFlying);
+
+	ogFlyPlotting = std::make_shared<GameObject>(
+			std::make_unique<AnimRC>(getFile("/fly_plot.gif")),
+			nullptr
+	);
+	ogFlyPlotting->setPos(-50, -50);
+	anim = std::static_pointer_cast<AnimRC>(ogFlyPlotting->getRenderComponent());
+	anim->setLoopMode(GIF::Infinite);
+	anim->start();
+	addObject(ogFlyPlotting);
+
+	ogFlyUnrolling = std::make_shared<GameObject>(
+			std::make_unique<AnimRC>(getFile("/fly_unroll.gif")),
+			nullptr
+	);
+	ogFlyUnrolling->setPos(-50, -50);
+	anim = std::static_pointer_cast<AnimRC>(ogFlyUnrolling->getRenderComponent());
+	anim->setLoopMode(GIF::Infinite);
+	anim->start();
+	addObject(ogFlyUnrolling);
 }
 
 uint32_t CharlieGame::CharlieGame::getXP() const{
@@ -95,8 +126,10 @@ void CharlieGame::CharlieGame::onLoop(float deltaTime){
 	if(flies.count() < MaxFlies/2 && flySpawnT >= FlySpawnRate / std::min(3.0f, std::max(1.0f, (float) score / 7.0f))){
 		flySpawnT = 0;
 
-		auto fly = new Fly([this](const char* name){ return getFile(name); }, nullptr, [this](Cacoon* cac){
-			if(over) return;
+		auto fly = new Fly(/*[this](const GameObjPtr& obj){ return addObject(obj); }, [this](const GameObjPtr& obj){ return removeObject(obj); },*/
+						   ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), nullptr,
+						   [this](Cacoon* cac){
+							   if(over) return;
 			audio->play({{ 600, 300, 200 },
 						 { 0,   0,   75 },
 						 { 400, 200, 200 },
@@ -134,6 +167,7 @@ void CharlieGame::CharlieGame::updateRoll(float dt){
 			nullptr
 	);
 	cacGo->setPos(go->getPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
+//	cacGo->setPos(rollingFly->getCachedPos() + Fly::SpriteSize * 0.5f - glm::vec2 { 14, 17 } * 0.5f);
 	auto rc = (AnimRC*) cacGo->getRenderComponent().get();
 	rc->setLayer(0);
 	rc->start();
@@ -195,8 +229,10 @@ void CharlieGame::CharlieGame::updateCacs(float dt){
 			cacs.rem(cac);
 			delete cac;
 		}else if(cac->beingRescued && cac->t >= CacoonTime/2.0f && cac->rescuer == nullptr){
-			auto fly = new Fly([this](const char* name){ return getFile(name); }, cac, [this](Cacoon* cac){
-				if(over) return;
+			auto fly = new Fly(/*[this](const GameObjPtr& obj){ return addObject(obj); }, [this](const GameObjPtr& obj){ return removeObject(obj); },*/
+							   ogFlyFlying->getRenderComponent(), ogFlyPlotting->getRenderComponent(), ogFlyUnrolling->getRenderComponent(), cac,
+							   [this](Cacoon* cac){
+			   if(over) return;
 
 				if(cac){
 					removeObject(cac->go);
