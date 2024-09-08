@@ -134,6 +134,8 @@ private:;
 			{.timestamp = 58.0f, .pos = { -8.0f, -2.0f }, .rotation = 280.0f},
 	};
 
+	std::vector<File> tiles;
+
 	const glm::mat4 Proj;
 
 	std::vector<GameObjPtr> billboardGameObjs;

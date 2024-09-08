@@ -5,8 +5,45 @@
 
 Sparkly::Sparkly::Sparkly(Sprite& canvas) : Game(canvas, Games::Sparkly, "/Games/Sparkly", {
 		{ esp_random() % 2 == 0 ? "/Landscape2.raw" : "/Landscape1.raw", {}, true },
-		{ "/Tiles-top.raw", {}, true },
-		{ "/Tiles-bttm.raw", {}, true },
+		{ "/tiles/1.raw", {}, true },
+		{ "/tiles/2.raw", {}, true },
+		{ "/tiles/3.raw", {}, true },
+		{ "/tiles/4.raw", {}, true },
+		{ "/tiles/5.raw", {}, true },
+		{ "/tiles/6.raw", {}, true },
+		{ "/tiles/7.raw", {}, true },
+		{ "/tiles/8.raw", {}, true },
+		{ "/tiles/9.raw", {}, true },
+		{ "/tiles/10.raw", {}, true },
+		{ "/tiles/11.raw", {}, true },
+		{ "/tiles/12.raw", {}, true },
+		{ "/tiles/13.raw", {}, true },
+		{ "/tiles/14.raw", {}, true },
+		{ "/tiles/15.raw", {}, true },
+		{ "/tiles/16.raw", {}, true },
+		{ "/tiles/17.raw", {}, true },
+		{ "/tiles/18.raw", {}, true },
+		{ "/tiles/19.raw", {}, true },
+		{ "/tiles/20.raw", {}, true },
+		{ "/tiles/21.raw", {}, true },
+		{ "/tiles/22.raw", {}, true },
+		{ "/tiles/23.raw", {}, true },
+		{ "/tiles/24.raw", {}, true },
+		{ "/tiles/25.raw", {}, true },
+		{ "/tiles/26.raw", {}, true },
+		{ "/tiles/27.raw", {}, true },
+		{ "/tiles/28.raw", {}, true },
+		{ "/tiles/29.raw", {}, true },
+		{ "/tiles/30.raw", {}, true },
+		{ "/tiles/31.raw", {}, true },
+		{ "/tiles/32.raw", {}, true },
+		{ "/tiles/33.raw", {}, true },
+		{ "/tiles/34.raw", {}, true },
+		{ "/tiles/35.raw", {}, true },
+		{ "/tiles/36.raw", {}, true },
+		{ "/tiles/37.raw", {}, true },
+		{ "/tiles/38.raw", {}, true },
+		{ "/tiles/39.raw", {}, true },
 		{ "/Opponent1.raw", {}, true },
 		{ "/Opponent2.raw", {}, true },
 		{ "/Opponent3.raw", {}, true },
@@ -93,6 +130,13 @@ void Sparkly::Sparkly::onLoad(){
 	addObject(raceTimeElement->getGO());
 	raceTimeElement->getGO()->setPos({ 2, 2 });
 	raceTimeElement->getGO()->getRenderComponent()->setLayer(billboardGameObjs.size());
+
+	for(size_t i = 1; i < 40; ++i) {
+		std::string path = "/tiles/";
+		path.append(std::to_string(i));
+		path.append(".raw");
+		tiles.emplace_back(getFile(path.c_str()));
+	}
 }
 
 void Sparkly::Sparkly::onStop(){
@@ -334,9 +378,6 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 		return;
 	}
 
-	File tilemapTop = getFile("/Tiles-top.raw");
-	File tilemapBttm = getFile("/Tiles-bttm.raw");
-
 	if(camPos.z < 0.01f) return; // Camera is below the ground plane
 
 	for(int x = 0; x < 128; ++x){
@@ -378,12 +419,6 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 
 			const int spriteIndex = Field[(int) planeYfloor][(int) planeXfloor];
 			// Location of sprite inside sprite-sheet [7x6]
-			const int spriteY = spriteIndex * 0.142858f;
-			const int spriteX = spriteIndex - spriteY * 7;
-
-			// Start pixel coords of needed sprite inside sprite-sheet [224x192]
-			const int spriteStartX = spriteX * 32;
-			const int spriteStartY = spriteY * 32;
 
 			// Pixel pos inside needed sprite [0x1]
 			const float pixelX = planeX - (float) planeXfloor;
@@ -411,16 +446,11 @@ void IRAM_ATTR Sparkly::Sparkly::sampleGround(Sprite& canvas){
 				BttmRightCollision.spriteCoords = { spritePixelX, spritePixelY };
 			}
 
-			const int index = (spriteStartX + spritePixelX) + (spriteStartY + spritePixelY) * 224;
+			const int index = spritePixelY * 32 + spritePixelX;
 
 			uint16_t color;
-			if(spriteIndex <= 20){
-				tilemapTop.seek(index * 2);
-				tilemapTop.read((uint8_t*) &color, 2);
-			}else{
-				tilemapBttm.seek((index - 21504) * 2);
-				tilemapBttm.read((uint8_t*) &color, 2);
-			}
+			tiles[spriteIndex].seek(index * 2);
+			tiles[spriteIndex].read((uint8_t*) &color, 2);
 
 			canvas.drawPixel(x, y, color);
 		}
