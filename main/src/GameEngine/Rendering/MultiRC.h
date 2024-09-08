@@ -7,6 +7,8 @@ class MultiRC : public RenderComponent {
 public:
 	MultiRC(std::shared_ptr<RenderComponent> rc);
 
+	void setRC(std::shared_ptr<RenderComponent> rc);
+
 protected:
 	void push(Sprite& parent, PixelDim pos, float rot, bool flipX, bool flipY) const override;
 
