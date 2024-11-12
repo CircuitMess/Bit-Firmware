@@ -22,8 +22,8 @@ void PauseScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->twinkle();
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->twinkle();
 }
 
 void PauseScreen::onStop(){
@@ -143,8 +143,8 @@ void PauseScreen::buildUI(){
 	lv_obj_add_style(*audioSwitch, focusStyle, LV_STATE_FOCUSED);
 
 	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
-		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
-		bl->setBrightness(value);
+//		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
+//		bl->setBrightness(value);
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
 	lv_obj_add_style(*blSlider, focusStyle, LV_STATE_FOCUSED);
@@ -192,8 +192,8 @@ void PauseScreen::showControls(){
 
 	new InstructionsElement(*this, currentGame);
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->ctrls(currentGame);
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->ctrls(currentGame);
 }
 
 void PauseScreen::exitControls(){
@@ -206,6 +206,6 @@ void PauseScreen::exitControls(){
 
 	buildUI();
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->twinkle();
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->twinkle();
 }

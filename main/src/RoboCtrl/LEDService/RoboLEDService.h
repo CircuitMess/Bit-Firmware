@@ -19,6 +19,7 @@ struct PwmMappingInfo {
 	gpio_num_t pin = GPIO_NUM_NC;
 	uint8_t limit = 100;
 };
+/*
 const std::map<LED, PwmMappingInfo> PwmMappings = {
 		{ LED::Up,    { (gpio_num_t) LED_UP,    0x10 }},
 		{ LED::Down,  { (gpio_num_t) LED_DOWN,  0x10 }},
@@ -28,6 +29,7 @@ const std::map<LED, PwmMappingInfo> PwmMappings = {
 		{ LED::B,     { (gpio_num_t) LED_B,     0x10 }},
 		{ LED::Menu,  { (gpio_num_t) LED_MENU,  0x10 }}
 };
+*/
 
 class RoboLEDService : private Threaded {
 public:

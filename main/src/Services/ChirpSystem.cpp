@@ -9,6 +9,7 @@ static const char* TAG = "ChirpSystem";
 ChirpSystem::ChirpSystem(PWM& pwm) : Threaded("ChirpSystem", 3072, configMAX_PRIORITIES - 1, 1), pwm(pwm), queue(xQueueCreate(QueueLength, sizeof(QueueItem))),
 									 timerSem(xSemaphoreCreateBinary()), timer(MinimumLength * 1000, isr, timerSem){
 
+	return;
 	pwm.detach();
 	xSemaphoreGive(timerSem);
 	start();
@@ -33,10 +34,12 @@ ChirpSystem::~ChirpSystem(){
 }
 
 void ChirpSystem::play(std::initializer_list<Chirp> sound){
+	return;
 	play((Sound) sound);
 }
 
 void ChirpSystem::play(const Sound& sound){
+	return;
 	auto setts = ((Settings*)Services.get(Service::Settings))->get();
 	if(!setts.sound) return;
 

@@ -18,8 +18,8 @@ BatteryElement::BatteryElement(lv_obj_t* parent) : LVObject(parent), evts(6){
 
 
 	img = lv_img_create(*this);
-	auto batt = (Battery*) Services.get(Service::Battery);
-	set(batt->getLevel());
+//	auto batt = (Battery*) Services.get(Service::Battery);
+//	set(batt->getLevel());
 	Events::listen(Facility::Battery, &evts);
 }
 

@@ -112,8 +112,8 @@ void SettingsScreen::buildUI(){
 	lv_obj_add_style(*audioSwitch, focusStyle, LV_STATE_FOCUSED);
 
 	blSlider = new SliderElement(rest, "Brightness", [](uint8_t value){
-		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
-		bl->setBrightness(value);
+//		auto bl = (BacklightBrightness*) Services.get(Service::Backlight);
+//		bl->setBrightness(value);
 	}, initSet.screenBrightness);
 	lv_group_add_obj(inputGroup, *blSlider);
 	lv_obj_add_style(*blSlider, focusStyle, LV_STATE_FOCUSED);

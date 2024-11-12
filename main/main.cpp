@@ -33,11 +33,12 @@
 #include "driver/rtc_io.h"
 #include "Services/LEDService.h"
 #include "Services/Allocator.h"
+#include "Devices/AW9523.h"
 
-BacklightBrightness* bl;
+//BacklightBrightness* bl;
 
 void shutdown(){
-	bl->fadeOut();
+//	bl->fadeOut();
 
 	esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO);
 	esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO);
@@ -47,27 +48,31 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	rtc_gpio_isolate((gpio_num_t)PIN_BL);
+//	rtc_gpio_isolate((gpio_num_t)PIN_BL);
 	esp_deep_sleep_start();
 }
 
 void init(){
-	auto alloc = new Allocator(86 * 1024);
+	esp_log_level_set("*", ESP_LOG_DEBUG);
 
-	gpio_config_t cfg = {
-			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
-			.mode = GPIO_MODE_INPUT
-	};
-	gpio_config(&cfg);
+	auto alloc = new Allocator(86 * 1024);
+	printf("here\n");
+
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t )I2C_SDA, (gpio_num_t)I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5B);
+	aw9523->pinMode(15, AW9523::LED);
+	aw9523->dim(15, 255);
 
 	auto nvs = new NVSFlash();
 	Services.set(Service::NVS, nvs);
+	printf("here\n");
 
-	new SystemManager(NVSUpgrades);
+//	new SystemManager(NVSUpgrades);
 
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
 
+/*
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 
@@ -79,6 +84,9 @@ void init(){
 		test->start();
 		vTaskDelete(nullptr);
 	}
+*/
+
+	printf("here\n");
 
 	auto xpsystem = new XPSystem();
 	Services.set(Service::XPSystem, xpsystem);
@@ -86,36 +94,40 @@ void init(){
 	auto achievements = new AchievementSystem();
 	Services.set(Service::Achievements, achievements);
 
-	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
-	blPwm->detach();
-	bl = new BacklightBrightness(blPwm);
-	Services.set(Service::Backlight, bl);
+//	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
+//	blPwm->detach();
+//	bl = new BacklightBrightness(blPwm);
+//	Services.set(Service::Backlight, bl);
 
-	auto battery = new Battery();
-	if(battery->isShutdown()){
-		shutdown();
-		return;
-	}
-	Services.set(Service::Battery, battery);
+//	auto battery = new Battery();
+//	if(battery->isShutdown()){
+//		shutdown();
+//		return;
+//	}
+//	Services.set(Service::Battery, battery);
+	printf("here\n");
 
-	auto led = new LEDService();
-	Services.set(Service::LED, led);
+//	auto led = new LEDService();
+//	Services.set(Service::LED, led);
 
+	printf("before spiffs init\n");
 	if(!SPIFFS::init()) return;
+	printf("spiffs inited\n");
 
 	auto disp = new Display();
 	Services.set(Service::Display, disp);
 
 	disp->getLGFX().drawBmpFile(Filepath::Splash, 36, 11);
-	bl->fadeIn();
+//	bl->fadeIn();
 	auto splashStart = millis();
 
-	auto buzzPwm = new PWM(PIN_BUZZ, LEDC_CHANNEL_0);
+	auto buzzPwm = new PWM(-1, LEDC_CHANNEL_0);
 	auto audio = new ChirpSystem(*buzzPwm);
 	Services.set(Service::Audio, audio);
 
 	auto input = new Input(true);
 	Services.set(Service::Input, input);
+	printf("spiffs inited\n");
 
 	auto sleep = new Sleep();
 
@@ -133,20 +145,24 @@ void init(){
 
 	auto gamer = new GameRunner(*disp, alloc);
 
-	if(settings->get().sound){
-		audio->play({
-				Chirp { NOTE_D4, NOTE_A4, 100 },
-				Chirp { 0, 0, 50 },
-				Chirp { NOTE_D5, NOTE_D5, 100 },
-				Chirp { 0, 0, 50 },
-				Chirp { NOTE_A4, NOTE_A4, 100 },
-				Chirp { 0, 0, 50 },
-				Chirp { NOTE_G5, NOTE_G4, 100 },
-				Chirp { 0, 0, 50 },
-				Chirp { NOTE_D4, NOTE_A4, 100 },
-				Chirp { NOTE_D5, NOTE_D5, 100 },
-		});
-	}
+	printf("spiffs inited\n");
+
+
+
+//	if(settings->get().sound){
+//		audio->play({
+//				Chirp { NOTE_D4, NOTE_A4, 100 },
+//				Chirp { 0, 0, 50 },
+//				Chirp { NOTE_D5, NOTE_D5, 100 },
+//				Chirp { 0, 0, 50 },
+//				Chirp { NOTE_A4, NOTE_A4, 100 },
+//				Chirp { 0, 0, 50 },
+//				Chirp { NOTE_G5, NOTE_G4, 100 },
+//				Chirp { 0, 0, 50 },
+//				Chirp { NOTE_D4, NOTE_A4, 100 },
+//				Chirp { NOTE_D5, NOTE_D5, 100 },
+//		});
+//	}
 
 	lvFS->loadCache();
 
@@ -156,16 +172,17 @@ void init(){
 	while(millis() - splashStart < 2000){
 		delayMillis(10);
 	}
+	printf("spiffs inited\n");
 
-	bl->fadeOut();
+//	bl->fadeOut();
 	ui->start();
 	ui->startScreen([](){ return std::make_unique<MainMenu>(true); });
 	delayMillis(200);
-	bl->fadeIn();
+//	bl->fadeIn();
 
 	// Start Battery scanning after everything else, otherwise Critical
 	// Battery event might come while initialization is still in progress
-	battery->begin();
+//	battery->begin();
 }
 
 extern "C" void app_main(void){

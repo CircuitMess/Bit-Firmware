@@ -3,7 +3,7 @@
 #include <driver/gpio.h>
 
 Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
-	gpio_config_t cfg = {};
+/*	gpio_config_t cfg = {};
 	for(const auto& pin : AddrPins){
 		cfg.pin_bit_mask |= 1ULL << pin;
 	}
@@ -21,7 +21,7 @@ Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
 
 	for(const auto& pin : AddrPins){
 		gpio_set_pull_mode((gpio_num_t) pin, GPIO_PULLUP_ONLY);
-	}
+	}*/
 
 	Robots::sleepyLoop();
 	start();
@@ -66,27 +66,29 @@ void Robots::sleepyLoop(){
 }
 
 bool Robots::checkInserted(){
-	bool det1 = gpio_get_level((gpio_num_t) DET_1);
+/*	bool det1 = gpio_get_level((gpio_num_t) DET_1);
 	bool det2 = gpio_get_level((gpio_num_t) DET_2);
-	return det1 == 0 && det2 == 1;
+	return det1 == 0 && det2 == 1;*/
+return false;
 }
 
 uint8_t Robots::checkAddr() const{
 	uint8_t addr = 0;
 
-	// Check regular robots
+/*	// Check regular robots
 	for(int i = 0; i < 6; i++){
 		auto state = gpio_get_level((gpio_num_t) AddrPins[i]);
 		if(state){
 			addr |= 1 << i;
 		}
-	}
+	}*/
 
 	return addr;
 }
 
 uint8_t Robots::checkToken() const{
-	gpio_config_t cfg = {
+	return 0;
+/*	gpio_config_t cfg = {
 			.pin_bit_mask = 0,
 			.mode = GPIO_MODE_INPUT
 	};
@@ -104,7 +106,7 @@ uint8_t Robots::checkToken() const{
 		}
 	}
 
-	return addr;
+	return addr;*/
 }
 
 bool Robots::testerBob(){

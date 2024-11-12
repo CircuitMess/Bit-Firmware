@@ -1,3 +1,4 @@
+/*
 #include "JigHWTest.h"
 #include "SPIFFSChecksum.hpp"
 #include <Pins.hpp>
@@ -516,3 +517,4 @@ bool JigHWTest::Robot(){
 	out();
 	return false;
 }
+*/

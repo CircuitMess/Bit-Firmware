@@ -25,8 +25,8 @@ void InstructionsScreen::onStart(){
 		InputLVGL::getInstance()->setVertNav(true);
 	}
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->ctrls(currentGame);
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->ctrls(currentGame);
 }
 
 void InstructionsScreen::onStop(){
@@ -34,8 +34,8 @@ void InstructionsScreen::onStop(){
 	InputLVGL::getInstance()->setVertNav(false);
 
 	if(!launch){
-		auto led = (LEDService*) Services.get(Service::LED);
-		led->twinkle();
+//		auto led = (LEDService*) Services.get(Service::LED);
+//		led->twinkle();
 	}
 }
 

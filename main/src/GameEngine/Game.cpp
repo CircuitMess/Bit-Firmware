@@ -9,6 +9,7 @@
 #include "Services/HighScoreManager.h"
 #include "Screens/Game/AwardsScreen.h"
 #include "Services/LEDService.h"
+#include "Util/stdafx.h"
 
 Game::Game(Sprite& base, Games gameType, const char* root, std::vector<ResDescriptor> resources) :
 		collision(this), inputQueue(12), audio(*(ChirpSystem*) Services.get(Service::Audio)), gameType(gameType), base(base),
@@ -32,6 +33,7 @@ void Game::load(Allocator* alloc){
 }
 
 void Game::loadFunc(){
+	heapRep();
 	resMan.load(resources, alloc);
 	onLoad();
 	loaded = true;
@@ -48,8 +50,8 @@ void Game::start(){
 
 	achievementSystem->startSession();
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->game(gameType);
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->game(gameType);
 
 	started = true;
 	onStart();
@@ -62,8 +64,8 @@ void Game::stop(){
 	onStop();
 	Events::unlisten(&inputQueue);
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->twinkle();
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->twinkle();
 }
 
 bool Game::isLoaded() const{

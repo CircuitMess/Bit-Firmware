@@ -1,3 +1,4 @@
+/*
 #ifndef BIT_FIRMWARE_JIGHWTEST_H
 #define BIT_FIRMWARE_JIGHWTEST_H
 
@@ -48,7 +49,7 @@ private:
 
 	static uint32_t calcChecksum(FILE* file);
 
-	static constexpr gpio_num_t led_pin = (gpio_num_t) CTRL_1;
+	static constexpr gpio_num_t led_pin = (gpio_num_t) -1;
 
 	void rgb();
 
@@ -71,3 +72,4 @@ private:
 };
 
 #endif //BIT_FIRMWARE_JIGHWTEST_H
+*/
