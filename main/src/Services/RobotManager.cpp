@@ -59,6 +59,8 @@ RobotManager::RobotManager() : Threaded("RobotManager", 5 * 1024, 5, 1), events(
 }
 
 bool RobotManager::isUnlocked(Games game) const{
+	return true;
+
 	if(game == Games::COUNT){
 		return false;
 	}
@@ -78,6 +80,7 @@ bool RobotManager::isUnlocked(Games game) const{
 }
 
 bool RobotManager::isUnlocked(Theme theme) const{
+	return true;
 	if(theme == Theme::COUNT){
 		return false;
 	}
@@ -97,6 +100,7 @@ bool RobotManager::isUnlocked(Theme theme) const{
 }
 
 bool RobotManager::isUnlocked(Pet pet) const{
+	return true;
 	if(pet == Pet::COUNT){
 		return false;
 	}

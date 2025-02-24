@@ -31,8 +31,9 @@
 #include "NVSUpgrades/NVSUpgrades.h"
 #include "Screens/MainMenu/MainMenu.h"
 #include "driver/rtc_io.h"
-#include "Services/LEDService.h"
+//#include "Services/LEDService.h"
 #include "Services/Allocator.h"
+#include "Periph/PinOut.h"
 
 BacklightBrightness* bl;
 
@@ -47,7 +48,25 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	rtc_gpio_isolate((gpio_num_t)PIN_BL);
+	static constexpr int OnPins[] = { PIN_BL, PIN_BUZZ, I2C_SDA, I2C_SCL  };
+	for(const auto& pin : OnPins){
+		PinOut out(pin);
+		out.on();
+		gpio_hold_en((gpio_num_t) pin);
+		rtc_gpio_isolate((gpio_num_t) pin);
+	}
+
+
+	static constexpr int OffPins[] = { PIN_VREF, TFT_SCK, TFT_MOSI, TFT_RST, TFT_DC  };
+	for(const auto& pin : OffPins){
+		PinOut out(pin);
+		out.off();
+		gpio_hold_en((gpio_num_t) pin);
+		rtc_gpio_isolate((gpio_num_t) pin);
+	}
+
+	gpio_deep_sleep_hold_en();
+
 	esp_deep_sleep_start();
 }
 
@@ -93,13 +112,14 @@ void init(){
 
 	auto battery = new Battery();
 	if(battery->isShutdown()){
-		shutdown();
-		return;
+//		printf("shutdown\n");
+//		shutdown();
+//		return;
 	}
 	Services.set(Service::Battery, battery);
 
-	auto led = new LEDService();
-	Services.set(Service::LED, led);
+//	auto led = new LEDService();
+//	Services.set(Service::LED, led);
 
 	if(!SPIFFS::init()) return;
 

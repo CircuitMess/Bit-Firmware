@@ -131,11 +131,11 @@ void JigHWTest::start(){
 	canvas->print("\nTEST GOTOV. SVE OK.");
 
 	for(;;){
-		gpio_set_level((gpio_num_t) LED_MENU, 1);
-		vTaskDelay(500);
-
-		gpio_set_level((gpio_num_t) LED_MENU, 0);
-		vTaskDelay(500);
+//		gpio_set_level((gpio_num_t) LED_MENU, 1);
+//		vTaskDelay(500);
+//
+//		gpio_set_level((gpio_num_t) LED_MENU, 0);
+//		vTaskDelay(500);
 	}
 }
 
@@ -330,7 +330,7 @@ bool JigHWTest::Buttons(){
 		Chirp { 200, 200, 100 }
 	});
 
-	gpio_config_t cfg = {
+/*	gpio_config_t cfg = {
 			.pin_bit_mask = ((uint64_t) 1) << LED_UP | ((uint64_t) 1) << LED_DOWN | ((uint64_t) 1) << LED_LEFT | ((uint64_t) 1) << LED_RIGHT |
 							((uint64_t) 1) << LED_A | ((uint64_t) 1) << LED_B | ((uint64_t) 1) << LED_MENU,
 			.mode = GPIO_MODE_OUTPUT,
@@ -342,7 +342,7 @@ bool JigHWTest::Buttons(){
 
 	for(auto btn : { LED_A, LED_B, LED_UP, LED_DOWN, LED_RIGHT, LED_LEFT, LED_MENU }){
 		gpio_set_level((gpio_num_t) btn, 1);
-	}
+	}*/
 
 
 	for(;;){
@@ -352,7 +352,7 @@ bool JigHWTest::Buttons(){
 		auto data = (Input::Data*) evt.data;
 		if(data->action == Input::Data::Press){
 			pressed.insert(data->btn);
-			switch(data->btn){
+/*			switch(data->btn){
 				case Input::Up:
 					gpio_set_level((gpio_num_t)LED_UP, 0);
 					break;
@@ -374,7 +374,7 @@ bool JigHWTest::Buttons(){
 				case Input::Menu:
 					gpio_set_level((gpio_num_t)LED_MENU, 0);
 					break;
-			}
+			}*/
 			buzz();
 		}else{
 			released.insert(data->btn);
@@ -394,13 +394,13 @@ bool JigHWTest::Buttons(){
    });
 	vTaskDelay(500);
 
-	gpio_set_level((gpio_num_t)LED_UP, 0);
-	gpio_set_level((gpio_num_t)LED_DOWN, 0);
-	gpio_set_level((gpio_num_t)LED_LEFT, 0);
-	gpio_set_level((gpio_num_t)LED_RIGHT, 0);
-	gpio_set_level((gpio_num_t)LED_A, 0);
-	gpio_set_level((gpio_num_t)LED_B, 0);
-	gpio_set_level((gpio_num_t)LED_MENU, 0);
+//	gpio_set_level((gpio_num_t)LED_UP, 0);
+//	gpio_set_level((gpio_num_t)LED_DOWN, 0);
+//	gpio_set_level((gpio_num_t)LED_LEFT, 0);
+//	gpio_set_level((gpio_num_t)LED_RIGHT, 0);
+//	gpio_set_level((gpio_num_t)LED_A, 0);
+//	gpio_set_level((gpio_num_t)LED_B, 0);
+//	gpio_set_level((gpio_num_t)LED_MENU, 0);
 
 	return true;
 }

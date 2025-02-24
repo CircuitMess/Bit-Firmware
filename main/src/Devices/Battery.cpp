@@ -48,9 +48,9 @@ void Battery::sample(bool fresh){
 	}
 
 	if(getLevel() == Critical){
-		stop(0);
-		shutdown = true;
-		return;
+//		stop(0);
+//		shutdown = true;
+//		return;
 	}
 }
 
@@ -68,5 +68,6 @@ Battery::Level Battery::getLevel() const{
 }
 
 bool Battery::isShutdown() const{
+	return false;
 	return shutdown;
 }

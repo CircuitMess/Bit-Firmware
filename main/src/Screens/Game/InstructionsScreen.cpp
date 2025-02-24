@@ -6,7 +6,7 @@
 #include "GameMenuScreen.h"
 #include "Periph/NVSFlash.h"
 #include "Services/RobotManager.h"
-#include "Services/LEDService.h"
+//#include "Services/LEDService.h"
 
 InstructionsScreen::InstructionsScreen(Games current, bool launch) : evts(6), currentGame(current), instrElement(obj, currentGame), launch(launch){
 	const Input* input = (Input*) Services.get(Service::Input);
@@ -25,18 +25,18 @@ void InstructionsScreen::onStart(){
 		InputLVGL::getInstance()->setVertNav(true);
 	}
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->ctrls(currentGame);
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->ctrls(currentGame);
 }
 
 void InstructionsScreen::onStop(){
 	Events::unlisten(&evts);
 	InputLVGL::getInstance()->setVertNav(false);
 
-	if(!launch){
-		auto led = (LEDService*) Services.get(Service::LED);
-		led->twinkle();
-	}
+//	if(!launch){
+//		auto led = (LEDService*) Services.get(Service::LED);
+//		led->twinkle();
+//	}
 }
 
 void InstructionsScreen::loop(){

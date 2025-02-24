@@ -12,7 +12,7 @@
 #include "Services/ChirpSystem.h"
 #include "Filepaths.hpp"
 #include "InstructionsElement.h"
-#include "Services/LEDService.h"
+//#include "Services/LEDService.h"
 
 PauseScreen::PauseScreen(Games current) : evts(6), currentGame(current){
 	buildUI();
@@ -22,8 +22,8 @@ void PauseScreen::onStart(){
 	Events::listen(Facility::Input, &evts);
 	InputLVGL::getInstance()->setVertNav(true);
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->twinkle();
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->twinkle();
 }
 
 void PauseScreen::onStop(){
@@ -192,8 +192,8 @@ void PauseScreen::showControls(){
 
 	new InstructionsElement(*this, currentGame);
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->ctrls(currentGame);
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->ctrls(currentGame);
 }
 
 void PauseScreen::exitControls(){
@@ -206,6 +206,6 @@ void PauseScreen::exitControls(){
 
 	buildUI();
 
-	auto led = (LEDService*) Services.get(Service::LED);
-	led->twinkle();
+//	auto led = (LEDService*) Services.get(Service::LED);
+//	led->twinkle();
 }

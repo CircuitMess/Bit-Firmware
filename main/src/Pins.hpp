@@ -1,50 +1,42 @@
 #ifndef BIT_LIBRARY_PINS_HPP
 #define BIT_LIBRARY_PINS_HPP
 
-#define BTN_DOWN 4
-#define BTN_UP 5
-#define BTN_LEFT 3
-#define BTN_RIGHT 6
-#define BTN_A 7
-#define BTN_B 8
-#define BTN_MENU 9
+#define BTN_DOWN 40
+#define BTN_UP 44
+#define BTN_LEFT 43
+#define BTN_RIGHT 39
+#define BTN_A 41
+#define BTN_B 42
+#define BTN_MENU 1
 
-#define PIN_BL 12
-#define PIN_BUZZ 11
+#define PIN_BL 38
+#define PIN_BUZZ 2
 #define PIN_BATT 10
+#define PIN_VREF 46
 
-#define I2C_SDA 1
-#define I2C_SCL 2
+#define I2C_SDA 4
+#define I2C_SCL 5
 
-#define TFT_SCK 13
-#define TFT_MOSI 14
-#define TFT_DC 15
-#define TFT_RST 16
+#define TFT_SCK 45
+#define TFT_MOSI 35
+#define TFT_DC 36
+#define TFT_RST 37
 
-#define DET_1 44
-#define DET_2 21
-#define ADDR_1 43
-#define ADDR_2 42
-#define ADDR_3 41
-#define ADDR_4 40
-#define ADDR_5 39
-#define ADDR_6 38
+#define DET_1 6
+#define DET_2 0
+#define ADDR_1 7
+#define ADDR_2 15
+#define ADDR_3 16
+#define ADDR_4 17
+#define ADDR_5 18
+#define ADDR_6 8
 
-#define CTRL_1 37
-#define CTRL_2 36
-#define CTRL_3 35
-#define CTRL_4 34
-#define CTRL_5 33
-#define CTRL_6 26
-
-#define LED_DOWN 48
-#define LED_UP 47
-#define LED_LEFT 0
-#define LED_RIGHT 18
-#define LED_A 17
-#define LED_B 45
-#define LED_MENU 46
-
+#define CTRL_1 3
+#define CTRL_2 11
+#define CTRL_3 12
+#define CTRL_4 13
+#define CTRL_5 14
+#define CTRL_6 21
 
 
 #endif //BIT_LIBRARY_PINS_HPP
