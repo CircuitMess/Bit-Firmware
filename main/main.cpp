@@ -48,7 +48,11 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	static constexpr int OnPins[] = { PIN_BL, PIN_BUZZ, I2C_SDA, I2C_SCL  };
+
+	gpio_set_direction((gpio_num_t)PIN_BUZZ, GPIO_MODE_INPUT);
+	gpio_hold_en((gpio_num_t)PIN_BUZZ);
+
+	static constexpr int OnPins[] = { PIN_BL, I2C_SDA, I2C_SCL  };
 	for(const auto& pin : OnPins){
 		PinOut out(pin);
 		out.on();
