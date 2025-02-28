@@ -3,7 +3,7 @@
 #include "Settings/Settings.h"
 #include "Util/Services.h"
 
-Sleep::Sleep() : Threaded("Sleep", 2 * 1024, 5, 1), evts(6){
+Sleep::Sleep() : Threaded("Sleep", 3 * 1024, 5, 1), evts(6){
 	Events::listen(Facility::Input, &evts);
 	Events::listen(Facility::Robots, &evts);
 
