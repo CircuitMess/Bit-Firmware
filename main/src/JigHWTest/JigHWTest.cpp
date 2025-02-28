@@ -29,8 +29,7 @@ JigHWTest::JigHWTest(){
 	// tests.push_back({ JigHWTest::Robot, "Konektor", [](){} });
 	tests.push_back({ JigHWTest::Buttons, "Gumbi", [](){} });
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
-	tests.push_back({ JigHWTest::BatteryCalib, "Batt kalib", [](){} });
-	tests.push_back({ JigHWTest::BatteryCheck, "Batt provjera", [](){} });
+	tests.push_back({ JigHWTest::BatteryRef, "Battery reference", [](){}});
 }
 
 bool JigHWTest::checkJig(){
@@ -186,79 +185,68 @@ void JigHWTest::instr(const char* msg){
 	canvas->print(" ");
 }
 
-bool JigHWTest::BatteryCalib(){
-	if(Battery::getVoltOffset() != 0){
-		test->log("calibrated", (int32_t) Battery::getVoltOffset());
-		test->instr("fused.");
-		return true;
+bool JigHWTest::BatteryRef(){
+	ADC adc(ADC_UNIT_1);
+
+	const auto config = [&adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader){
+		adc_unit_t unit;
+		adc_channel_t chan;
+		ESP_ERROR_CHECK(adc_oneshot_io_to_channel(pin, &unit, &chan));
+		assert(unit == adc.getUnit());
+
+		adc.config(chan, {
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		});
+
+		const adc_cali_curve_fitting_config_t curveCfg = {
+				.unit_id = unit,
+				.chan = chan,
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		};
+		ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&curveCfg, &cali));
+
+		static constexpr float Factor = 4.0f;
+		static constexpr float Offset = 0;
+		reader = std::make_unique<ADCReader>(adc, chan, cali, Offset, Factor);
+	};
+
+	adc_cali_handle_t cali;
+	std::unique_ptr<ADCReader> reader;
+	config(PIN_BATT, cali, reader);
+
+	static constexpr int CalReads = 10;
+
+	PinOut refSwitch(PIN_VREF);
+	refSwitch.on();
+
+	delayMillis(100);
+	for(int i = 0; i < CalReads; i++){
+		reader->sample();
+		delayMillis(10);
 	}
 
-	ADC adc((gpio_num_t) PIN_BATT);
-
-	constexpr uint16_t numReadings = 200;
-	constexpr uint16_t readDelay = 10;
-	uint32_t reading = 0;
-
-	for(int i = 0; i < numReadings; i++){
-		reading += adc.sample();
-		vTaskDelay(readDelay);
+	float total = 0;
+	for(int i = 0; i < CalReads; i++){
+		total += reader->sample();
+		delayMillis(10);
 	}
-	reading /= numReadings;
+	const float reading = total / (float) CalReads;
+	const float offset = reading - VoltRef;
 
-
-	uint32_t mapped = Battery::mapRawReading(reading);
-
-	int16_t offset = referenceVoltage - mapped;
+	refSwitch.off();
 
 	test->log("reading", reading);
-	test->log("mapped", mapped);
 	test->log("offset", (int32_t) offset);
 
-	if(abs(offset) >= 500){
-		test->log("offset too big, read voltage: ", (uint32_t) mapped);
-		return false;
-	}
-
-	uint8_t offsetLow = offset & 0xff;
-	uint8_t offsetHigh = (offset >> 8) & 0xff;
-
-	// return true; //TODO - remove early return, burn to efuse
-
-	esp_efuse_batch_write_begin();
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &offsetLow, 8);
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
-	esp_efuse_batch_write_commit();
-
-	return true;
-}
-
-
-bool JigHWTest::BatteryCheck(){
-	ADC adc((gpio_num_t) PIN_BATT);
-
-	constexpr uint16_t numReadings = 200;
-	constexpr uint16_t readDelay = 10;
-	uint32_t reading = 0;
-
-	for(int i = 0; i < numReadings; i++){
-		reading += (int) adc.sample();
-		vTaskDelay(readDelay);
-	}
-	reading /= numReadings;
-
-	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
-
-	if(voltage < referenceVoltage - 200 || voltage > referenceVoltage + 200){
-		test->log("raw", reading);
-		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
-		test->log("offset", (int32_t) Battery::getVoltOffset());
-		test->log("mapped+offset", voltage);
+	if(std::abs(offset) > VoltOffsetTolerance){
+		test->log("error", "offset too big");
 		return false;
 	}
 
 	return true;
 }
-
 
 bool JigHWTest::SPIFFSTest(){
 	auto ret = esp_vfs_spiffs_register(&spiffsConfig);

@@ -1,35 +1,23 @@
-#ifndef BIT_FIRMWARE_ADC_H
-#define BIT_FIRMWARE_ADC_H
+#ifndef CODEE_FIRMWARE_ADC_H
+#define CODEE_FIRMWARE_ADC_H
 
-#include <hal/gpio_types.h>
 #include <esp_adc/adc_oneshot.h>
 
 class ADC {
 public:
-	// Specifying min and max maps value to [-100, +100]
-	ADC(gpio_num_t pin, float ema_a = 1, int min = 0, int max = 0, int readingOffset = 0);
+	explicit ADC(adc_unit_t unit);
 	virtual ~ADC();
-	// Take a sample and get current value
-	float sample();
 
-	// Get current value without sampling
-	float getVal() const;
+	adc_unit_t getUnit() const;
 
-	void resetEma();
-	void setEmaA(float emaA);
+	void config(adc_channel_t chan, const adc_oneshot_chan_cfg_t& cfg);
+
+	esp_err_t read(adc_channel_t chan, int& valueOut, adc_cali_handle_t cali = nullptr) const;
 
 private:
-	bool valid = true;
+	adc_oneshot_unit_handle_t hndl;
+	const adc_unit_t unit;
 
-	const gpio_num_t pin;
-	float ema_a;
-	const float min, max;
-	const float offset;
-
-	float val = -1;
-
-	adc_oneshot_unit_handle_t adc1_handle;
 };
 
-
-#endif //BIT_FIRMWARE_ADC_H
+#endif //CODEE_FIRMWARE_ADC_H

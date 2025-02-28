@@ -42,8 +42,7 @@ private:
 
 	static bool Robot();
 	static bool SPIFFSTest();
-	static bool BatteryCalib();
-	static bool BatteryCheck();
+	static bool BatteryRef();
 	static bool Buttons();
 
 	static uint32_t calcChecksum(FILE* file);
@@ -52,8 +51,8 @@ private:
 
 	void rgb();
 
-
-	static const int16_t referenceVoltage = 4000; // 50mV for backlight voltage drop compensation
+	static const int16_t VoltRef = 2500;
+	static constexpr uint32_t VoltOffsetTolerance = 120;
 
 	static constexpr uint32_t CheckTimeout = 500;
 

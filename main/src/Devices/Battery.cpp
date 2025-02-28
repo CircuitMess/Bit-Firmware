@@ -6,12 +6,40 @@
 #include <cmath>
 #include <driver/gpio.h>
 
-#define MAX_READ 3820 // 4.5V
-#define MIN_READ 2870 // 3.6V
+Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1), adc(adc), refSwitch(PIN_VREF),
+							 hysteresis({ 0, 4, 15, 30, 50, 70, 90, 100 }, 3){
+	const auto config = [this, &adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader, bool emaAndMap){
+		adc_unit_t unit;
+		adc_channel_t chan;
+		ESP_ERROR_CHECK(adc_oneshot_io_to_channel(pin, &unit, &chan));
+		assert(unit == adc.getUnit());
 
-Battery::Battery() : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1), adc((gpio_num_t) PIN_BATT, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
-					 hysteresis({ 0, 4, 15, 30, 50, 70, 90, 100 }, 3){
+		adc.config(chan, {
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		});
 
+		const adc_cali_curve_fitting_config_t curveCfg = {
+				.unit_id = unit,
+				.chan = chan,
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		};
+		ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&curveCfg, &cali));
+
+		if(emaAndMap){
+			reader = std::make_unique<ADCReader>(adc, chan, caliBatt, Offset, Factor, EmaA, VoltEmpty, VoltFull);
+		}else{
+			reader = std::make_unique<ADCReader>(adc, chan, caliBatt, Offset, Factor);
+		}
+	};
+
+	config(PIN_BATT, caliBatt, readerBatt, true);
+	config(PIN_BATT, caliRef, readerRef, false);
+
+	calibrate();
+
+	sample(true);
 	sample(true);
 }
 
@@ -19,15 +47,40 @@ void Battery::begin(){
 	start();
 }
 
-uint16_t Battery::mapRawReading(uint16_t reading){
-	return std::round(map((double) reading, MIN_READ, MAX_READ, 3600, 4500));
+uint8_t Battery::getPerc() const{
+	return readerBatt->getValue();
 }
 
-int16_t Battery::getVoltOffset(){
-	int16_t upper = 0, lower = 0;
-	esp_efuse_read_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &lower, 8);
-	esp_efuse_read_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &upper, 8);
-	return (upper << 8) | lower;
+Battery::Level Battery::getLevel() const{
+	return (Level) hysteresis.get();
+}
+
+bool Battery::isShutdown() const{
+	return shutdown;
+}
+
+void Battery::calibrate(){
+	refSwitch.on();
+
+	delayMillis(100);
+	for(int i = 0; i < CalReads; i++){
+		readerRef->sample();
+		delayMillis(10);
+	}
+
+	float total = 0;
+	for(int i = 0; i < CalReads; i++){
+		total += readerRef->sample();
+		delayMillis(10);
+	}
+
+	const float reading = total / (float) CalReads;
+	const float offset = CalExpected - reading;
+	readerBatt->setMoreOffset(offset);
+
+	refSwitch.off();
+
+	printf("Calibration: Read %.02f mV, expected %.02f mV. Applying %.02f mV offset.\n", reading, CalExpected, offset);
 }
 
 void Battery::sample(bool fresh){
@@ -36,11 +89,10 @@ void Battery::sample(bool fresh){
 	auto oldLevel = getLevel();
 
 	if(fresh){
-		adc.resetEma();
-		hysteresis.reset(adc.getVal());
+		readerBatt->resetEma();
+		hysteresis.reset(readerBatt->getValue());
 	}else{
-		auto val = adc.sample();
-		hysteresis.update(val);
+		hysteresis.update(readerBatt->sample());
 	}
 
 	if(oldLevel != getLevel() || fresh){
@@ -48,26 +100,13 @@ void Battery::sample(bool fresh){
 	}
 
 	if(getLevel() == Critical){
-//		stop(0);
-//		shutdown = true;
-//		return;
+		stop(0);
+		shutdown = true;
+		return;
 	}
 }
 
 void Battery::sleepyLoop(){
 	if(shutdown) return;
 	sample();
-}
-
-uint8_t Battery::getPerc() const{
-	return adc.getVal();
-}
-
-Battery::Level Battery::getLevel() const{
-	return (Level) hysteresis.get();
-}
-
-bool Battery::isShutdown() const{
-	return false;
-	return shutdown;
 }

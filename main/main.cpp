@@ -114,11 +114,13 @@ void init(){
 	bl = new BacklightBrightness(blPwm);
 	Services.set(Service::Backlight, bl);
 
-	auto battery = new Battery();
+	auto adc1 = new ADC(ADC_UNIT_1);
+
+	auto battery = new Battery(*adc1);
 	if(battery->isShutdown()){
-//		printf("shutdown\n");
-//		shutdown();
-//		return;
+		printf("shutdown\n");
+		shutdown();
+		return;
 	}
 	Services.set(Service::Battery, battery);
 
