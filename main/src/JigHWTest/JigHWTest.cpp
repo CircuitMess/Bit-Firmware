@@ -187,7 +187,7 @@ void JigHWTest::instr(const char* msg){
 }
 
 bool JigHWTest::BatteryCalib(){
-	if(Battery::getVoltOffset() != 0){
+	/*if(Battery::getVoltOffset() != 0){
 		test->log("calibrated", (int32_t) Battery::getVoltOffset());
 		test->instr("fused.");
 		return true;
@@ -228,13 +228,14 @@ bool JigHWTest::BatteryCalib(){
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &offsetLow, 8);
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
 	esp_efuse_batch_write_commit();
+	*/
 
 	return true;
 }
 
 
 bool JigHWTest::BatteryCheck(){
-	ADC adc((gpio_num_t) PIN_BATT);
+	/*ADC adc((gpio_num_t) PIN_BATT);
 
 	constexpr uint16_t numReadings = 200;
 	constexpr uint16_t readDelay = 10;
@@ -255,6 +256,7 @@ bool JigHWTest::BatteryCheck(){
 		test->log("mapped+offset", voltage);
 		return false;
 	}
+	*/
 
 	return true;
 }
