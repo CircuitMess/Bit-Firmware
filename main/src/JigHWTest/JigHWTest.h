@@ -40,27 +40,23 @@ private:
 
 	void instr(const char* msg);
 
+	static bool BatteryRef();
 	static bool Robot();
 	static bool SPIFFSTest();
-	static bool BatteryCalib();
-	static bool BatteryCheck();
 	static bool Buttons();
+	static bool HWVersion();
 
 	static uint32_t calcChecksum(FILE* file);
 
-	static constexpr gpio_num_t led_pin = (gpio_num_t) CTRL_1;
+	gpio_num_t led_pin = (gpio_num_t) Pins::get(Pin::Ctrl1);
 
 	void rgb();
 
 
-	static const int16_t referenceVoltage = 4000; // 50mV for backlight voltage drop compensation
+	static const int16_t VoltRef = 2500;
+	static constexpr uint32_t VoltOffsetTolerance = 120;
 
 	static constexpr uint32_t CheckTimeout = 500;
-
-	static constexpr esp_efuse_desc_t adc1_low = { EFUSE_BLK3, 0, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_low[] = { &adc1_low, nullptr };
-	static constexpr esp_efuse_desc_t adc1_high = { EFUSE_BLK3, 8, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_high[] = { &adc1_high, nullptr };
 
 	static constexpr esp_vfs_spiffs_conf_t spiffsConfig = {
 			.base_path = "/spiffs",

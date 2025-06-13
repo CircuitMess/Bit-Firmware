@@ -6,13 +6,13 @@
 #include <cmath>
 
 static const std::unordered_map<Input::Button, gpio_num_t> PinMap = {
-		{ Input::Button::A, (gpio_num_t) LED_A },
-		{ Input::Button::B, (gpio_num_t) LED_B },
-		{ Input::Button::Menu, (gpio_num_t) LED_MENU },
-		{ Input::Button::Up, (gpio_num_t) LED_UP },
-		{ Input::Button::Down, (gpio_num_t) LED_DOWN },
-		{ Input::Button::Left, (gpio_num_t) LED_LEFT },
-		{ Input::Button::Right, (gpio_num_t) LED_RIGHT },
+		{ Input::Button::A, (gpio_num_t) Pins::get(Pin::LedA) },
+		{ Input::Button::B, (gpio_num_t) Pins::get(Pin::LedB) },
+		{ Input::Button::Menu, (gpio_num_t) Pins::get(Pin::LedMenu) },
+		{ Input::Button::Up, (gpio_num_t) Pins::get(Pin::LedUp) },
+		{ Input::Button::Down, (gpio_num_t) Pins::get(Pin::LedDown) },
+		{ Input::Button::Left, (gpio_num_t) Pins::get(Pin::LedLeft) },
+		{ Input::Button::Right, (gpio_num_t) Pins::get(Pin::LedRight) },
 };
 
 #define BtnA Input::Button::A

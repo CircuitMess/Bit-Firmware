@@ -6,7 +6,7 @@
 #include <cmath>
 #include <driver/gpio.h>
 
-Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1), adc(adc), refSwitch(PIN_VREF), hysteresis({ 0, 4, 15, 30, 50, 70, 90, 100 }, 3){
+Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1), adc(adc), refSwitch(Pins::get(Pin::BattVref)), hysteresis({ 0, 4, 15, 30, 50, 70, 90, 100 }, 3){
 	const auto config = [this, &adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader, bool emaAndMap){
 		adc_unit_t unit;
 		adc_channel_t chan;
@@ -33,8 +33,8 @@ Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 102
 		}
 	};
 
-	config(PIN_BATT, caliBatt, readerBatt, true);
-	config(PIN_BATT, caliRef, readerRef, false);
+	config(Pins::get(Pin::BattRead), caliBatt, readerBatt, true);
+	config(Pins::get(Pin::BattRead), caliRef, readerRef, false);
 
 	calibrate();
 

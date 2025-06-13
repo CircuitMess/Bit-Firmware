@@ -2,7 +2,7 @@
 #include "Util/Services.h"
 #include "Devices/SingleDigitalLED.h"
 
-RoboCtrl::Hertz::Hertz() : RobotDriver(Robot::Hertz), pwm(CTRL_1, LEDC_CHANNEL_2), chirpSystem(pwm){
+RoboCtrl::Hertz::Hertz() : RobotDriver(Robot::Hertz), pwm(Pins::get(Pin::Ctrl1), LEDC_CHANNEL_2), chirpSystem(pwm){
 }
 
 RoboCtrl::Hertz::~Hertz(){
@@ -15,7 +15,7 @@ void RoboCtrl::Hertz::hello(){
 }
 
 void RoboCtrl::Hertz::init(){
-	ledService.add<SingleDigitalLED>(LED::RobotCtrl2, CTRL_2);
+	ledService.add<SingleDigitalLED>(LED::RobotCtrl2, Pins::get(Pin::Ctrl2));
 }
 
 void RoboCtrl::Hertz::deinit(){

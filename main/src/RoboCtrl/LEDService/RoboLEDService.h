@@ -20,13 +20,13 @@ struct PwmMappingInfo {
 	uint8_t limit = 100;
 };
 const std::map<LED, PwmMappingInfo> PwmMappings = {
-		{ LED::Up,    { (gpio_num_t) LED_UP,    0x10 }},
-		{ LED::Down,  { (gpio_num_t) LED_DOWN,  0x10 }},
-		{ LED::Left,  { (gpio_num_t) LED_LEFT,  0x10 }},
-		{ LED::Right, { (gpio_num_t) LED_RIGHT, 0x10 }},
-		{ LED::A,     { (gpio_num_t) LED_A,     0x10 }},
-		{ LED::B,     { (gpio_num_t) LED_B,     0x10 }},
-		{ LED::Menu,  { (gpio_num_t) LED_MENU,  0x10 }}
+		{ LED::Up,    { (gpio_num_t) Pins::get(Pin::LedUp),    0x10 }},
+		{ LED::Down,  { (gpio_num_t) Pins::get(Pin::LedDown),  0x10 }},
+		{ LED::Left,  { (gpio_num_t) Pins::get(Pin::LedLeft),  0x10 }},
+		{ LED::Right, { (gpio_num_t) Pins::get(Pin::LedRight), 0x10 }},
+		{ LED::A,     { (gpio_num_t) Pins::get(Pin::LedA),     0x10 }},
+		{ LED::B,     { (gpio_num_t) Pins::get(Pin::LedB),     0x10 }},
+		{ LED::Menu,  { (gpio_num_t) Pins::get(Pin::LedMenu),  0x10 }}
 };
 
 class RoboLEDService : private Threaded {

@@ -13,7 +13,7 @@
 #include "Util/Events.h"
 #include <esp_adc/adc_oneshot.h>
 #include "Services/ChirpSystem.h"
-
+#include "Util/EfuseMeta.h"
 
 JigHWTest* JigHWTest::test = nullptr;
 Display* JigHWTest::display = nullptr;
@@ -21,16 +21,16 @@ LGFX_Device* JigHWTest::canvas = nullptr;
 
 
 JigHWTest::JigHWTest(){
-	display = new Display();
+	display = new Display(EfuseMeta::getHardcodedRevision());
 	canvas = &display->getLGFX();
 
 	test = this;
 
 	// tests.push_back({ JigHWTest::Robot, "Konektor", [](){} });
-	tests.push_back({ JigHWTest::Buttons, "Gumbi", [](){} });
-	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
-	tests.push_back({ JigHWTest::BatteryCalib, "Batt kalib", [](){} });
-	tests.push_back({ JigHWTest::BatteryCheck, "Batt provjera", [](){} });
+	tests.push_back({ JigHWTest::BatteryRef, "Batt provjera", [](){}});
+	tests.push_back({ JigHWTest::Buttons, "Gumbi", [](){}});
+	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){}});
+	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); }});
 }
 
 bool JigHWTest::checkJig(){
@@ -68,7 +68,7 @@ void JigHWTest::start(){
 	printf("\nTEST:begin:%llx\n", _chipmacid);
 
 	gpio_config_t io_conf = {
-			.pin_bit_mask = (1ULL << CTRL_1) | (1ULL << PIN_BL),
+			.pin_bit_mask = (1ULL << Pins::get(Pin::Ctrl1)) | (1ULL << Pins::get(Pin::LedBl)),
 			.mode = GPIO_MODE_OUTPUT,
 			.pull_up_en = GPIO_PULLUP_DISABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -78,7 +78,7 @@ void JigHWTest::start(){
 	gpio_set_level(led_pin, 0);
 
 	canvas->clear(0);
-	gpio_set_level((gpio_num_t) PIN_BL, 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedBl), 0);
 	rgb();
 
 	canvas->clear(TFT_BLACK);
@@ -131,10 +131,10 @@ void JigHWTest::start(){
 	canvas->print("\nTEST GOTOV. SVE OK.");
 
 	for(;;){
-		gpio_set_level((gpio_num_t) LED_MENU, 1);
+		gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 1);
 		vTaskDelay(500);
 
-		gpio_set_level((gpio_num_t) LED_MENU, 0);
+		gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
 		vTaskDelay(500);
 	}
 }
@@ -186,81 +186,69 @@ void JigHWTest::instr(const char* msg){
 	canvas->print(" ");
 }
 
-bool JigHWTest::BatteryCalib(){
-	/*if(Battery::getVoltOffset() != 0){
-		test->log("calibrated", (int32_t) Battery::getVoltOffset());
-		test->instr("fused.");
-		return true;
+
+bool JigHWTest::BatteryRef(){
+	ADC adc(ADC_UNIT_1);
+
+	const auto config = [&adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader){
+		adc_unit_t unit;
+		adc_channel_t chan;
+		ESP_ERROR_CHECK(adc_oneshot_io_to_channel(pin, &unit, &chan));
+		assert(unit == adc.getUnit());
+
+		adc.config(chan, {
+				.atten = ADC_ATTEN_DB_0,
+				.bitwidth = ADC_BITWIDTH_12
+		});
+
+		const adc_cali_curve_fitting_config_t curveCfg = {
+				.unit_id = unit,
+				.chan = chan,
+				.atten = ADC_ATTEN_DB_0,
+				.bitwidth = ADC_BITWIDTH_12
+		};
+		ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&curveCfg, &cali));
+
+		static constexpr float Factor = 4.0f;
+		static constexpr float Offset = 0;
+		reader = std::make_unique<ADCReader>(adc, chan, cali, Offset, Factor);
+	};
+
+	adc_cali_handle_t cali;
+	std::unique_ptr<ADCReader> reader;
+	config(Pins::get(Pin::BattRead), cali, reader);
+
+	static constexpr int CalReads = 10;
+
+	PinOut refSwitch(Pins::get(Pin::BattVref));
+	refSwitch.on();
+
+	delayMillis(100);
+	for(int i = 0; i < CalReads; i++){
+		reader->sample();
+		delayMillis(10);
 	}
 
-	ADC adc((gpio_num_t) PIN_BATT);
-
-	constexpr uint16_t numReadings = 200;
-	constexpr uint16_t readDelay = 10;
-	uint32_t reading = 0;
-
-	for(int i = 0; i < numReadings; i++){
-		reading += adc.sample();
-		vTaskDelay(readDelay);
+	float total = 0;
+	for(int i = 0; i < CalReads; i++){
+		total += reader->sample();
+		delayMillis(10);
 	}
-	reading /= numReadings;
+	const float reading = total / (float) CalReads;
+	const float offset = reading - VoltRef;
 
-
-	uint32_t mapped = Battery::mapRawReading(reading);
-
-	int16_t offset = referenceVoltage - mapped;
+	refSwitch.off();
 
 	test->log("reading", reading);
-	test->log("mapped", mapped);
 	test->log("offset", (int32_t) offset);
 
-	if(abs(offset) >= 500){
-		test->log("offset too big, read voltage: ", (uint32_t) mapped);
+	if(std::abs(offset) > VoltOffsetTolerance){
+		test->log("error", "offset too big");
 		return false;
 	}
 
-	uint8_t offsetLow = offset & 0xff;
-	uint8_t offsetHigh = (offset >> 8) & 0xff;
-
-	// return true; //TODO - remove early return, burn to efuse
-
-	esp_efuse_batch_write_begin();
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &offsetLow, 8);
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
-	esp_efuse_batch_write_commit();
-	*/
-
 	return true;
 }
-
-
-bool JigHWTest::BatteryCheck(){
-	/*ADC adc((gpio_num_t) PIN_BATT);
-
-	constexpr uint16_t numReadings = 200;
-	constexpr uint16_t readDelay = 10;
-	uint32_t reading = 0;
-
-	for(int i = 0; i < numReadings; i++){
-		reading += (int) adc.sample();
-		vTaskDelay(readDelay);
-	}
-	reading /= numReadings;
-
-	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
-
-	if(voltage < referenceVoltage - 200 || voltage > referenceVoltage + 200){
-		test->log("raw", reading);
-		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
-		test->log("offset", (int32_t) Battery::getVoltOffset());
-		test->log("mapped+offset", voltage);
-		return false;
-	}
-	*/
-
-	return true;
-}
-
 
 bool JigHWTest::SPIFFSTest(){
 	auto ret = esp_vfs_spiffs_register(&spiffsConfig);
@@ -309,10 +297,10 @@ uint32_t JigHWTest::calcChecksum(FILE* file){
 }
 
 bool JigHWTest::Buttons(){
-	PWM buzzPwm(PIN_BUZZ, LEDC_CHANNEL_0);
+	PWM buzzPwm(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
 	ChirpSystem audio(buzzPwm);
 	const auto buzz = [&audio](){
-		audio.play({ Chirp { 200, 200, 100 } });
+		audio.play({ Chirp{ 200, 200, 100 }});
 	};
 
 	EventQueue evts(12);
@@ -325,16 +313,16 @@ bool JigHWTest::Buttons(){
 
 	test->instr("Pritisni sve\ngumbe redom.");
 	audio.play({
-		Chirp { 200, 200, 100 },
-		Chirp { 0, 0, 50 },
-		Chirp { 200, 200, 100 },
-		Chirp { 0, 0, 50 },
-		Chirp { 200, 200, 100 }
-	});
+					   Chirp{ 200, 200, 100 },
+					   Chirp{ 0, 0, 50 },
+					   Chirp{ 200, 200, 100 },
+					   Chirp{ 0, 0, 50 },
+					   Chirp{ 200, 200, 100 }
+			   });
 
 	gpio_config_t cfg = {
-			.pin_bit_mask = ((uint64_t) 1) << LED_UP | ((uint64_t) 1) << LED_DOWN | ((uint64_t) 1) << LED_LEFT | ((uint64_t) 1) << LED_RIGHT |
-							((uint64_t) 1) << LED_A | ((uint64_t) 1) << LED_B | ((uint64_t) 1) << LED_MENU,
+			.pin_bit_mask = ((uint64_t) 1) << Pins::get(Pin::LedUp) | ((uint64_t) 1) << Pins::get(Pin::LedDown) | ((uint64_t) 1) << Pins::get(Pin::LedLeft) | ((uint64_t) 1) << Pins::get(Pin::LedRight) |
+							((uint64_t) 1) << Pins::get(Pin::LedA) | ((uint64_t) 1) << Pins::get(Pin::LedB) | ((uint64_t) 1) << Pins::get(Pin::LedMenu),
 			.mode = GPIO_MODE_OUTPUT,
 			.pull_up_en = GPIO_PULLUP_DISABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
@@ -342,7 +330,7 @@ bool JigHWTest::Buttons(){
 	};
 	gpio_config(&cfg);
 
-	for(auto btn : { LED_A, LED_B, LED_UP, LED_DOWN, LED_RIGHT, LED_LEFT, LED_MENU }){
+	for(auto btn : { Pins::get(Pin::LedA), Pins::get(Pin::LedB), Pins::get(Pin::LedUp), Pins::get(Pin::LedDown), Pins::get(Pin::LedRight), Pins::get(Pin::LedLeft), Pins::get(Pin::LedMenu) }){
 		gpio_set_level((gpio_num_t) btn, 1);
 	}
 
@@ -356,25 +344,25 @@ bool JigHWTest::Buttons(){
 			pressed.insert(data->btn);
 			switch(data->btn){
 				case Input::Up:
-					gpio_set_level((gpio_num_t)LED_UP, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedUp), 0);
 					break;
 				case Input::Down:
-					gpio_set_level((gpio_num_t)LED_DOWN, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedDown), 0);
 					break;
 				case Input::Left:
-					gpio_set_level((gpio_num_t)LED_LEFT, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedLeft), 0);
 					break;
 				case Input::Right:
-					gpio_set_level((gpio_num_t)LED_RIGHT, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedRight), 0);
 					break;
 				case Input::A:
-					gpio_set_level((gpio_num_t)LED_A, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedA), 0);
 					break;
 				case Input::B:
-					gpio_set_level((gpio_num_t)LED_B, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedB), 0);
 					break;
 				case Input::Menu:
-					gpio_set_level((gpio_num_t)LED_MENU, 0);
+					gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
 					break;
 			}
 			buzz();
@@ -390,27 +378,27 @@ bool JigHWTest::Buttons(){
 
 	vTaskDelay(300);
 	audio.play({
-		   Chirp { 200, 200, 100 },
-		   Chirp { 0, 0, 50 },
-		   Chirp { 200, 200, 100 }
-   });
+					   Chirp{ 200, 200, 100 },
+					   Chirp{ 0, 0, 50 },
+					   Chirp{ 200, 200, 100 }
+			   });
 	vTaskDelay(500);
 
-	gpio_set_level((gpio_num_t)LED_UP, 0);
-	gpio_set_level((gpio_num_t)LED_DOWN, 0);
-	gpio_set_level((gpio_num_t)LED_LEFT, 0);
-	gpio_set_level((gpio_num_t)LED_RIGHT, 0);
-	gpio_set_level((gpio_num_t)LED_A, 0);
-	gpio_set_level((gpio_num_t)LED_B, 0);
-	gpio_set_level((gpio_num_t)LED_MENU, 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedUp), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedDown), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedLeft), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedRight), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedA), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedB), 0);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
 
 	return true;
 }
 
 bool JigHWTest::Robot(){
 	Robots rob;
-	gpio_set_direction((gpio_num_t) CTRL_1, GPIO_MODE_OUTPUT);
-	gpio_set_level((gpio_num_t) CTRL_1, 0);
+	gpio_set_direction((gpio_num_t) Pins::get(Pin::Ctrl1), GPIO_MODE_OUTPUT);
+	gpio_set_level((gpio_num_t) Pins::get(Pin::Ctrl1), 0);
 
 	if(rob.getInserted().robot == Robot::Bob){
 		test->instr("Krivi Bob.\nUzmi iz kutije za\ntestiranje.");
@@ -424,25 +412,25 @@ bool JigHWTest::Robot(){
 
 	ThreadedClosure blinker([](){
 		for(int i = 0; i < 2; i++){
-			gpio_set_level((gpio_num_t) CTRL_1, 1);
+			gpio_set_level((gpio_num_t) Pins::get(Pin::Ctrl1), 1);
 			delayMillis(100);
-			gpio_set_level((gpio_num_t) CTRL_1, 0);
+			gpio_set_level((gpio_num_t) Pins::get(Pin::Ctrl1), 0);
 			delayMillis(100);
 		}
 		delayMillis(1000);
 	}, "Blinker", 2048);
 
-	PWM buzzPwm(PIN_BUZZ, LEDC_CHANNEL_0);
+	PWM buzzPwm(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
 	ChirpSystem audio(buzzPwm);
 	const auto buzz = [&audio](){
-		audio.play({ Chirp { 200, 200, 100 } });
+		audio.play({ Chirp{ 200, 200, 100 }});
 	};
 	const auto buzzDbl = [&audio](){
 		audio.play({
-			Chirp { 200, 200, 100 },
-			Chirp { 0, 0, 100 },
-			Chirp { 200, 200, 100 }
-		});
+						   Chirp{ 200, 200, 100 },
+						   Chirp{ 0, 0, 100 },
+						   Chirp{ 200, 200, 100 }
+				   });
 	};
 
 	EventQueue evts(12);
@@ -451,7 +439,7 @@ bool JigHWTest::Robot(){
 	const auto out = [&evts, &blinker](){
 		Events::unlisten(&evts);
 		blinker.stop();
-		gpio_set_level((gpio_num_t) CTRL_1, 0);
+		gpio_set_level((gpio_num_t) Pins::get(Pin::Ctrl1), 0);
 		vTaskDelay(500);
 	};
 
@@ -517,4 +505,27 @@ bool JigHWTest::Robot(){
 
 	out();
 	return false;
+}
+
+bool JigHWTest::HWVersion(){
+	uint16_t pid = 1;
+	bool result = EfuseMeta::readPID(pid);
+
+	if(!result){
+		test->log("HW version", "couldn't read from efuse");
+		return false;
+	}
+
+	if(pid != 0){
+		test->log("Existing HW version", (uint32_t) pid);
+		if(pid == EfuseMeta::getHardcodedPID()){
+			test->log("Already fused.", (uint32_t) pid);
+			return true;
+		}else{
+			test->log("Wrong binary already fused!", (uint32_t) pid);
+			return false;
+		}
+	}
+
+	return EfuseMeta::write();
 }

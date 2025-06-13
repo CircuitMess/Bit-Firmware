@@ -33,7 +33,7 @@
 #include "driver/rtc_io.h"
 #include "Services/LEDService.h"
 #include "Services/Allocator.h"
-
+#include "Util/EfuseMeta.h"
 BacklightBrightness* bl;
 
 void shutdown(){
@@ -47,18 +47,22 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	rtc_gpio_isolate((gpio_num_t)PIN_BL);
+	rtc_gpio_isolate((gpio_num_t)Pins::get(Pin::LedBl));
 	esp_deep_sleep_start();
 }
 
 void init(){
-	auto alloc = new Allocator(86 * 1024);
+	esp_log_level_set("*", ESP_LOG_INFO);
 
-	gpio_config_t cfg = {
-			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
-			.mode = GPIO_MODE_INPUT
-	};
-	gpio_config(&cfg);
+	if(!EfuseMeta::check()){
+		while(true){
+			vTaskDelay(1000);
+			EfuseMeta::log();
+		}
+	}
+
+
+	auto alloc = new Allocator(86 * 1024);
 
 	auto nvs = new NVSFlash();
 	Services.set(Service::NVS, nvs);
@@ -71,6 +75,8 @@ void init(){
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 
+		Pins::setLatest();
+
 		auto set = settings->get();
 		set.sound = true;
 		settings->set(set);
@@ -80,13 +86,19 @@ void init(){
 		vTaskDelete(nullptr);
 	}
 
+	gpio_config_t cfg = {
+			.pin_bit_mask = (1ULL << Pins::get(Pin::I2cSda)) | (1ULL << Pins::get(Pin::I2cScl)),
+			.mode = GPIO_MODE_INPUT
+	};
+	gpio_config(&cfg);
+
 	auto xpsystem = new XPSystem();
 	Services.set(Service::XPSystem, xpsystem);
 
 	auto achievements = new AchievementSystem();
 	Services.set(Service::Achievements, achievements);
 
-	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
+	auto blPwm = new PWM(Pins::get(Pin::LedBl), LEDC_CHANNEL_1, true);
 	blPwm->detach();
 	bl = new BacklightBrightness(blPwm);
 	Services.set(Service::Backlight, bl);
@@ -105,14 +117,17 @@ void init(){
 
 	if(!SPIFFS::init()) return;
 
-	auto disp = new Display();
+	uint8_t revision;
+	EfuseMeta::readRev(revision);
+
+	auto disp = new Display(revision);
 	Services.set(Service::Display, disp);
 
 	disp->getLGFX().drawBmpFile(Filepath::Splash, 36, 11);
 	bl->fadeIn();
 	auto splashStart = millis();
 
-	auto buzzPwm = new PWM(PIN_BUZZ, LEDC_CHANNEL_0);
+	auto buzzPwm = new PWM(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
 	auto audio = new ChirpSystem(*buzzPwm);
 	Services.set(Service::Audio, audio);
 
