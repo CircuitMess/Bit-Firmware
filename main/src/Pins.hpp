@@ -59,7 +59,7 @@ public:
 private:
 	Pins();
 
-	PinMap* currentMap;
+	PinMap* currentMap = nullptr;
 
 	inline static Pins* instance = nullptr;
 

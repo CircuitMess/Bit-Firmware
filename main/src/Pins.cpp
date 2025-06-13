@@ -4,8 +4,7 @@
 static const char* TAG = "Pins";
 
 int Pins::get(Pin pin){
-
-	if(!instance){
+	if(instance == nullptr){
 		instance = new Pins();
 
 		uint8_t revision = 0;
@@ -27,6 +26,11 @@ int Pins::get(Pin pin){
 
 	PinMap* pinMap = instance->currentMap;
 
+	if(pinMap == nullptr){
+		ESP_LOGE(TAG, "Pin map is invalid.!\n");
+		return -1;
+	}
+
 	if(!pinMap->contains(pin)){
 		ESP_LOGE(TAG, "Pin %d not mapped!\n", (int)pin);
 		return -1;
@@ -36,7 +40,7 @@ int Pins::get(Pin pin){
 }
 
 void Pins::setLatest(){
-	if(!instance){
+	if(instance == nullptr){
 		instance = new Pins();
 	}
 

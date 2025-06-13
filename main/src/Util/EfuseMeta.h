@@ -29,7 +29,7 @@ private:
 
 	static constexpr esp_efuse_desc_t PIDBlock = { EFUSE_BLK3, 16, 16 };
 	static constexpr const esp_efuse_desc_t* PID_Blob[] = { &PIDBlock, nullptr };
-	static constexpr esp_efuse_desc_t RevBlock = { EFUSE_BLK3, 32, 40 };
+	static constexpr esp_efuse_desc_t RevBlock = { EFUSE_BLK3, 32, 8 };
 	static constexpr const esp_efuse_desc_t* Rev_Blob[] = { &RevBlock, nullptr };
 };
 
