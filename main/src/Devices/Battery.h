@@ -1,65 +1,28 @@
-#ifndef BIT_LIBRARY_BATTERY_H
-#define BIT_LIBRARY_BATTERY_H
+#ifndef BIT_FIRMWARE_BATTERY_H
+#define BIT_FIRMWARE_BATTERY_H
 
-#include <hal/gpio_types.h>
-#include <atomic>
-#include "Util/Threaded.h"
-#include "Periph/ADC.h"
-#include "Util/Hysteresis.h"
-#include "Periph/Timer.h"
-#include "Services/ADCReader.h"
-#include "Periph/PinOut.h"
-#include <mutex>
-#include <esp_efuse.h>
-#include <memory>
+#include <cstdint>
 
-class Battery : private SleepyThreaded {
+class Battery {
 public:
-    Battery(ADC& adc);
+	enum Level { Critical = 0, VeryLow, Low, Mid, High, VeryHigh, Full, COUNT };
+	enum class ChargingState : uint8_t { Unplugged, Charging, Full };
 
-    enum Level { Critical = 0, VeryLow, Low, Mid, High, VeryHigh, Full, COUNT };
+	struct Event {
+		enum { Charging, LevelChange } action;
+		union {
+			Level level;
+			ChargingState chargingState;
+		};
+	};
 
-    struct Event {
-        enum { LevelChange } action;
-        union { Level level; };
-    };
+	virtual void begin(){};
 
-    void begin();
+	virtual bool isShutdown() const = 0;
 
-    bool isShutdown() const;
-
-    uint8_t getPerc() const;
-    Level getLevel() const;
-
-private:
-    static constexpr uint32_t MeasureIntverval = 100;
-
-    static constexpr float VoltEmpty = 3600;
-    static constexpr float VoltFull = 4200;
-    static constexpr float Factor = 4.0f;
-    static constexpr float Offset = 0;
-    static constexpr float EmaA = 0.05f;
-
-    static constexpr int CalReads = 10;
-    static constexpr float CalExpected = 2500;
-
-    ADC& adc;
-    PinOut refSwitch;
-    Hysteresis hysteresis;
-
-    std::unique_ptr<ADCReader> readerBatt;
-    adc_cali_handle_t caliBatt;
-
-    std::unique_ptr<ADCReader> readerRef;
-    adc_cali_handle_t caliRef;
-
-    void calibrate();
-
-    void sample(bool fresh = false);
-    bool shutdown = false;
-
-    void sleepyLoop() override;
-
+	virtual uint8_t getPerc() const = 0;
+	virtual Level getLevel() const = 0;
+	virtual ChargingState getChargingState() const = 0;
 };
 
-#endif //BIT_LIBRARY_BATTERY_H
+#endif //BIT_FIRMWARE_BATTERY_H

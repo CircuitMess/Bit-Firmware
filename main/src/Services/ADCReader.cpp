@@ -2,7 +2,7 @@
 #include <algorithm>
 
 ADCReader::ADCReader(ADC& adc, adc_channel_t chan, adc_cali_handle_t cali, float offset, float factor, float emaA, float min, float max)
-: adc(adc), chan(chan), cali(cali), offset(offset), factor(factor), emaA(emaA), min(min), max(max){
+		: adc(adc), chan(chan), cali(cali), offset(offset), factor(factor), emaA(emaA), min(min), max(max){
 
 }
 
@@ -53,4 +53,9 @@ void ADCReader::resetEma(){
 
 void ADCReader::setMoreOffset(float offset){
 	moreOffset = offset;
+}
+
+float ADCReader::getUnmappedValue() const{
+	const float adjusted = value * factor + offset + moreOffset;
+	return adjusted;
 }

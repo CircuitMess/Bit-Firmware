@@ -4,7 +4,7 @@
 #include <vector>
 #include "Devices/Display.h"
 #include "Util/stdafx.h"
-#include "Devices/Battery.h"
+#include "Devices/Battery/BatteryRev3.h"
 #include <esp_efuse.h>
 #include <esp_spiffs.h>
 #include "Periph/I2C.h"

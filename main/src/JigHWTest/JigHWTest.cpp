@@ -220,7 +220,7 @@ bool JigHWTest::BatteryRef(){
 
 	static constexpr int CalReads = 10;
 
-	PinOut refSwitch(Pins::get(Pin::BattVref));
+	PinOut refSwitch(Pins::get(Pin::CalibVrefEn));
 	refSwitch.on();
 
 	delayMillis(100);

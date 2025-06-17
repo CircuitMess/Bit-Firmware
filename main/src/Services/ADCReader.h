@@ -33,6 +33,9 @@ public:
 	/** Set additional offset. This offset is applied after initial factor and offset. */
 	void setMoreOffset(float offset);
 
+	/** Get unmapped value in mV. Still filtered and offset, just not mapped and clamped. */
+	float getUnmappedValue() const;
+
 private:
 	ADC& adc;
 	const adc_channel_t chan;

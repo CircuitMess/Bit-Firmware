@@ -19,7 +19,10 @@ BatteryElement::BatteryElement(lv_obj_t* parent) : LVObject(parent), evts(6){
 
 	img = lv_img_create(*this);
 	auto batt = (Battery*) Services.get(Service::Battery);
-	set(batt->getLevel());
+	charging = (batt->getChargingState() != Battery::ChargingState::Unplugged);
+	if(!charging){
+		set(batt->getLevel());
+	}
 	Events::listen(Facility::Battery, &evts);
 }
 
@@ -45,10 +48,29 @@ void BatteryElement::loop(){
 	Event evt;
 	if(evts.get(evt, 0)){
 		auto data = (Battery::Event*) evt.data;
-		if(data->action == Battery::Event::LevelChange){
+		if(data->action == Battery::Event::LevelChange && !charging){
 			set(data->level);
+		}else if(data->action == Battery::Event::Charging){
+			if(data->chargingState == Battery::ChargingState::Unplugged){
+				charging = false;
+				auto batt = (Battery*) Services.get(Service::Battery);
+				set(batt->getLevel());
+			}else{
+				charging = true;
+				chargingMillis = millis();
+			}
+			charging = data->chargingState == Battery::ChargingState::Charging;
 		}
 		free(evt.data);
+	}
+
+	if(charging){
+		if(millis() - chargingMillis > ChargingAnimTime){
+			chargingMillis = millis();
+			chargingIndex = (chargingIndex + 1) % BatteryLevels;
+			lv_obj_clear_flag(img, LV_OBJ_FLAG_HIDDEN);
+			lv_img_set_src(img, BatteryIcons[chargingIndex]);
+		}
 	}
 
 	if(level == Empty){

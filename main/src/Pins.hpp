@@ -18,7 +18,7 @@ enum class Pin : uint8_t {
 	LedBl,
 	Buzz,
 	BattRead,
-	BattVref,
+	CalibVrefEn,
 	I2cSda,
 	I2cScl,
 	TftSck,

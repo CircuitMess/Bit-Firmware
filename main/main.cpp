@@ -105,7 +105,7 @@ void init(){
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
-	auto battery = new Battery(*adc1);
+	Battery* battery = new BatteryRev3(*adc1);
 	if(battery->isShutdown()){
 		shutdown();
 		return;

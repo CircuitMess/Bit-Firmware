@@ -4,7 +4,7 @@
 
 #include "LV_Interface/LVObject.h"
 #include "Util/Events.h"
-#include "Devices/Battery.h"
+#include "Devices/Battery/BatteryRev3.h"
 #include "Filepaths.hpp"
 
 class BatteryElement : public LVObject {
@@ -27,6 +27,8 @@ private:
 
 	static constexpr uint8_t Width = 20;
 	static constexpr uint8_t Height = 13;
+
+	bool charging = false;
 
 	uint8_t chargingIndex = 0;
 	static constexpr uint32_t ChargingAnimTime = 500;
