@@ -11,6 +11,8 @@
 #include "Devices/Display.h"
 #include "Devices/Input.h"
 #include "Devices/Battery.h"
+#include "Devices/Battery/BatteryRev3.h"
+#include "Devices/Battery/BatteryRev1.h"
 #include "Util/Notes.h"
 #include "FS/SPIFFS.h"
 #include "UIThread.h"
@@ -105,7 +107,16 @@ void init(){
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
-	Battery* battery = new BatteryRev3(*adc1);
+	uint8_t revision;
+	EfuseMeta::readRev(revision);
+
+	Battery* battery;
+	if(revision == 3){
+		battery = new BatteryRev3(*adc1);
+	}else{
+		battery = new BatteryRev1(*adc1);
+	}
+
 	if(battery->isShutdown()){
 		shutdown();
 		return;
@@ -116,9 +127,6 @@ void init(){
 	Services.set(Service::LED, led);
 
 	if(!SPIFFS::init()) return;
-
-	uint8_t revision;
-	EfuseMeta::readRev(revision);
 
 	auto disp = new Display(revision);
 	Services.set(Service::Display, disp);
