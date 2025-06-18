@@ -1,6 +1,7 @@
 #ifndef BIT_ADCREADER_H
 #define BIT_ADCREADER_H
 
+#include <functional>
 #include "Periph/ADC.h"
 
 class ADCReader {
@@ -36,6 +37,9 @@ public:
 	/** Get unmapped value in mV. Still filtered and offset, just not mapped and clamped. */
 	float getUnmappedValue() const;
 
+	/** Function which will be applied on offset value before filtering, mapping, clamping*/
+	void setAdjustmentFunction(std::function<float(float)> function);
+
 private:
 	ADC& adc;
 	const adc_channel_t chan;
@@ -50,6 +54,8 @@ private:
 	float value = -1.0f;
 
 	float moreOffset = 0;
+
+	std::function<float(float)> adjustmentFunction = nullptr;
 
 };
 

@@ -33,6 +33,7 @@ BatteryRev3::BatteryRev3(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery",
 
 		if(emaAndMap){
 			reader = std::make_unique<ADCReader>(adc, chan, caliBatt, Offset, Factor, EmaA, VoltEmpty, VoltFull);
+			reader->setAdjustmentFunction([](float mV){ return -1.1316f * (377.595f - mV); });
 		}else{
 			reader = std::make_unique<ADCReader>(adc, chan, caliBatt, Offset, Factor);
 		}
@@ -47,7 +48,6 @@ BatteryRev3::BatteryRev3(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery",
 	sample(true);
 	checkCharging(true);
 	wasCharging = getChargingState() == Battery::ChargingState::Charging;
-	
 }
 
 void BatteryRev3::begin(){
@@ -132,8 +132,6 @@ void BatteryRev3::checkCharging(bool fresh){
 	}else{
 		chargeHyst.update(val);
 	}
-
-	printf("chargeHyst: %d\n", chargeHyst.get());
 
 	if(chargeHyst.get() == 1){
 		if(!wasCharging){

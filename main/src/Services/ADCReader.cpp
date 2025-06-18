@@ -22,7 +22,11 @@ float ADCReader::sample(){
 }
 
 float ADCReader::getValue() const{
-	const float adjusted = value * factor + offset + moreOffset;
+	float adjusted = value * factor + offset + moreOffset;
+
+	if(adjustmentFunction){
+		adjusted = (int)adjustmentFunction(adjusted);
+	}
 
 	if(max == 0 && min == 0){
 		return adjusted;
@@ -58,4 +62,8 @@ void ADCReader::setMoreOffset(float offset){
 float ADCReader::getUnmappedValue() const{
 	const float adjusted = value * factor + offset + moreOffset;
 	return adjusted;
+}
+
+void ADCReader::setAdjustmentFunction(std::function<float(float)> function){
+	adjustmentFunction = function;
 }
