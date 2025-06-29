@@ -18,7 +18,7 @@ BatteryRev1::BatteryRev1(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery",
 	assert(unit == adc.getUnit());
 
 	adc.config(chan, {
-			.atten = ADC_ATTEN_DB_12,
+			.atten = ADC_ATTEN_DB_11,
 			.bitwidth = ADC_BITWIDTH_12,
 	});
 
@@ -55,8 +55,6 @@ void BatteryRev1::sample(bool fresh){
 		auto val = adcReader->sample();
 		hysteresis.update(val);
 	}
-
-	printf("adc: %.2f\n", adcReader->getValue());
 
 	if(oldLevel != getLevel() || fresh){
 		Events::post(Facility::Battery, Battery::Event{ .action = Event::LevelChange, .level = getLevel() });
