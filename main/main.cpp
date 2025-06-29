@@ -49,7 +49,27 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	rtc_gpio_isolate((gpio_num_t)Pins::get(Pin::LedBl));
+
+	const auto blPin = (gpio_num_t)Pins::get(Pin::LedBl);
+	gpio_set_direction(blPin, GPIO_MODE_OUTPUT);
+	gpio_set_level(blPin, true);
+	gpio_set_pull_mode(blPin, GPIO_PULLUP_ONLY);
+	gpio_hold_en(blPin);
+
+	const auto buzzPin = (gpio_num_t)Pins::get(Pin::Buzz);
+	gpio_set_direction(buzzPin, GPIO_MODE_OUTPUT);
+	gpio_set_level(buzzPin, false);
+	gpio_set_pull_mode(buzzPin, GPIO_PULLDOWN_ONLY);
+	gpio_hold_en(buzzPin);
+
+	const auto calibEn = (gpio_num_t)Pins::get(Pin::CalibVrefEn);
+	gpio_set_direction(calibEn, GPIO_MODE_OUTPUT);
+	gpio_set_level(calibEn, false);
+	gpio_set_pull_mode(calibEn, GPIO_PULLDOWN_ONLY);
+	gpio_hold_en(calibEn);
+
+
+	gpio_deep_sleep_hold_en();
 	esp_deep_sleep_start();
 }
 
@@ -107,7 +127,7 @@ void init(){
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
-	uint8_t revision;
+	uint8_t revision = 0;
 	EfuseMeta::readRev(revision);
 
 	Battery* battery;
