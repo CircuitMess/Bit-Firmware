@@ -6,6 +6,7 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 #include <hal/gpio_types.h>
+#include <Pins.hpp>
 
 class Input : public SleepyThreaded {
 public:
@@ -34,7 +35,16 @@ private:
 	void pressed(Button btn);
 	void released(Button btn);
 
-	static const std::unordered_map<Button, gpio_num_t> PinMap;
+	// button index -> GPIO port
+	const std::unordered_map<Input::Button, gpio_num_t> PinMap = {
+			{ Up,    (gpio_num_t) Pins::get(Pin::BtnUp) },
+			{ Down,  (gpio_num_t) Pins::get(Pin::BtnDown) },
+			{ Left,  (gpio_num_t) Pins::get(Pin::BtnLeft) },
+			{ Right, (gpio_num_t) Pins::get(Pin::BtnRight) },
+			{ A,     (gpio_num_t) Pins::get(Pin::BtnA) },
+			{ B,     (gpio_num_t) Pins::get(Pin::BtnB) },
+			{ Menu,  (gpio_num_t) Pins::get(Pin::BtnMenu) }
+	};
 
 	std::unordered_map<Button, bool> btnState;
 

@@ -19,15 +19,6 @@ struct PwmMappingInfo {
 	gpio_num_t pin = GPIO_NUM_NC;
 	uint8_t limit = 100;
 };
-const std::map<LED, PwmMappingInfo> PwmMappings = {
-		{ LED::Up,    { (gpio_num_t) Pins::get(Pin::LedUp),    0x10 }},
-		{ LED::Down,  { (gpio_num_t) Pins::get(Pin::LedDown),  0x10 }},
-		{ LED::Left,  { (gpio_num_t) Pins::get(Pin::LedLeft),  0x10 }},
-		{ LED::Right, { (gpio_num_t) Pins::get(Pin::LedRight), 0x10 }},
-		{ LED::A,     { (gpio_num_t) Pins::get(Pin::LedA),     0x10 }},
-		{ LED::B,     { (gpio_num_t) Pins::get(Pin::LedB),     0x10 }},
-		{ LED::Menu,  { (gpio_num_t) Pins::get(Pin::LedMenu),  0x10 }}
-};
 
 class RoboLEDService : private Threaded {
 public:
@@ -79,6 +70,16 @@ private:
 	std::map<LED, class SingleLED*> ledDevices;
 	std::map<LED, std::unique_ptr<class LEDFunction>> ledFunctions;
 	Queue<LEDInstructionInfo> instructionQueue;
+
+	const std::map<LED, PwmMappingInfo> PwmMappings = {
+			{ LED::Up,    { (gpio_num_t) Pins::get(Pin::LedUp),    0x10 }},
+			{ LED::Down,  { (gpio_num_t) Pins::get(Pin::LedDown),  0x10 }},
+			{ LED::Left,  { (gpio_num_t) Pins::get(Pin::LedLeft),  0x10 }},
+			{ LED::Right, { (gpio_num_t) Pins::get(Pin::LedRight), 0x10 }},
+			{ LED::A,     { (gpio_num_t) Pins::get(Pin::LedA),     0x10 }},
+			{ LED::B,     { (gpio_num_t) Pins::get(Pin::LedB),     0x10 }},
+			{ LED::Menu,  { (gpio_num_t) Pins::get(Pin::LedMenu),  0x10 }}
+	};
 
 private:
 	void onInternal(LED led);

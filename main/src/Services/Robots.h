@@ -90,8 +90,8 @@ public:
 private:
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 
-	inline static int AddrPins[] = { Pins::get(Pin::Addr1), Pins::get(Pin::Addr2), Pins::get(Pin::Addr3), Pins::get(Pin::Addr4), Pins::get(Pin::Addr5), Pins::get(Pin::Addr6) };
-	inline static int CtrlPins[] = { Pins::get(Pin::Ctrl1), Pins::get(Pin::Ctrl2), Pins::get(Pin::Ctrl3), Pins::get(Pin::Ctrl4), Pins::get(Pin::Ctrl5), Pins::get(Pin::Ctrl6) };
+	const int AddrPins[6] = { Pins::get(Pin::Addr1), Pins::get(Pin::Addr2), Pins::get(Pin::Addr3), Pins::get(Pin::Addr4), Pins::get(Pin::Addr5), Pins::get(Pin::Addr6) };
+	const int CtrlPins[6] = { Pins::get(Pin::Ctrl1), Pins::get(Pin::Ctrl2), Pins::get(Pin::Ctrl3), Pins::get(Pin::Ctrl4), Pins::get(Pin::Ctrl5), Pins::get(Pin::Ctrl6) };
 
 	bool inserted = false;
 	RobotData current = { Robot::COUNT, Token::COUNT };
