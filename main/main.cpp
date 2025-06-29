@@ -74,15 +74,12 @@ void shutdown(){
 }
 
 void init(){
-	esp_log_level_set("*", ESP_LOG_INFO);
-
 	if(!EfuseMeta::check()){
 		while(true){
 			vTaskDelay(1000);
 			EfuseMeta::log();
 		}
 	}
-
 
 	auto alloc = new Allocator(86 * 1024);
 
@@ -106,6 +103,8 @@ void init(){
 		auto test = new JigHWTest();
 		test->start();
 		vTaskDelete(nullptr);
+	}else{
+		printf("Hello\n");
 	}
 
 	gpio_config_t cfg = {

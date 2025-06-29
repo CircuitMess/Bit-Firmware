@@ -10,6 +10,7 @@
 #include "Periph/I2C.h"
 #include <Pins.hpp>
 #include "Services/Robots.h"
+#include "Devices/Input.h"
 
 struct Test {
 	bool (* test)();
@@ -25,8 +26,10 @@ public:
 
 private:
 	static Display* display;
-	static LGFX_Device* canvas;
+	static LGFX_Device* panel;
+	static LGFX_Sprite* canvas;
 	static JigHWTest* test;
+	static Input* input;
 	std::vector<Test> tests;
 	const char* currentTest;
 
@@ -40,7 +43,8 @@ private:
 
 	void instr(const char* msg);
 
-	static bool BatteryRef();
+	static bool BatteryCheck();
+	static bool VoltReferenceCheck();
 	static bool Robot();
 	static bool SPIFFSTest();
 	static bool Buttons();
@@ -53,8 +57,9 @@ private:
 	void rgb();
 
 
-	static const int16_t VoltRef = 2500;
-	static constexpr uint32_t VoltOffsetTolerance = 120;
+	static constexpr int16_t BatVoltageMinimum = 4400;
+	static constexpr float VoltReference = 2500;
+	static constexpr float VoltReferenceTolerance = 100;
 
 	static constexpr uint32_t CheckTimeout = 500;
 
@@ -64,6 +69,8 @@ private:
 			.max_files = 8,
 			.format_if_mount_failed = false
 	};
+
+	static constexpr uint8_t ButtonCount = 7;
 };
 
 #endif //BIT_FIRMWARE_JIGHWTEST_H

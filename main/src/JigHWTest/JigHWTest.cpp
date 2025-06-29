@@ -3,34 +3,39 @@
 #include <Pins.hpp>
 #include <soc/efuse_reg.h>
 #include <esp_efuse.h>
-#include <ctime>
 #include <iostream>
 #include <esp_mac.h>
 #include "Util/Services.h"
-#include <driver/gptimer.h>
 #include <driver/ledc.h>
 #include "Devices/Input.h"
 #include "Util/Events.h"
 #include <esp_adc/adc_oneshot.h>
 #include "Services/ChirpSystem.h"
 #include "Util/EfuseMeta.h"
+#include "Util/Notes.h"
 
 JigHWTest* JigHWTest::test = nullptr;
 Display* JigHWTest::display = nullptr;
-LGFX_Device* JigHWTest::canvas = nullptr;
+LGFX_Device* JigHWTest::panel = nullptr;
+LGFX_Sprite* JigHWTest::canvas = nullptr;
+Input* JigHWTest::input = nullptr;
 
 
 JigHWTest::JigHWTest(){
 	display = new Display(EfuseMeta::getHardcodedRevision());
-	canvas = &display->getLGFX();
+	panel = &display->getLGFX();
+	canvas = new LGFX_Sprite(panel);
+	canvas->setColorDepth(lgfx::rgb565_2Byte);
+	canvas->createSprite(128, 128);
+	input = new Input(true);
 
 	test = this;
 
-	// tests.push_back({ JigHWTest::Robot, "Konektor", [](){} });
-	tests.push_back({ JigHWTest::BatteryRef, "Batt provjera", [](){}});
-	tests.push_back({ JigHWTest::Buttons, "Gumbi", [](){}});
+	tests.push_back({ JigHWTest::VoltReferenceCheck, "Voltage ref", [](){ gpio_set_level((gpio_num_t) Pins::get(Pin::CalibVrefEn), 0); }});
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){}});
-	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); }});
+	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){}});
+	tests.push_back({ JigHWTest::Buttons, "Buttons", [](){}});
+	tests.push_back({ JigHWTest::HWVersion, "HW rev", [](){ esp_efuse_batch_write_cancel(); }});
 }
 
 bool JigHWTest::checkJig(){
@@ -67,30 +72,31 @@ void JigHWTest::start(){
 	esp_efuse_mac_get_default((uint8_t*) (&_chipmacid));
 	printf("\nTEST:begin:%llx\n", _chipmacid);
 
-	gpio_config_t io_conf = {
-			.pin_bit_mask = (1ULL << Pins::get(Pin::Ctrl1)) | (1ULL << Pins::get(Pin::LedBl)),
+	gpio_config_t cfg = {
+			.pin_bit_mask = ((uint64_t) 1) << Pins::get(Pin::LedBl),
 			.mode = GPIO_MODE_OUTPUT,
 			.pull_up_en = GPIO_PULLUP_DISABLE,
 			.pull_down_en = GPIO_PULLDOWN_DISABLE,
 			.intr_type = GPIO_INTR_DISABLE
 	};
-	gpio_config(&io_conf);
-	gpio_set_level(led_pin, 0);
-
-	canvas->clear(0);
+	gpio_config(&cfg);
 	gpio_set_level((gpio_num_t) Pins::get(Pin::LedBl), 0);
-	rgb();
 
 	canvas->clear(TFT_BLACK);
 	canvas->setTextColor(TFT_GOLD);
-	canvas->setTextWrap(true, true);
+	canvas->setTextWrap(false, false);
 	canvas->setTextDatum(textdatum_t::middle_center);
+	canvas->pushSprite(0, 0);
 
 	canvas->setTextFont(0);
 	canvas->setTextSize(1);
-	canvas->setCursor(0, 6);
 
-	canvas->print("Bit test\n\n");
+	canvas->drawString("Bit Hardware Test", canvas->width() / 2, 6);
+	canvas->println();
+
+	canvas->pushSprite(0, 0);
+
+	canvas->setCursor(0, 16);
 
 	bool pass = true;
 	for(const Test& test : tests){
@@ -98,13 +104,16 @@ void JigHWTest::start(){
 
 		canvas->setTextColor(TFT_WHITE);
 		canvas->printf("%s: ", test.name);
+		canvas->pushSprite(0, 0);
+
 
 		printf("TEST:startTest:%s\n", currentTest);
 
 		bool result = test.test();
 
-		canvas->setTextColor(result ? TFT_GREEN : TFT_RED);
-		canvas->printf("%s\n", result ? "OK" : "FAIL");
+		canvas->setTextColor(result ? TFT_SILVER : TFT_ORANGE);
+		canvas->printf("%s\n", result ? "PASS" : "FAIL");
+		canvas->pushSprite(0, 0);
 
 		printf("TEST:endTest:%s\n", result ? "pass" : "fail");
 
@@ -117,25 +126,63 @@ void JigHWTest::start(){
 		}
 	}
 
-	if(!pass){
+	if(pass){
+		printf("TEST:passall\n");
+	}else{
 		printf("TEST:fail:%s\n", currentTest);
-		vTaskDelete(nullptr);
-		return;
 	}
 
-	printf("TEST:passall\n");
 
-//------------------------------------------------------
+	//------------------------------------------------------
+	canvas->print("\n");
+	canvas->setTextColor(pass ? TFT_BLUE : TFT_ORANGE);
+	canvas->drawCentreString(pass ? "All OK!" : "FAIL!", canvas->width() / 2, canvas->getCursorY());
+	canvas->pushSprite(0, 0);
 
-	canvas->setTextColor(TFT_GREEN);
-	canvas->print("\nTEST GOTOV. SVE OK.");
+	bool painted = false;
+	const auto color = pass ? TFT_GREEN : TFT_RED;
+	auto flashTime = 0;
+	bool tone = false;
+	const uint16_t note = NOTE_C6 + ((rand() * 20) % 400) - 200; //NOTE_C6 = 1047
+
+	auto buzzPwm = new PWM(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
+	auto audio = new ChirpSystem(*buzzPwm);
 
 	for(;;){
-		gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 1);
-		vTaskDelay(500);
+		if(millis() - flashTime >= 500){
+			for(int x = 0; x < canvas->width(); x++){
+				for(int y = 0; y < canvas->height(); y++){
+					const auto previousPixel = canvas->readPixel(x, y);
+					if(!painted && previousPixel == TFT_BLACK){
+						canvas->drawPixel(x, y, color);
+					}else if(painted && previousPixel == color){
+						canvas->drawPixel(x, y, TFT_BLACK);
+					}
+				}
+			}
 
-		gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
-		vTaskDelay(500);
+			flashTime = millis();
+			painted = !painted;
+			canvas->pushSprite(0, 0);
+		}
+
+		auto press = false;
+		for(int i = 0; i < ButtonCount; i++){
+			if(input->isPressed((Input::Button) i)){
+				press = true;
+				break;
+			}
+		}
+
+		if(press && !tone){
+			audio->play({{ note, note, 2000 }});
+			tone = true;
+		}else if(!press && tone){
+			audio->stop();
+			tone = false;
+		}
+
+		delayMillis(10);
 	}
 }
 
@@ -187,7 +234,7 @@ void JigHWTest::instr(const char* msg){
 }
 
 
-bool JigHWTest::BatteryRef(){
+bool JigHWTest::BatteryCheck(){
 	ADC adc(ADC_UNIT_1);
 
 	const auto config = [&adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader){
@@ -197,20 +244,22 @@ bool JigHWTest::BatteryRef(){
 		assert(unit == adc.getUnit());
 
 		adc.config(chan, {
-				.atten = ADC_ATTEN_DB_0,
+				.atten = ADC_ATTEN_DB_2_5,
 				.bitwidth = ADC_BITWIDTH_12
 		});
 
 		const adc_cali_curve_fitting_config_t curveCfg = {
 				.unit_id = unit,
 				.chan = chan,
-				.atten = ADC_ATTEN_DB_0,
+				.atten = ADC_ATTEN_DB_2_5,
 				.bitwidth = ADC_BITWIDTH_12
 		};
+
 		ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&curveCfg, &cali));
 
 		static constexpr float Factor = 4.0f;
 		static constexpr float Offset = 0;
+
 		reader = std::make_unique<ADCReader>(adc, chan, cali, Offset, Factor);
 	};
 
@@ -218,34 +267,82 @@ bool JigHWTest::BatteryRef(){
 	std::unique_ptr<ADCReader> reader;
 	config(Pins::get(Pin::BattRead), cali, reader);
 
-	static constexpr int CalReads = 10;
+	constexpr uint16_t numReadings = 50;
+	constexpr uint16_t readDelay = 10;
+	uint32_t reading = 0;
 
-	PinOut refSwitch(Pins::get(Pin::CalibVrefEn));
-	refSwitch.on();
-
-	delayMillis(100);
-	for(int i = 0; i < CalReads; i++){
-		reader->sample();
-		delayMillis(10);
+	for(int i = 0; i < numReadings; i++){
+		reading += reader->sample();
+		vTaskDelay(readDelay / portTICK_PERIOD_MS);
 	}
-
-	float total = 0;
-	for(int i = 0; i < CalReads; i++){
-		total += reader->sample();
-		delayMillis(10);
-	}
-	const float reading = total / (float) CalReads;
-	const float offset = reading - VoltRef;
-
-	refSwitch.off();
+	reading /= numReadings;
 
 	test->log("reading", reading);
-	test->log("offset", (int32_t) offset);
 
-	if(std::abs(offset) > VoltOffsetTolerance){
-		test->log("error", "offset too big");
+	if(reading < BatVoltageMinimum){
 		return false;
 	}
+
+	return true;
+}
+
+bool JigHWTest::VoltReferenceCheck(){
+	const gpio_num_t RefSwitch = (gpio_num_t) Pins::get(Pin::CalibVrefEn);
+	gpio_set_direction(RefSwitch, GPIO_MODE_OUTPUT);
+	gpio_set_level(RefSwitch, 1);
+
+	delayMillis(100);
+
+	ADC adc(ADC_UNIT_1);
+
+	const auto config = [&adc](int pin, adc_cali_handle_t& cali, std::unique_ptr<ADCReader>& reader){
+		adc_unit_t unit;
+		adc_channel_t chan;
+		ESP_ERROR_CHECK(adc_oneshot_io_to_channel(pin, &unit, &chan));
+		assert(unit == adc.getUnit());
+
+		adc.config(chan, {
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		});
+
+		const adc_cali_curve_fitting_config_t curveCfg = {
+				.unit_id = unit,
+				.chan = chan,
+				.atten = ADC_ATTEN_DB_2_5,
+				.bitwidth = ADC_BITWIDTH_12
+		};
+
+		ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&curveCfg, &cali));
+
+		static constexpr float Factor = 4.0f;
+		static constexpr float Offset = 0;
+
+		reader = std::make_unique<ADCReader>(adc, chan, cali, Offset, Factor);
+	};
+
+	adc_cali_handle_t cali;
+	std::unique_ptr<ADCReader> reader;
+	config(Pins::get(Pin::BattRead), cali, reader);
+
+	constexpr uint16_t numReadings = 50;
+	constexpr uint16_t readDelay = 10;
+	uint32_t reading = 0;
+
+	for(int i = 0; i < numReadings; i++){
+		reading += reader->sample();
+		vTaskDelay(readDelay / portTICK_PERIOD_MS);
+	}
+	reading /= numReadings;
+
+	test->log("reading", reading);
+
+	if(reading < VoltReference - VoltReferenceTolerance || reading > VoltReference + VoltReferenceTolerance){
+		return false;
+	}
+
+	gpio_set_level(RefSwitch, 0);
+	delayMillis(100);
 
 	return true;
 }
@@ -297,102 +394,66 @@ uint32_t JigHWTest::calcChecksum(FILE* file){
 }
 
 bool JigHWTest::Buttons(){
-	PWM buzzPwm(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
-	ChirpSystem audio(buzzPwm);
-	const auto buzz = [&audio](){
-		audio.play({ Chirp{ 200, 200, 100 }});
-	};
+	const auto cX = canvas->getCursorX();
+	const auto cY = canvas->getCursorY();
+	bool flash = false;
+	uint32_t flashTime = 0;
 
-	EventQueue evts(12);
-	Input input(true);
-	vTaskDelay(200);
-	Events::listen(Facility::Input, &evts);
-
-	std::unordered_set<Input::Button> pressed;
-	std::unordered_set<Input::Button> released;
-
-	test->instr("Pritisni sve\ngumbe redom.");
-	audio.play({
-					   Chirp{ 200, 200, 100 },
-					   Chirp{ 0, 0, 50 },
-					   Chirp{ 200, 200, 100 },
-					   Chirp{ 0, 0, 50 },
-					   Chirp{ 200, 200, 100 }
-			   });
-
-	gpio_config_t cfg = {
-			.pin_bit_mask = ((uint64_t) 1) << Pins::get(Pin::LedUp) | ((uint64_t) 1) << Pins::get(Pin::LedDown) | ((uint64_t) 1) << Pins::get(Pin::LedLeft) | ((uint64_t) 1) << Pins::get(Pin::LedRight) |
-							((uint64_t) 1) << Pins::get(Pin::LedA) | ((uint64_t) 1) << Pins::get(Pin::LedB) | ((uint64_t) 1) << Pins::get(Pin::LedMenu),
-			.mode = GPIO_MODE_OUTPUT,
-			.pull_up_en = GPIO_PULLUP_DISABLE,
-			.pull_down_en = GPIO_PULLDOWN_DISABLE,
-			.intr_type = GPIO_INTR_DISABLE
-	};
-	gpio_config(&cfg);
-
-	for(auto btn : { Pins::get(Pin::LedA), Pins::get(Pin::LedB), Pins::get(Pin::LedUp), Pins::get(Pin::LedDown), Pins::get(Pin::LedRight), Pins::get(Pin::LedLeft), Pins::get(Pin::LedMenu) }){
-		gpio_set_level((gpio_num_t) btn, 1);
-	}
-
-
+	std::vector<bool> pressed(ButtonCount, false);
+	std::vector<bool> released(ButtonCount, false);
+	uint8_t pressCount = 0;
+	uint8_t releaseCount = 0;
 	for(;;){
-		Event evt{};
-		if(!evts.get(evt, portMAX_DELAY)) continue;
-
-		auto data = (Input::Data*) evt.data;
-		if(data->action == Input::Data::Press){
-			pressed.insert(data->btn);
-			switch(data->btn){
-				case Input::Up:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedUp), 0);
-					break;
-				case Input::Down:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedDown), 0);
-					break;
-				case Input::Left:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedLeft), 0);
-					break;
-				case Input::Right:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedRight), 0);
-					break;
-				case Input::A:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedA), 0);
-					break;
-				case Input::B:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedB), 0);
-					break;
-				case Input::Menu:
-					gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
-					break;
+		for(int i = 0; i < ButtonCount; i++){
+			if(input->isPressed((Input::Button) i) && !pressed[i]){
+				pressed[i] = true;
+				pressCount++;
+			}else if(!input->isPressed((Input::Button) i) && pressed[i] && !released[i]){
+				released[i] = true;
+				releaseCount++;
 			}
-			buzz();
-		}else{
-			released.insert(data->btn);
 		}
 
-		free(evt.data);
-		if(pressed.size() == 7 && released.size() == 7) break;
+		if(pressCount == ButtonCount && releaseCount == ButtonCount) break;
+
+		if(millis() - flashTime > 500){
+			if(flash){
+				canvas->fillRect(cX, cY - 4, 120, 8, TFT_BLACK);
+			}else{
+				canvas->setCursor(cX, cY);
+				canvas->setTextColor(TFT_GOLD);
+				canvas->printf("-PRESS BTNS-");
+			}
+
+			canvas->pushSprite(0, 0);
+			flash = !flash;
+			flashTime = millis();
+		}
+
+		canvas->fillRect(cX, cY + 6, 120, 8, TFT_BLACK);
+		canvas->setTextColor(TFT_LIGHTGRAY);
+		canvas->setCursor(cX - 3, cY + 10);
+		canvas->printf("[");
+		for(int i = 0; i < ButtonCount; i++){
+			if(input->isPressed((Input::Button) i)){
+				canvas->setTextColor(TFT_GOLD);
+			}else if(pressed[i] && released[i]){
+				canvas->setTextColor(TFT_BLUE);
+			}else{
+				canvas->setTextColor(TFT_DARKGRAY);
+			}
+			canvas->printf("-");
+		}
+		canvas->setTextColor(TFT_LIGHTGRAY);
+		canvas->printf("]");
+		canvas->pushSprite(0, 0);
+
+		delayMillis(10);
 	}
 
-	Events::unlisten(&evts);
-
-	vTaskDelay(300);
-	audio.play({
-					   Chirp{ 200, 200, 100 },
-					   Chirp{ 0, 0, 50 },
-					   Chirp{ 200, 200, 100 }
-			   });
-	vTaskDelay(500);
-
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedUp), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedDown), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedLeft), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedRight), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedA), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedB), 0);
-	gpio_set_level((gpio_num_t) Pins::get(Pin::LedMenu), 0);
-
-	return true;
+	canvas->fillRect(cX - 3, cY - 4, 120, 20, TFT_BLACK);
+	canvas->setCursor(cX, cY);
+	return pressCount == ButtonCount && releaseCount == ButtonCount;
 }
 
 bool JigHWTest::Robot(){
