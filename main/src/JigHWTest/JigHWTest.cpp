@@ -34,7 +34,7 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::VoltReferenceCheck, "Voltage ref", [](){ gpio_set_level((gpio_num_t) Pins::get(Pin::CalibVrefEn), 0); }});
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){}});
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){}});
-	tests.push_back({ JigHWTest::Buttons, "Buttons", [](){}});
+//	tests.push_back({ JigHWTest::Buttons, "Buttons", [](){}});
 	tests.push_back({ JigHWTest::HWVersion, "HW rev", [](){ esp_efuse_batch_write_cancel(); }});
 }
 
@@ -142,7 +142,6 @@ void JigHWTest::start(){
 	bool painted = false;
 	const auto color = pass ? TFT_GREEN : TFT_RED;
 	auto flashTime = 0;
-	bool tone = false;
 	const uint16_t note = NOTE_C6 + ((rand() * 20) % 400) - 200; //NOTE_C6 = 1047
 
 	auto buzzPwm = new PWM(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
@@ -150,6 +149,12 @@ void JigHWTest::start(){
 
 	for(;;){
 		if(millis() - flashTime >= 500){
+			if(!painted){
+				audio->play({{ note, note, 500 }});
+			}else{
+				audio->stop();
+			}
+
 			for(int x = 0; x < canvas->width(); x++){
 				for(int y = 0; y < canvas->height(); y++){
 					const auto previousPixel = canvas->readPixel(x, y);
@@ -164,22 +169,6 @@ void JigHWTest::start(){
 			flashTime = millis();
 			painted = !painted;
 			canvas->pushSprite(0, 0);
-		}
-
-		auto press = false;
-		for(int i = 0; i < ButtonCount; i++){
-			if(input->isPressed((Input::Button) i)){
-				press = true;
-				break;
-			}
-		}
-
-		if(press && !tone){
-			audio->play({{ note, note, 2000 }});
-			tone = true;
-		}else if(!press && tone){
-			audio->stop();
-			tone = false;
 		}
 
 		delayMillis(10);

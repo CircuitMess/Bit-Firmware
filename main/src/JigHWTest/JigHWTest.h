@@ -47,8 +47,10 @@ private:
 	static bool VoltReferenceCheck();
 	static bool Robot();
 	static bool SPIFFSTest();
-	static bool Buttons();
 	static bool HWVersion();
+
+	/** UNUSED */
+	static bool Buttons();
 
 	static uint32_t calcChecksum(FILE* file);
 
@@ -57,7 +59,7 @@ private:
 	void rgb();
 
 
-	static constexpr int16_t BatVoltageMinimum = 4400;
+	static constexpr int16_t BatVoltageMinimum = 3300;
 	static constexpr float VoltReference = 2500;
 	static constexpr float VoltReferenceTolerance = 100;
 
