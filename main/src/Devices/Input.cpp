@@ -1,19 +1,7 @@
 #include "Input.h"
 #include "Util/Events.h"
 #include <Util/stdafx.h>
-#include <Pins.hpp>
 #include <driver/gpio.h>
-
-// button index -> GPIO port
-const std::unordered_map<Input::Button, gpio_num_t> Input::PinMap{
-		{ Up,    (gpio_num_t) BTN_UP },
-		{ Down,  (gpio_num_t) BTN_DOWN },
-		{ Left,  (gpio_num_t) BTN_LEFT },
-		{ Right, (gpio_num_t) BTN_RIGHT },
-		{ A,     (gpio_num_t) BTN_A },
-		{ B,     (gpio_num_t) BTN_B },
-		{ Menu,  (gpio_num_t) BTN_MENU }
-};
 
 const std::unordered_map<Input::Button, const char*> Input::PinLabels{
 		{ Up,    "Up" },

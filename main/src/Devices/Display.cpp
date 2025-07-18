@@ -1,8 +1,9 @@
 #include "Display.h"
 #include <Pins.hpp>
 #include "Color.h"
+#include "Util/EfuseMeta.h"
 
-Display::Display() : canvas(&lgfx){
+Display::Display(uint8_t revision) : canvas(&lgfx), revision(revision){
 	setupBus();
 	setupPanel();
 
@@ -21,39 +22,63 @@ Display::~Display(){
 
 void Display::setupBus(){
 	lgfx::Bus_SPI::config_t cfg = {
-		.freq_write = 40000000,
-		.freq_read = 40000000,
-		.pin_sclk = TFT_SCK,
-		.pin_miso = -1,
-		.pin_mosi = TFT_MOSI,
-		.pin_dc = TFT_DC,
-		.spi_mode = 0,
-		.spi_3wire = false,
-		.use_lock = false,
-		.dma_channel = LGFX_ESP32_SPI_DMA_CH,
-		.spi_host = SPI2_HOST
+			.freq_write = 40000000,
+			.freq_read = 40000000,
+			.pin_sclk = (int16_t) Pins::get(Pin::TftSck),
+			.pin_miso = -1,
+			.pin_mosi = (int16_t) Pins::get(Pin::TftMosi),
+			.pin_dc = (int16_t) Pins::get(Pin::TftDc),
+			.spi_mode = 0,
+			.spi_3wire = false,
+			.use_lock = false,
+			.dma_channel = LGFX_ESP32_SPI_DMA_CH,
+			.spi_host = SPI2_HOST
 	};
 	bus.config(cfg);
 }
 
 void Display::setupPanel(){
-	lgfx::Panel_Device::config_t cfg = {
-			.pin_cs = -1,
-			.pin_rst = TFT_RST,
-			.pin_busy = -1,
-			.memory_width = 132,
-			.memory_height = 132,
-			.panel_width = 128,
-			.panel_height = 128,
-			.offset_x = 2,
-			.offset_y = 1,
-			.offset_rotation = 2,
-			.readable = false,
-			.invert = false,
-			.rgb_order = false,
-			.dlen_16bit = false,
-			.bus_shared = false
-	};
+
+	lgfx::Panel_Device::config_t cfg;
+
+	if(revision == 3){
+		cfg = {
+				.pin_cs = -1,
+				.pin_rst = (int16_t) Pins::get(Pin::TftRst),
+				.pin_busy = -1,
+				.memory_width = 132,
+				.memory_height = 132,
+				.panel_width = 128,
+				.panel_height = 128,
+				.offset_x = 2,
+				.offset_y = 1,
+				.offset_rotation = 0,
+				.readable = false,
+				.invert = false,
+				.rgb_order = false,
+				.dlen_16bit = false,
+				.bus_shared = false
+		};
+	}else{
+		cfg = {
+				.pin_cs = -1,
+				.pin_rst = (int16_t) Pins::get(Pin::TftRst),
+				.pin_busy = -1,
+				.memory_width = 132,
+				.memory_height = 132,
+				.panel_width = 128,
+				.panel_height = 128,
+				.offset_x = 2,
+				.offset_y = 1,
+				.offset_rotation = 2,
+				.readable = false,
+				.invert = false,
+				.rgb_order = false,
+				.dlen_16bit = false,
+				.bus_shared = false
+		};
+	}
+
 	panel.config(cfg);
 }
 

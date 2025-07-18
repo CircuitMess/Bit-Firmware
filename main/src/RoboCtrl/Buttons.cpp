@@ -1,6 +1,6 @@
 #include "Buttons.h"
 
-RoboCtrl::Buttons::Buttons() : RobotDriver(Robot::Buttons), pwm(CTRL_1, LEDC_CHANNEL_2), chirpSystem(pwm){
+RoboCtrl::Buttons::Buttons() : RobotDriver(Robot::Buttons), pwm(Pins::get(Pin::Ctrl1), LEDC_CHANNEL_2), chirpSystem(pwm){
 
 }
 

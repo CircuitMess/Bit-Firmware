@@ -19,7 +19,7 @@ void RoboCtrl::MrBee::hello(){
 }
 
 void RoboCtrl::MrBee::init(){
-	ledService.add<SingleDigitalLED>(LED::RobotCtrl1, CTRL_1);
+	ledService.add<SingleDigitalLED>(LED::RobotCtrl1, Pins::get(Pin::Ctrl1));
 }
 
 void RoboCtrl::MrBee::deinit(){

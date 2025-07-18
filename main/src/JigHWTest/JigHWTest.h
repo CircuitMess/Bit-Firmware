@@ -4,12 +4,13 @@
 #include <vector>
 #include "Devices/Display.h"
 #include "Util/stdafx.h"
-#include "Devices/Battery.h"
+#include "Devices/Battery/BatteryRev3.h"
 #include <esp_efuse.h>
 #include <esp_spiffs.h>
 #include "Periph/I2C.h"
 #include <Pins.hpp>
 #include "Services/Robots.h"
+#include "Devices/Input.h"
 
 struct Test {
 	bool (* test)();
@@ -25,8 +26,10 @@ public:
 
 private:
 	static Display* display;
-	static LGFX_Device* canvas;
+	static LGFX_Device* panel;
+	static LGFX_Sprite* canvas;
 	static JigHWTest* test;
+	static Input* input;
 	std::vector<Test> tests;
 	const char* currentTest;
 
@@ -40,27 +43,27 @@ private:
 
 	void instr(const char* msg);
 
+	static bool BatteryCheck();
+	static bool VoltReferenceCheck();
 	static bool Robot();
 	static bool SPIFFSTest();
-	static bool BatteryCalib();
-	static bool BatteryCheck();
+	static bool HWVersion();
+
+	/** UNUSED */
 	static bool Buttons();
 
 	static uint32_t calcChecksum(FILE* file);
 
-	static constexpr gpio_num_t led_pin = (gpio_num_t) CTRL_1;
+	gpio_num_t led_pin = (gpio_num_t) Pins::get(Pin::Ctrl1);
 
 	void rgb();
 
 
-	static const int16_t referenceVoltage = 4000; // 50mV for backlight voltage drop compensation
+	static constexpr int16_t BatVoltageMinimum = 3300;
+	static constexpr float VoltReference = 2500;
+	static constexpr float VoltReferenceTolerance = 100;
 
 	static constexpr uint32_t CheckTimeout = 500;
-
-	static constexpr esp_efuse_desc_t adc1_low = { EFUSE_BLK3, 0, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_low[] = { &adc1_low, nullptr };
-	static constexpr esp_efuse_desc_t adc1_high = { EFUSE_BLK3, 8, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_high[] = { &adc1_high, nullptr };
 
 	static constexpr esp_vfs_spiffs_conf_t spiffsConfig = {
 			.base_path = "/spiffs",
@@ -68,6 +71,8 @@ private:
 			.max_files = 8,
 			.format_if_mount_failed = false
 	};
+
+	static constexpr uint8_t ButtonCount = 7;
 };
 
 #endif //BIT_FIRMWARE_JIGHWTEST_H

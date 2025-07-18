@@ -39,8 +39,8 @@ void RoboCtrl::Resistron::hello(){
 }
 
 void RoboCtrl::Resistron::init(){
-	ledService.add<SingleDigitalLED>(LED::RobotCtrl1, CTRL_1);
-	ledService.add<SingleDigitalLED>(LED::RobotCtrl2, CTRL_2);
+	ledService.add<SingleDigitalLED>(LED::RobotCtrl1, Pins::get(Pin::Ctrl1));
+	ledService.add<SingleDigitalLED>(LED::RobotCtrl2, Pins::get(Pin::Ctrl2));
 }
 
 void RoboCtrl::Resistron::deinit(){

@@ -55,6 +55,16 @@ private:
 	void gotoTwinkle();
 	void gotoCtrl();
 
+	const std::unordered_map<Input::Button, gpio_num_t> PinMap = {
+			{ Input::Button::A,     (gpio_num_t) Pins::get(Pin::LedA) },
+			{ Input::Button::B,     (gpio_num_t) Pins::get(Pin::LedB) },
+			{ Input::Button::Menu,  (gpio_num_t) Pins::get(Pin::LedMenu) },
+			{ Input::Button::Up,    (gpio_num_t) Pins::get(Pin::LedUp) },
+			{ Input::Button::Down,  (gpio_num_t) Pins::get(Pin::LedDown) },
+			{ Input::Button::Left,  (gpio_num_t) Pins::get(Pin::LedLeft) },
+			{ Input::Button::Right, (gpio_num_t) Pins::get(Pin::LedRight) },
+	};
+
 };
 
 

@@ -8,7 +8,7 @@ typedef lgfx::LGFX_Sprite Sprite;
 
 class Display {
 public:
-	Display();
+	Display(uint8_t revision);
 	virtual ~Display();
 
 	LGFX_Device& getLGFX();
@@ -37,6 +37,8 @@ private:
 	lgfx::Panel_ST7735S panel;
 	LGFX_Device lgfx;
 	Sprite canvas;
+
+	uint8_t revision;
 
 	void setupBus();
 	void setupPanel();

@@ -1,7 +1,7 @@
 #include "Artemis.h"
 #include "Pins.hpp"
 
-RoboCtrl::Artemis::Artemis() : RobotDriver(Robot::Artemis), clockPin(CTRL_1), resetPin(CTRL_2){
+RoboCtrl::Artemis::Artemis() : RobotDriver(Robot::Artemis), clockPin(Pins::get(Pin::Ctrl1)), resetPin(Pins::get(Pin::Ctrl2)){
 }
 
 void RoboCtrl::Artemis::setSpeed(uint32_t tickTime){

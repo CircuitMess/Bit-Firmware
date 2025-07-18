@@ -11,6 +11,8 @@
 #include "Devices/Display.h"
 #include "Devices/Input.h"
 #include "Devices/Battery.h"
+#include "Devices/Battery/BatteryRev3.h"
+#include "Devices/Battery/BatteryRev1.h"
 #include "Util/Notes.h"
 #include "FS/SPIFFS.h"
 #include "UIThread.h"
@@ -33,7 +35,7 @@
 #include "driver/rtc_io.h"
 #include "Services/LEDService.h"
 #include "Services/Allocator.h"
-
+#include "Util/EfuseMeta.h"
 BacklightBrightness* bl;
 
 void shutdown(){
@@ -47,18 +49,39 @@ void shutdown(){
 
 	//PIN_BL will be held high, since that is the last state set by bl->fadeOut()
 	//Required to prevent MOSFET activation on TFT_BL with leaked current if pin is floating
-	rtc_gpio_isolate((gpio_num_t)PIN_BL);
+
+	const auto blPin = (gpio_num_t)Pins::get(Pin::LedBl);
+	gpio_set_direction(blPin, GPIO_MODE_OUTPUT);
+	gpio_set_level(blPin, true);
+	gpio_set_pull_mode(blPin, GPIO_PULLUP_ONLY);
+	gpio_hold_en(blPin);
+
+	const auto buzzPin = (gpio_num_t)Pins::get(Pin::Buzz);
+	gpio_set_direction(buzzPin, GPIO_MODE_OUTPUT);
+	gpio_set_level(buzzPin, false);
+	gpio_set_pull_mode(buzzPin, GPIO_PULLDOWN_ONLY);
+	gpio_hold_en(buzzPin);
+
+	const auto calibEn = (gpio_num_t)Pins::get(Pin::CalibVrefEn);
+	gpio_set_direction(calibEn, GPIO_MODE_OUTPUT);
+	gpio_set_level(calibEn, false);
+	gpio_set_pull_mode(calibEn, GPIO_PULLDOWN_ONLY);
+	gpio_hold_en(calibEn);
+
+
+	gpio_deep_sleep_hold_en();
 	esp_deep_sleep_start();
 }
 
 void init(){
-	auto alloc = new Allocator(86 * 1024);
+	if(!EfuseMeta::check()){
+		while(true){
+			vTaskDelay(1000);
+			EfuseMeta::log();
+		}
+	}
 
-	gpio_config_t cfg = {
-			.pin_bit_mask = (1ULL << I2C_SDA) | (1ULL << I2C_SCL),
-			.mode = GPIO_MODE_INPUT
-	};
-	gpio_config(&cfg);
+	auto alloc = new Allocator(86 * 1024);
 
 	auto nvs = new NVSFlash();
 	Services.set(Service::NVS, nvs);
@@ -71,6 +94,8 @@ void init(){
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 
+		Pins::setLatest();
+
 		auto set = settings->get();
 		set.sound = true;
 		settings->set(set);
@@ -78,7 +103,15 @@ void init(){
 		auto test = new JigHWTest();
 		test->start();
 		vTaskDelete(nullptr);
+	}else{
+		printf("Hello\n");
 	}
+
+	gpio_config_t cfg = {
+			.pin_bit_mask = (1ULL << Pins::get(Pin::I2cSda)) | (1ULL << Pins::get(Pin::I2cScl)),
+			.mode = GPIO_MODE_INPUT
+	};
+	gpio_config(&cfg);
 
 	auto xpsystem = new XPSystem();
 	Services.set(Service::XPSystem, xpsystem);
@@ -86,12 +119,23 @@ void init(){
 	auto achievements = new AchievementSystem();
 	Services.set(Service::Achievements, achievements);
 
-	auto blPwm = new PWM(PIN_BL, LEDC_CHANNEL_1, true);
+	auto blPwm = new PWM(Pins::get(Pin::LedBl), LEDC_CHANNEL_1, true);
 	blPwm->detach();
 	bl = new BacklightBrightness(blPwm);
 	Services.set(Service::Backlight, bl);
 
-	auto battery = new Battery();
+	auto adc1 = new ADC(ADC_UNIT_1);
+
+	uint8_t revision = 0;
+	EfuseMeta::readRev(revision);
+
+	Battery* battery;
+	if(revision == 3){
+		battery = new BatteryRev3(*adc1);
+	}else{
+		battery = new BatteryRev1(*adc1);
+	}
+
 	if(battery->isShutdown()){
 		shutdown();
 		return;
@@ -103,14 +147,14 @@ void init(){
 
 	if(!SPIFFS::init()) return;
 
-	auto disp = new Display();
+	auto disp = new Display(revision);
 	Services.set(Service::Display, disp);
 
 	disp->getLGFX().drawBmpFile(Filepath::Splash, 36, 11);
 	bl->fadeIn();
 	auto splashStart = millis();
 
-	auto buzzPwm = new PWM(PIN_BUZZ, LEDC_CHANNEL_0);
+	auto buzzPwm = new PWM(Pins::get(Pin::Buzz), LEDC_CHANNEL_0);
 	auto audio = new ChirpSystem(*buzzPwm);
 	Services.set(Service::Audio, audio);
 

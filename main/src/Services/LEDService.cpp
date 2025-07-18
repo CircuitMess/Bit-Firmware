@@ -5,16 +5,6 @@
 #include <esp_random.h>
 #include <cmath>
 
-static const std::unordered_map<Input::Button, gpio_num_t> PinMap = {
-		{ Input::Button::A, (gpio_num_t) LED_A },
-		{ Input::Button::B, (gpio_num_t) LED_B },
-		{ Input::Button::Menu, (gpio_num_t) LED_MENU },
-		{ Input::Button::Up, (gpio_num_t) LED_UP },
-		{ Input::Button::Down, (gpio_num_t) LED_DOWN },
-		{ Input::Button::Left, (gpio_num_t) LED_LEFT },
-		{ Input::Button::Right, (gpio_num_t) LED_RIGHT },
-};
-
 #define BtnA Input::Button::A
 #define LR Input::Button::Left, Input::Button::Right
 #define UD Input::Button::Up, Input::Button::Down
@@ -22,24 +12,24 @@ static const std::unordered_map<Input::Button, gpio_num_t> PinMap = {
 #define ALL DPAD, BtnA
 
 static const std::unordered_map<Games, std::unordered_set<Input::Button>> GameButtons = {
-		{ Games::WackyStacky, { BtnA } },
-		{ Games::Blocks, { ALL } },
-		{ Games::Snake, { DPAD } },
-		{ Games::Pong, { UD } },
-		{ Games::Artemis, { ALL } },
-		{ Games::MrBee, { BtnA } },
-		{ Games::Bob, { LR } },
-		{ Games::Buttons, { Input::Button::Up, LR } },
-		{ Games::Capacitron, { LR } },
-		{ Games::Hertz, { BtnA } },
-		{ Games::Marv, { UD } },
-		{ Games::Resistron, { LR, BtnA } },
-		{ Games::Robby, { LR, BtnA } },
-		{ Games::Harald, { DPAD } },
-		{ Games::Charlie, { ALL } },
-		{ Games::Planck, { LR, BtnA, Input::Button::B } },
-		{ Games::Dusty, { BtnA } },
-		{ Games::Sparkly, { LR, BtnA, Input::Button::B } }
+		{ Games::WackyStacky, { BtnA }},
+		{ Games::Blocks,      { ALL }},
+		{ Games::Snake,       { DPAD }},
+		{ Games::Pong,        { UD }},
+		{ Games::Artemis,     { ALL }},
+		{ Games::MrBee,       { BtnA }},
+		{ Games::Bob,         { LR }},
+		{ Games::Buttons,     { Input::Button::Up, LR }},
+		{ Games::Capacitron,  { LR }},
+		{ Games::Hertz,       { BtnA }},
+		{ Games::Marv,        { UD }},
+		{ Games::Resistron,   { LR,                BtnA }},
+		{ Games::Robby,       { LR,                BtnA }},
+		{ Games::Harald,      { DPAD }},
+		{ Games::Charlie,     { ALL }},
+		{ Games::Planck,      { LR,                BtnA, Input::Button::B }},
+		{ Games::Dusty,       { BtnA }},
+		{ Games::Sparkly,     { LR,                BtnA, Input::Button::B }}
 };
 
 LEDService::LEDService() : Threaded("LED2", 4096, 5, 1), stateQueue(6), evts(6){

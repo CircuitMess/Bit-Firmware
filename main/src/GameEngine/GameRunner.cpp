@@ -1,6 +1,5 @@
 #include "GameRunner.h"
 #include "Util/stdafx.h"
-#include "Devices/Battery.h"
 #include "Games/Flappy/Flappy.h"
 #include "Games/Pong/Pong.h"
 #include "Games/Snake/Snake.h"

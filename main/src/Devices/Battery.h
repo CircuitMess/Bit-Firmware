@@ -1,57 +1,28 @@
-#ifndef BIT_LIBRARY_BATTERY_H
-#define BIT_LIBRARY_BATTERY_H
+#ifndef BIT_FIRMWARE_BATTERY_H
+#define BIT_FIRMWARE_BATTERY_H
 
-#include <hal/gpio_types.h>
-#include <atomic>
-#include "Util/Threaded.h"
-#include "Periph/ADC.h"
-#include "Util/Hysteresis.h"
-#include "Periph/Timer.h"
-#include <mutex>
-#include <esp_efuse.h>
+#include <cstdint>
 
-class Battery : private SleepyThreaded {
+class Battery {
 public:
-	Battery();
-	void begin();
-
 	enum Level { Critical = 0, VeryLow, Low, Mid, High, VeryHigh, Full, COUNT };
-
-	uint8_t getPerc() const;
-	Level getLevel() const;
+	enum class ChargingState : uint8_t { Unplugged, Charging, Full };
 
 	struct Event {
-		enum {
-			LevelChange
-		} action;
+		enum { Charging, LevelChange } action;
 		union {
 			Level level;
+			ChargingState chargingState;
 		};
 	};
 
-	static int16_t getVoltOffset();
-	static uint16_t mapRawReading(uint16_t reading);
+	virtual void begin(){};
 
-	bool isShutdown() const;
+	virtual bool isShutdown() const = 0;
 
-private:
-	static constexpr uint32_t MeasureIntverval = 100;
-
-	ADC adc;
-	Hysteresis hysteresis;
-
-	void sleepyLoop() override;
-
-	void sample(bool fresh = false);
-	bool shutdown = false;
-
-	void off();
-
-	static constexpr esp_efuse_desc_t adc1_low = { EFUSE_BLK3, 0, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_low[] = { &adc1_low, nullptr };
-	static constexpr esp_efuse_desc_t adc1_high = { EFUSE_BLK3, 8, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_high[] = { &adc1_high, nullptr };
-
+	virtual uint8_t getPerc() const = 0;
+	virtual Level getLevel() const = 0;
+	virtual ChargingState getChargingState() const = 0;
 };
 
-#endif //BIT_LIBRARY_BATTERY_H
+#endif //BIT_FIRMWARE_BATTERY_H

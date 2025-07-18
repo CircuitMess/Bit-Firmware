@@ -10,14 +10,14 @@ Robots::Robots() : SleepyThreaded(CheckInterval, "Robots", 2 * 1024, 5, 1){
 	for(const auto& pin : CtrlPins){
 		cfg.pin_bit_mask |= 1ULL << pin;
 	}
-	for(const auto& pin : { DET_1, DET_2 }){
+	for(const auto& pin : { Pins::get(Pin::Det1), Pins::get(Pin::Det2) }){
 		cfg.pin_bit_mask |= 1ULL << pin;
 	}
 	cfg.mode = GPIO_MODE_INPUT;
 	gpio_config(&cfg);
 
-	gpio_set_pull_mode((gpio_num_t) DET_1, GPIO_PULLUP_ONLY);
-	gpio_set_pull_mode((gpio_num_t) DET_2, GPIO_PULLDOWN_ONLY);
+	gpio_set_pull_mode((gpio_num_t) Pins::get(Pin::Det1), GPIO_PULLUP_ONLY);
+	gpio_set_pull_mode((gpio_num_t) Pins::get(Pin::Det2), GPIO_PULLDOWN_ONLY);
 
 	for(const auto& pin : AddrPins){
 		gpio_set_pull_mode((gpio_num_t) pin, GPIO_PULLUP_ONLY);
@@ -66,8 +66,8 @@ void Robots::sleepyLoop(){
 }
 
 bool Robots::checkInserted(){
-	bool det1 = gpio_get_level((gpio_num_t) DET_1);
-	bool det2 = gpio_get_level((gpio_num_t) DET_2);
+	bool det1 = gpio_get_level((gpio_num_t) Pins::get(Pin::Det1));
+	bool det2 = gpio_get_level((gpio_num_t) Pins::get(Pin::Det2));
 	return det1 == 0 && det2 == 1;
 }
 

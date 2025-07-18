@@ -1,7 +1,7 @@
 #include "Robby.h"
 #include "math.h"
 
-RoboCtrl::Robby::Robby() : RobotDriver(Robot::Robby), pwm(CTRL_1, LEDC_CHANNEL_2){
+RoboCtrl::Robby::Robby() : RobotDriver(Robot::Robby), pwm(Pins::get(Pin::Ctrl1), LEDC_CHANNEL_2){
 
 }
 

@@ -1,7 +1,7 @@
 #include "Marv.h"
 #include "Pins.hpp"
 
-RoboCtrl::Marv::Marv() : RobotDriver(Robot::Marv), clockPin(CTRL_1), resetPin(CTRL_2){
+RoboCtrl::Marv::Marv() : RobotDriver(Robot::Marv), clockPin(Pins::get(Pin::Ctrl1)), resetPin(Pins::get(Pin::Ctrl2)){
 }
 
 void RoboCtrl::Marv::setSpeed(uint32_t tickTime){
