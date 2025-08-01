@@ -1,15 +1,9 @@
-Subject: [PATCH] LovyanGFX
----
-Index: src/lgfx/v1/platforms/esp32/common.cpp
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/lgfx/v1/platforms/esp32/common.cpp b/src/lgfx/v1/platforms/esp32/common.cpp
---- a/src/lgfx/v1/platforms/esp32/common.cpp	(revision d0beeee9d680c6967926b7593e3f73a907064321)
-+++ b/src/lgfx/v1/platforms/esp32/common.cpp	(date 1753101338445)
-@@ -834,7 +834,7 @@
-   || (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0))
+﻿diff --git a/src/lgfx/v1/platforms/esp32/common.cpp b/src/lgfx/v1/platforms/esp32/common.cpp
+index 1ed66a3..7f94c54 100644
+--- a/src/lgfx/v1/platforms/esp32/common.cpp
++++ b/src/lgfx/v1/platforms/esp32/common.cpp
+@@ -807,7 +807,7 @@ namespace lgfx
+  #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 2) && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 1, 0))
        (&dev->comd[0])[index].val = cmd_val;
   #else
 -      (&dev->comd0)[index].val = cmd_val;
