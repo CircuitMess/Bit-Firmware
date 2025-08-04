@@ -246,6 +246,12 @@ void Planck::Planck::onLoop(float deltaTime){
 
 	if(battery <= 0.0f && poweredAcceleration >= 1.0f){
 		poweredAcceleration -= 1.0f;
+
+		//no energy left
+		audio.play({{ 100, 100, 100 },
+					{ 0,   0,   75 },
+					{ 100, 100, 100 },
+				   });
 	}
 
 	auto a = poweredAcceleration * GasBrakeAcceleration + boostAcceleration;
@@ -321,6 +327,17 @@ void Planck::Planck::onLoop(float deltaTime){
 	}
 
 	if(lives == 0 || (speed == 0 && battery == 0)){
+		audio.play({{ 100, 500, 200 },
+					{ 500, 100, 200 },
+					{ 0,   0,   50 },
+					{ 100, 350, 200 },
+					{ 350, 100, 200 },
+					{ 0,   0,   50 },
+					{ 100, 100, 150 },
+					{ 0,   0,   100 },
+					{ 100, 100, 350 },
+				   });
+		delayMillis(2000);
 		exit();
 		return;
 	}
@@ -339,8 +356,19 @@ void Planck::Planck::handleInput(const Input::Data& data){
 		direction -= 1.0f;
 	}
 
-	if((data.btn == Input::Button::A && data.action == Input::Data::Press && battery > 0.0f) ||
-	   (data.btn == Input::Button::B && data.action == Input::Data::Release)){
+	if(data.btn == Input::Button::A && data.action == Input::Data::Press){
+		if(battery > 0.0f){
+			poweredAcceleration += 1.0f;
+		}else{
+			//no energy left
+			audio.play({{ 100, 100, 100 },
+						{ 0,   0,   75 },
+						{ 100, 100, 100 },
+					   });
+		}
+
+	}
+	if(data.btn == Input::Button::B && data.action == Input::Data::Release){
 		poweredAcceleration += 1.0f;
 	}
 
@@ -572,6 +600,14 @@ bool Planck::Planck::onCollision(){
 	}
 
 	if(!invincible){
+		//taken damage
+		audio.play({{ 500, 180, 250 },
+					{ 0,   0,   50 },
+					{ 100, 100, 100 },
+					{ 0,   0,   75 },
+					{ 100, 100, 100 }
+				   });
+
 		--lives;
 		hearts->setLives(lives);
 
@@ -586,6 +622,8 @@ void Planck::Planck::onBoost(){
 		return;
 	}
 
+	//boosting
+	audio.play({{ 300, 800, 750 }});
 	boostAcceleration = BoostAccelerationRate;
 
 	boosting = true;
@@ -601,6 +639,13 @@ void Planck::Planck::onRamp(){
 		return;
 	}
 
+	//jumping
+	audio.play({{ 400, 750, 650 },
+				{ 750, 400, 650 },
+				{ 0, 0, 50 },
+				{ 80, 80, 75 }
+			   });
+
 	lastAir = millis();
 
 	direction = 0;
@@ -608,7 +653,18 @@ void Planck::Planck::onRamp(){
 }
 
 void Planck::Planck::onHealthUp(){
-	if(lives >= 3 || lastAir != 0){
+	if(lastAir != 0){
+		return;
+	}
+
+	audio.play({{ 250, 500, 150 },
+				{ 0,   0,   75 },
+				{ 350, 600, 150 },
+				{ 0,   0,   75 },
+				{ 450, 700, 150 },
+			   });
+
+	if(lives >= 3){
 		return;
 	}
 
@@ -621,6 +677,11 @@ void Planck::Planck::onBatteryUp(){
 		return;
 	}
 
+	audio.play({{ 300, 750, 200 },
+				{ 0,   0,   75 },
+				{ 400, 850, 200 }
+			   });
+
 	setBattery(battery + 0.5f);
 
 	batteries++;
@@ -632,6 +693,9 @@ void Planck::Planck::onPickup(){
 		return;
 	}
 
+	audio.play({{ 600, 600, 100 },
+				{ 0,   0,   75 },
+				{ 800, 800, 100 }});
 	++score;
 	scoreDisplay->setScore(score);
 }
