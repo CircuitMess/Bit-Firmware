@@ -73,6 +73,11 @@ void shutdown(){
 	esp_deep_sleep_start();
 }
 
+/**
+ * No need to check Clockstar v2 - Bit v3 PID conflict here.
+ * Bit Firmware only fits into 8MB flash, so uploading it to Clockstar's 4MB isn't possible.
+ */
+
 void init(){
 	if(!EfuseMeta::check()){
 		while(true){
