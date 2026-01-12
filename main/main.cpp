@@ -79,12 +79,12 @@ void shutdown(){
  */
 
 void init(){
-	if(!EfuseMeta::check()){
-		while(true){
-			vTaskDelay(1000);
-			EfuseMeta::log();
-		}
-	}
+	// if(!EfuseMeta::check()){
+	// 	while(true){
+	// 		vTaskDelay(1000);
+	// 		EfuseMeta::log();
+	// 	}
+	// }
 
 	auto alloc = new Allocator(86 * 1024);
 
@@ -96,7 +96,7 @@ void init(){
 	auto settings = new Settings();
 	Services.set(Service::Settings, settings);
 
-	if(JigHWTest::checkJig()){
+	/*if(JigHWTest::checkJig()){
 		printf("Jig\n");
 
 		Pins::setLatest();
@@ -110,7 +110,7 @@ void init(){
 		vTaskDelete(nullptr);
 	}else{
 		printf("Hello\n");
-	}
+	}*/
 
 	gpio_config_t cfg = {
 			.pin_bit_mask = (1ULL << Pins::get(Pin::I2cSda)) | (1ULL << Pins::get(Pin::I2cScl)),
@@ -131,8 +131,8 @@ void init(){
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
-	uint8_t revision = 0;
-	EfuseMeta::readRev(revision);
+	uint8_t revision = 3;
+	// EfuseMeta::readRev(revision);
 
 	Battery* battery;
 	if(revision == 3){

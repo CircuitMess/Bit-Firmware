@@ -10,16 +10,16 @@ int Pins::get(Pin pin){
 		uint8_t revision = 0;
 		EfuseMeta::readRev(revision);
 
-		if(revision == 0 || revision == 1 || revision == 2){
+		/*if(revision == 0 || revision == 1 || revision == 2){
 			instance->currentMap = &instance->Revision1;
-		}else if(revision == 3){
+		}else if(revision == 3){*/
 			instance->currentMap = &instance->Revision3;
-		}else{
+		/*}else{
 			while(true){
 				EfuseMeta::log();
 				while(true);
 			}
-		}
+		}*/
 	}
 
 	assert(instance != nullptr);
@@ -52,16 +52,17 @@ Pins::Pins(){
 }
 
 void Pins::initPinMaps(){
+	//Corgi pins
 	Revision1 = {
-			{ Pin::BtnDown,     4 },
-			{ Pin::BtnUp,       5 },
-			{ Pin::BtnLeft,     3 },
-			{ Pin::BtnRight,    6 },
-			{ Pin::BtnA,        7 },
-			{ Pin::BtnB,        8 },
-			{ Pin::BtnMenu,     9 },
-			{ Pin::LedBl,       12 },
-			{ Pin::Buzz,        11 },
+			{ Pin::BtnDown,     13 },
+			{ Pin::BtnUp,       11 },
+			{ Pin::BtnLeft,     12 },
+			{ Pin::BtnRight,    9 },
+			{ Pin::BtnA,        14 },
+			{ Pin::BtnB,        15 },
+			{ Pin::BtnMenu,     -1 },
+			{ Pin::LedBl,       8 },
+			{ Pin::Buzz,        16 },
 			{ Pin::BattRead,    10 },
 			{ Pin::CalibVrefEn, -1 },
 			{ Pin::I2cSda,      1 },
@@ -100,7 +101,7 @@ void Pins::initPinMaps(){
 			{ Pin::BtnRight,    9 },
 			{ Pin::BtnA,        14 },
 			{ Pin::BtnB,        15 },
-			{ Pin::BtnMenu,     21 },
+			{ Pin::BtnMenu,     -1 },
 			{ Pin::LedBl,       8 },
 			{ Pin::Buzz,        16 },
 			{ Pin::BattRead,    3 },

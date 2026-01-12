@@ -96,6 +96,8 @@ void BatteryRev3::sample(bool fresh){
 
 	auto oldLevel = getLevel();
 
+	ESP_LOGI(TAG, "unmapped: %.2f\n", readerBatt->getUnmappedValue());
+
 	if(fresh){
 		readerBatt->resetEma();
 		hysteresis.reset(readerBatt->getValue());
