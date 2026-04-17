@@ -135,7 +135,7 @@ void init(){
 	EfuseMeta::readRev(revision);
 
 	Battery* battery;
-	if(revision == 3){
+	if(revision == 3 || revision == 4){
 		battery = new BatteryRev3(*adc1);
 	}else{
 		battery = new BatteryRev1(*adc1);

@@ -41,7 +41,25 @@ void Display::setupPanel(){
 
 	lgfx::Panel_Device::config_t cfg;
 
-	if(revision == 3){
+	if(revision == 4){
+		cfg = {
+				.pin_cs = -1,
+				.pin_rst = (int16_t) Pins::get(Pin::TftRst),
+				.pin_busy = -1,
+				.memory_width = 128,
+				.memory_height = 128,
+				.panel_width = 128,
+				.panel_height = 128,
+				.offset_x = 0,
+				.offset_y = 0,
+				.offset_rotation = 0,
+				.readable = false,
+				.invert = false,
+				.rgb_order = false,
+				.dlen_16bit = false,
+				.bus_shared = false
+		};
+	}else if(revision == 3){
 		cfg = {
 				.pin_cs = -1,
 				.pin_rst = (int16_t) Pins::get(Pin::TftRst),

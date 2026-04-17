@@ -12,7 +12,7 @@ int Pins::get(Pin pin){
 
 		if(revision == 0 || revision == 1 || revision == 2){
 			instance->currentMap = &instance->Revision1;
-		}else if(revision == 3){
+		}else if(revision == 3 || revision == 4){
 			instance->currentMap = &instance->Revision3;
 		}else{
 			while(true){
